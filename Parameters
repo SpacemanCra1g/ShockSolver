@@ -1,0 +1,51 @@
+# #############################
+# This is the parameters file #
+# #############################
+
+# ###################
+# Domain Parameters #
+# ###################
+NDIMS 2
+NGC 3
+
+
+# ##############
+# X Parameters #
+# ##############
+NX 10
+X0 0
+XN 9
+
+# ##############
+# Y Parameters #
+# ##############
+NY 1
+Y0 0
+YN 1
+
+# ##############
+# T Parameters #
+# ##############
+T0 0
+TN 1.8
+
+
+# ################
+# Run Parameters #
+# ################
+gamma 1.4
+CFL 0.8
+TestProblem ShuOsher
+BC ShuOsher
+RK_Method 3
+ell 6
+MoodOrder 5
+SlowStart True
+
+# ###############
+# NN Parameters #
+# ###############
+Use_NN False
+UseDMP True
+NegativeSlope 0.01
+NN_Thresh .99
