@@ -1,8 +1,10 @@
 #ifndef DOMAINCLASS_H_
 #define DOMAINCLASS_H_
 
+#include "CellClass.hpp"
 #include "OptionsClass.hpp"
 #include <cblas.h>
+#include <cmath>
 #include <iostream>
 // #include <lapacke.h>
 
@@ -10,43 +12,19 @@
 // extern void cblas_dscal(int, double, double *, int);
 // }
 
-class Cell {
-public:
-  double *DENS, *PRES, *XVEL, *YVEL, *MOMX, *MOMY, *ENERGY, *gamma;
-  Cell *LCell, *RCell, *TCell, *BCell;
-  int x, y;
-
-  // Defined VarConvert.cpp
-  void Cons2Prims();
-  void Prims2Cons();
-  double GetPres();
-
-  void Assign(std::string Var, double val) {
-    if (Var == "DENS") {
-      *DENS = val;
-    } else if (Var == "PRES") {
-      *PRES = val;
-    } else if (Var == "XVEL") {
-      *XVEL = val;
-    } else if (Var == "YVEL") {
-      *YVEL = val;
-    }
-  }
-};
-
 class Domain {
 public:
-  double *DENS, *PRES, *XVEL, *YVEL, *MOMX, *MOMY, *ENERGY;
-  double gamma, nx, ny, x0, xN, y0, yN, dx, dy;
-  int XStart, YStart, XEnd, YEnd, REdgeX, REdgeY, ngc;
-
-public:
+  double *DENS, *PRES, *XVEL, *YVEL, *MOMX, *MOMY, *ENERGY, *Cs, *Buffer;
+  double gamma, nx, ny, x0, xN, y0, yN, dx, dy, T, TN, dt, dt_sim, cfl;
+  int XStart, YStart, XEnd, YEnd, REdgeX, REdgeY, ngc, ndims;
   int xDim, yDim;
   Cell *Cells;
   void (Domain::*BC)(std::string);
   void (Domain::*IC)();
+  bool SlowStart;
 
-  Domain(opt &Opts) {
+  // Class constructor, Takes in the Opts class to build internal variables
+  Domain(opt Opts) {
     xDim = Opts.ngc * 2 + Opts.nx;
     yDim = Opts.ngc * 2 + Opts.ny;
     DENS = new double[xDim * yDim];
@@ -56,6 +34,8 @@ public:
     MOMX = new double[xDim * yDim];
     MOMY = new double[xDim * yDim];
     ENERGY = new double[xDim * yDim];
+    Buffer = new double[xDim * yDim];
+    Cs = new double[xDim * yDim];
     Cells = new Cell[xDim * yDim];
     XStart = Opts.ngc;
     YStart = Opts.ngc;
@@ -70,12 +50,21 @@ public:
     yN = Opts.yN;
     nx = Opts.nx;
     ny = Opts.ny;
-    dx = (x0 - xN) / nx;
-    dy = (y0 - xN) / ny;
+    dx = (xN - x0) / nx;
+    dy = (yN - y0) / ny;
+    T = Opts.T0;
+    dt_sim = 1E-10;
+    TN = Opts.TN;
+    cfl = Opts.CFL;
+    ndims = Opts.Ndims;
+    SlowStart = Opts.SlowStart;
   }
   void AssignCells() {
     for (int i = 0; i < xDim; ++i) {
       for (int j = 0; j < yDim; ++j) {
+        // Each cell stores memory locations corresponding to it's position in
+        // this array This approach, while memory intensive, should prevent
+        // copying memory.
         Cells[i * yDim + j].DENS = &DENS[i * yDim + j];
         Cells[i * yDim + j].PRES = &PRES[i * yDim + j];
         Cells[i * yDim + j].XVEL = &XVEL[i * yDim + j];
@@ -83,10 +72,12 @@ public:
         Cells[i * yDim + j].MOMX = &MOMX[i * yDim + j];
         Cells[i * yDim + j].MOMY = &MOMY[i * yDim + j];
         Cells[i * yDim + j].ENERGY = &ENERGY[i * yDim + j];
+        Cells[i * yDim + j].Cs = &Cs[i * yDim + j];
         Cells[i * yDim + j].gamma = &gamma;
         Cells[i * yDim + j].x = i;
         Cells[i * yDim + j].y = j;
 
+        // Access points to get left and right cells as well.
         if (i > 0) {
           Cells[i * yDim + j].LCell = &Cells[(i - 1) * yDim + j];
         }
@@ -109,6 +100,7 @@ public:
   // Defined in the VarConvert.cpp file
   void Prims2Cons();
   void Cons2Prim();
+  void SolvePressure();
 
   // Defined in the BC.cpp file
   void NeumannBC(std::string);
@@ -116,6 +108,10 @@ public:
 
   // Defined in the IC.cpp file
   void ShuOsherIC();
+
+  // Defined in the Find_dt.cpp flie
+  void Find_dt();
+  void Find_Cs();
 
   void TestLapacke(double val) { cblas_dscal(25, val, DENS, 1); }
 };

@@ -25,6 +25,14 @@ void Domain::Cons2Prim() {
   // }
 }
 
+void Domain::SolvePressure() {
+  for (int i = 0; i < xDim * yDim; ++i) {
+    PRES[i] =
+        (gamma - 1) *
+        (ENERGY[i] - 0.5 * (MOMX[i] * MOMX[i] + MOMY[i] * MOMY[i]) / DENS[i]);
+  }
+}
+
 void Cell::Cons2Prims() {
   *XVEL = *XVEL / *DENS;
   *MOMY = *YVEL / *DENS;

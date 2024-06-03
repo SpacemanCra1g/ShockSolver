@@ -8,7 +8,7 @@
 class opt {
 public:
   std::string BC, TestProblem;
-  int Ndims, ngc, nx, ny, RK, ell, MO;
+  int Ndims, ngc, nx, ny, RK, ell, MO, ngp;
   double NegSlope, NN_Thresh, gamma, CFL, TN, T0, y0, yN, x0, xN;
   bool SlowStart, UseNN, UseDMP;
 
@@ -110,6 +110,10 @@ public:
 
       else if (!strcmp(Parameter, "NN_Thresh")) {
         NN_Thresh = std::atof(val);
+      }
+
+      else if (!strcmp(Parameter, "Num_QuadraturePoints")) {
+        ngp = std::atoi(val);
       }
 
       else if (!strcmp(&Parameter[0], "#")) {

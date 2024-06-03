@@ -12,22 +12,22 @@ NGC 3
 # ##############
 # X Parameters #
 # ##############
-NX 10
+NX 1000
 X0 0
 XN 9
 
 # ##############
 # Y Parameters #
 # ##############
-NY 1
+NY 1000
 Y0 0
-YN 1
+YN 9
 
 # ##############
 # T Parameters #
 # ##############
 T0 0
-TN 1.8
+TN 2
 
 
 # ################
@@ -41,6 +41,8 @@ RK_Method 3
 ell 6
 MoodOrder 5
 SlowStart True
+# If set to 0 will default to the number appropriate to the Mood Order
+Num_QuadraturePoints 2
 
 # ###############
 # NN Parameters #
