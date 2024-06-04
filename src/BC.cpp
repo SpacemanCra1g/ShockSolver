@@ -87,7 +87,7 @@ void Domain::ShuOsherBC(std::string Vars) {
       // We need some slight changes for the DENS variable however
 
       cblas_dcopy(yDim, &ENERGY[(REdgeX - 1) * yDim], 1,
-                  &ENERGY[(REdgeX + i) * yDim], 1);
+                  &ENERGY[(XEnd + i) * yDim], 1);
 
       std::fill(&MOMY[(XEnd + i) * yDim], &MOMY[(XEnd + i + 1) * yDim], 0.0);
       std::fill(&MOMX[(XEnd + i) * yDim], &MOMX[(XEnd + i + 1) * yDim], 0.0);

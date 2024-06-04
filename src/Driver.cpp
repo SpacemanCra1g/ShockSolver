@@ -16,10 +16,8 @@ int main() {
 
   (Solver.*(Solver.IC))();
 
-  // for (int i = Solver.XStart; i < Solver.REdgeX; ++i) {
-  //   std::cout << Solver.DENS[i * Solver.yDim] << " ";
-  // }
   (Solver.*(Solver.BC))("Cons");
+
   Solver.SolvePressure();
 
   do {
