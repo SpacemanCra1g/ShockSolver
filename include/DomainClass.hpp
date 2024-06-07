@@ -16,11 +16,14 @@ class Domain {
 public:
   double *DENS, *PRES, *XVEL, *YVEL, *MOMX, *MOMY, *ENERGY, *Cs, *Buffer;
   double gamma, nx, ny, x0, xN, y0, yN, dx, dy, T, TN, dt, dt_sim, cfl;
+    double *CopyBuffer;
   int XStart, YStart, XEnd, YEnd, REdgeX, REdgeY, ngc, ndims;
   int xDim, yDim;
   Cell *Cells;
+    // double *Prims[4] = {DENS,XVEL,YVEL,PRES};
   void (Domain::*BC)(std::string);
   void (Domain::*IC)();
+  void (Domain::*RK_TimeStepper)();
   bool SlowStart;
 
   // Class constructor, Takes in the Opts class to build internal variables
@@ -34,6 +37,11 @@ public:
     MOMX = new double[xDim * yDim];
     MOMY = new double[xDim * yDim];
     ENERGY = new double[xDim * yDim];
+    CopyBuffer = new double[xDim*yDim*4];
+    double *CopyCons[4] ={CopyBuffer,&CopyBuffer[xDim*yDim],
+                   &CopyBuffer[xDim*yDim*2],&CopyBuffer[xDim*yDim*3]};
+    double *Prims[4] = {DENS,XVEL,YVEL,PRES};
+    double *Cons[4] = {DENS,MOMX,MOMY,ENERGY};
     Buffer = new double[xDim * yDim];
     Cs = new double[xDim * yDim];
     Cells = new Cell[xDim * yDim];
@@ -112,6 +120,10 @@ public:
   // Defined in the Find_dt.cpp flie
   void Find_dt();
   void Find_Cs();
+
+  // Defined in the TimeSteppers.cpp file
+  void RK3();
+  void ForwardEuler();
 
   void TestLapacke(double val) { cblas_dscal(25, val, DENS, 1); }
 };
