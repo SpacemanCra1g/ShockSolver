@@ -16,11 +16,14 @@ class Domain {
 public:
   double *DENS, *PRES, *XVEL, *YVEL, *MOMX, *MOMY, *ENERGY, *Cs, *Buffer;
   double gamma, nx, ny, x0, xN, y0, yN, dx, dy, T, TN, dt, dt_sim, cfl;
-    double *CopyBuffer;
+  double *CopyBuffer, *CopyCons;
+  double *XQuads1, *XQuads2, *XQuads3;
+  double *YQuads1, *YQuads2, *YQuads3;
   int XStart, YStart, XEnd, YEnd, REdgeX, REdgeY, ngc, ndims;
   int xDim, yDim;
   Cell *Cells;
-    // double *Prims[4] = {DENS,XVEL,YVEL,PRES};
+  double *Cons;
+  // double *Prims[4] = {DENS,XVEL,YVEL,PRES};
   void (Domain::*BC)(std::string);
   void (Domain::*IC)();
   void (Domain::*RK_TimeStepper)();
@@ -37,11 +40,14 @@ public:
     MOMX = new double[xDim * yDim];
     MOMY = new double[xDim * yDim];
     ENERGY = new double[xDim * yDim];
-    CopyBuffer = new double[xDim*yDim*4];
-    double *CopyCons[4] ={CopyBuffer,&CopyBuffer[xDim*yDim],
-                   &CopyBuffer[xDim*yDim*2],&CopyBuffer[xDim*yDim*3]};
-    double *Prims[4] = {DENS,XVEL,YVEL,PRES};
-    double *Cons[4] = {DENS,MOMX,MOMY,ENERGY};
+    CopyBuffer = new double[xDim * yDim * 4];
+    double *CopyCons[4] = {CopyBuffer, &CopyBuffer[xDim * yDim],
+                           &CopyBuffer[xDim * yDim * 2],
+                           &CopyBuffer[xDim * yDim * 3]};
+    double *Prims[4] = {DENS, XVEL, YVEL, PRES};
+    double *Cons[4] = {DENS, MOMX, MOMY, ENERGY};
+    XQuads1 = new double[(xDim - 1) * yDim];
+    YQuads1 = new double[xDim * (yDim - 1)];
     Buffer = new double[xDim * yDim];
     Cs = new double[xDim * yDim];
     Cells = new Cell[xDim * yDim];

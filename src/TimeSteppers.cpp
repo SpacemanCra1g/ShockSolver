@@ -1,26 +1,27 @@
 #include "../include/DomainClass.hpp"
 
-void Domain::ForwardEuler(){
-    for (int i = 0; i < 4; ++i){
-        std::copy(Cons[i],)
-    }
+void Domain::ForwardEuler() {
 
+  Calculate_Quad_Points();
 
+  Flux_Recon();
 }
 
+void Domain::RK3() {
 
-void Domain::RK3(){
-    ForwardEuler;
+  for (int i = 0; i < 4; ++i) {
+    std::copy(Cons[i], Cons[i] + xDim * yDim, CopyCons[i]);
+  }
 
-    BC
+  ForwardEuler;
 
-    ForwardEuler;
+  BC
 
-    Domain_ADD;
+      ForwardEuler;
 
-    Forward Euler;
+  Domain_ADD;
 
-    Domain_Add
+  Forward Euler;
 
-
+  Domain_Add
 }
