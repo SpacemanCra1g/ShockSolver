@@ -1,6 +1,7 @@
 #ifndef CELLCLASS_H_
 #define CELLCLASS_H_
 
+#include "GP_Kernel.hpp"
 #include <string>
 
 class Cell {
@@ -9,6 +10,7 @@ public:
   double *Cs;
   Cell *LCell, *RCell, *TCell, *BCell;
   int x, y;
+  GP_Kernel *GP_Weight;
 
   // Defined VarConvert.cpp
   void Cons2Prims();

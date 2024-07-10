@@ -1,11 +1,11 @@
 CC=clang++
-FLAGS= -g -Wall -Wextra -pedantic -Qunused-arguments
+FLAGS=  -g -Wall -Wextra -pedantic -Qunused-arguments
 SRC=src
 OBJ=build
 OUTDIR=OutputData
 SRCS=$(wildcard $(SRC)/*.cpp)
 OBJS=$(patsubst $(SRC)/%.cpp, $(OBJ)/%.o, $(SRCS))
-LINKERS = -std=c++11 -lcblas -fopenmp
+LINKERS = -std=c++11 -lcblas -fopenmp -llapacke
 TARGET=Main.ex
 INC_DIR = -I./include
 

@@ -2,26 +2,26 @@
 
 void Domain::ForwardEuler() {
 
-  Calculate_Quad_Points();
+  // Calculate_Quad_Points();
 
-  Flux_Recon();
+  // Flux_Recon();
 }
 
 void Domain::RK3() {
 
-  for (int i = 0; i < 4; ++i) {
-    std::copy(Cons[i], Cons[i] + xDim * yDim, CopyCons[i]);
-  }
+  // for (int i = 0; i < 4; ++i) {
+  //   std::copy(Cons[i], Cons[i] + xDim * yDim, CopyCons[i]);
+  // }
 
-  ForwardEuler;
+  // ForwardEuler;
 
-  BC
+  // BC
 
-      ForwardEuler;
+  //     ForwardEuler;
 
-  Domain_ADD;
+  // Domain_ADD;
 
-  Forward Euler;
+  // Forward Euler;
 
-  Domain_Add
+  // Domain_Add
 }

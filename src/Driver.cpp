@@ -29,7 +29,6 @@ int main() {
               << std::endl;
 
     // exit(0);
-
   } while (Solver.T < Solver.TN);
 
   std::cout << "BC DIDNT CRASH!" << std::endl;

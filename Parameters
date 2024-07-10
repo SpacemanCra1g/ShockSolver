@@ -19,7 +19,7 @@ XN 9
 # ##############
 # Y Parameters #
 # ##############
-NY 1000
+NY 100
 Y0 0
 YN 9
 
@@ -38,7 +38,7 @@ CFL 0.8
 TestProblem ShuOsher
 BC ShuOsher
 RK_Method 3
-ell 6
+ell 12
 MoodOrder 5
 SlowStart True
 # If set to 0 will default to the number appropriate to the Mood Order

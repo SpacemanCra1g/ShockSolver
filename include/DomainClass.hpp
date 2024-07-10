@@ -2,10 +2,12 @@
 #define DOMAINCLASS_H_
 
 #include "CellClass.hpp"
+#include "GP_Kernel.hpp"
 #include "OptionsClass.hpp"
 #include <cblas.h>
 #include <cmath>
 #include <iostream>
+#include <vector>
 // #include <lapacke.h>
 
 // extern "C" {
@@ -20,7 +22,7 @@ public:
   double *XQuads1, *XQuads2, *XQuads3;
   double *YQuads1, *YQuads2, *YQuads3;
   int XStart, YStart, XEnd, YEnd, REdgeX, REdgeY, ngc, ndims;
-  int xDim, yDim;
+  int xDim, yDim, ell, nqp;
   Cell *Cells;
   double *Cons;
   // double *Prims[4] = {DENS,XVEL,YVEL,PRES};
@@ -28,6 +30,8 @@ public:
   void (Domain::*IC)();
   void (Domain::*RK_TimeStepper)();
   bool SlowStart;
+  GP_Kernel SolutionKer;
+  std::vector<double> FluxArray[2][4];
 
   // Class constructor, Takes in the Opts class to build internal variables
   Domain(opt Opts) {
@@ -41,9 +45,11 @@ public:
     MOMY = new double[xDim * yDim];
     ENERGY = new double[xDim * yDim];
     CopyBuffer = new double[xDim * yDim * 4];
+
     double *CopyCons[4] = {CopyBuffer, &CopyBuffer[xDim * yDim],
                            &CopyBuffer[xDim * yDim * 2],
                            &CopyBuffer[xDim * yDim * 3]};
+
     double *Prims[4] = {DENS, XVEL, YVEL, PRES};
     double *Cons[4] = {DENS, MOMX, MOMY, ENERGY};
     XQuads1 = new double[(xDim - 1) * yDim];
@@ -64,20 +70,29 @@ public:
     yN = Opts.yN;
     nx = Opts.nx;
     ny = Opts.ny;
+    ell = Opts.ell;
     dx = (xN - x0) / nx;
     dy = (yN - y0) / ny;
     T = Opts.T0;
     dt_sim = 1E-10;
     TN = Opts.TN;
+    nqp = Opts.ngp;
     cfl = Opts.CFL;
     ndims = Opts.Ndims;
     SlowStart = Opts.SlowStart;
+    SolutionKer.GP_Kernel_init(ell, dx, dy);
+    for (int i = 0; i < 2; ++i) {
+      for (int j = 0; j < 2; ++j) {
+        FluxArray[i][j].resize(REdgeY * REdgeX);
+      }
+    }
   }
   void AssignCells() {
     for (int i = 0; i < xDim; ++i) {
       for (int j = 0; j < yDim; ++j) {
-        // Each cell stores memory locations corresponding to it's position in
-        // this array This approach, while memory intensive, should prevent
+        // Each cell stores memory locations corresponding to its position in
+        // this array.
+        // This approach, while memory intensive, should prevent
         // copying memory.
         Cells[i * yDim + j].DENS = &DENS[i * yDim + j];
         Cells[i * yDim + j].PRES = &PRES[i * yDim + j];
@@ -90,6 +105,7 @@ public:
         Cells[i * yDim + j].gamma = &gamma;
         Cells[i * yDim + j].x = i;
         Cells[i * yDim + j].y = j;
+        Cells[i * yDim + j].GP_Weight = &SolutionKer;
 
         // Access points to get left and right cells as well.
         if (i > 0) {
