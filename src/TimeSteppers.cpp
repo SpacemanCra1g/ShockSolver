@@ -2,26 +2,33 @@
 
 void Domain::ForwardEuler() {
 
-  // Calculate_Quad_Points();
+  Calculate_Quad_Points();
 
-  // Flux_Recon();
+  SolveRiemann();
+
+  TimeStep();
 }
 
 void Domain::RK3() {
 
-  // for (int i = 0; i < 4; ++i) {
-  //   std::copy(Cons[i], Cons[i] + xDim * yDim, CopyCons[i]);
-  // }
+  SaveDomain();
 
-  // ForwardEuler;
+  DomainAdd(1.0 / 3.0, 2.0 / 3.0);
+  ForwardEuler();
 
-  // BC
+  (this->*(this->BC))("Cons");
 
-  //     ForwardEuler;
+  ForwardEuler();
 
-  // Domain_ADD;
+  (this->*(this->BC))("Cons");
 
-  // Forward Euler;
+  DomainAdd(.75, .25);
 
-  // Domain_Add
+  ForwardEuler();
+
+  (this->*(this->BC))("Cons");
+
+  DomainAdd(1.0 / 3.0, 2.0 / 3.0);
+
+  Check();
 }

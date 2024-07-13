@@ -14,6 +14,9 @@ int main() {
 
   Solver.AssignCells();
 
+  // std::cout << Solver.GetCell(10, 17)->y << std::endl;
+  // exit(0);
+
   (Solver.*(Solver.IC))();
 
   (Solver.*(Solver.BC))("Cons");
@@ -25,13 +28,17 @@ int main() {
 
     Solver.T += Solver.dt;
 
+    // Solver.Check();
+    Solver.RK3();
     std::cout << "The time is: " << Solver.T << " dt = :" << Solver.dt
               << std::endl;
 
     // exit(0);
-  } while (Solver.T < Solver.TN);
+  } while (Solver.T < Solver.TN || false);
 
-  std::cout << "BC DIDNT CRASH!" << std::endl;
+  Solver.Cons2Prim();
+
+  Solver.WriteOutSolution();
 
   return 0;
 }

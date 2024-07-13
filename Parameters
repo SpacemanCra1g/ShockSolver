@@ -12,22 +12,22 @@ NGC 3
 # ##############
 # X Parameters #
 # ##############
-NX 100
+NX 10
 X0 0
 XN 9
 
 # ##############
 # Y Parameters #
 # ##############
-NY 100
+NY 1
 Y0 0
-YN 9
+YN 1
 
 # ##############
 # T Parameters #
 # ##############
 T0 0
-TN 2
+TN .8UpdatedDens = 0.0;UpdatedDens = 0.0;
 
 
 # ################

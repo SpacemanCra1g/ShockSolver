@@ -37,18 +37,18 @@ void Cell::Cons2Prims() {
   *XVEL = *XVEL / *DENS;
   *MOMY = *YVEL / *DENS;
   *PRES =
-      (*gamma - 1) * (*ENERGY - 0.5 * (*MOMX * *MOMX + *MOMY * *MOMY) / *DENS);
+      (gamma - 1) * (*ENERGY - 0.5 * (*MOMX * *MOMX + *MOMY * *MOMY) / *DENS);
 }
 
 void Cell::Prims2Cons() {
   *MOMX = *DENS * *XVEL;
   *MOMY = *DENS * *YVEL;
   *ENERGY =
-      *PRES / (*gamma - 1) + .5 * *DENS * ((*XVEL * *XVEL) + *YVEL * *YVEL);
+      *PRES / (gamma - 1) + .5 * *DENS * ((*XVEL * *XVEL) + *YVEL * *YVEL);
 }
 
 double Cell::GetPres() {
   *PRES =
-      (*gamma - 1) * (*ENERGY - 0.5 * (*MOMX * *MOMX + *MOMY * *MOMY) / *DENS);
+      (gamma - 1) * (*ENERGY - 0.5 * (*MOMX * *MOMX + *MOMY * *MOMY) / *DENS);
   return *PRES;
 }
