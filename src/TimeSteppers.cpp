@@ -13,7 +13,7 @@ void Domain::RK3() {
 
   SaveDomain();
 
-  DomainAdd(1.0 / 3.0, 2.0 / 3.0);
+  // DomainAdd(1.0 / 3.0, 2.0 / 3.0);
   ForwardEuler();
 
   (this->*(this->BC))("Cons");
@@ -30,5 +30,5 @@ void Domain::RK3() {
 
   DomainAdd(1.0 / 3.0, 2.0 / 3.0);
 
-  Check();
+  // Check();
 }

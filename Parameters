@@ -12,7 +12,7 @@ NGC 3
 # ##############
 # X Parameters #
 # ##############
-NX 10
+NX 100
 X0 0
 XN 9
 
@@ -27,7 +27,7 @@ YN 1
 # T Parameters #
 # ##############
 T0 0
-TN .8UpdatedDens = 0.0;UpdatedDens = 0.0;
+TN .08
 
 
 # ################
@@ -42,7 +42,7 @@ ell 12
 MoodOrder 5
 SlowStart True
 # If set to 0 will default to the number appropriate to the Mood Order
-Num_QuadraturePoints 2
+Num_QuadraturePoints 1
 
 # ###############
 # NN Parameters #

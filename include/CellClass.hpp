@@ -126,17 +126,33 @@ public:
     Update_Stencils();
 
     for (int i = 0; i < 4; ++i) {
-      Walls[0].Vars[i][0] = cblas_ddot(5, &R1_Stencil[5 * i], 1, GP->R1_g1R, 1);
-      Walls[0].Vars[i][1] = cblas_ddot(5, &R1_Stencil[5 * i], 1, GP->R1_g2R, 1);
+      Walls[0].Vars[i][0] = R1_Stencil[5 * i];
+      Walls[0].Vars[i][1] = R1_Stencil[5 * i];
 
-      Walls[1].Vars[i][0] = cblas_ddot(5, &R1_Stencil[5 * i], 1, GP->R1_g1L, 1);
-      Walls[1].Vars[i][1] = cblas_ddot(5, &R1_Stencil[5 * i], 1, GP->R1_g2L, 1);
+      Walls[1].Vars[i][0] = R1_Stencil[5 * i];
+      Walls[1].Vars[i][1] = R1_Stencil[5 * i];
 
-      Walls[2].Vars[i][0] = cblas_ddot(5, &R1_Stencil[5 * i], 1, GP->R1_g1U, 1);
-      Walls[2].Vars[i][1] = cblas_ddot(5, &R1_Stencil[5 * i], 1, GP->R1_g2U, 1);
+      Walls[2].Vars[i][0] = R1_Stencil[5 * i];
+      Walls[2].Vars[i][1] = R1_Stencil[5 * i];
 
-      Walls[3].Vars[i][0] = cblas_ddot(5, &R1_Stencil[5 * i], 1, GP->R1_g1D, 1);
-      Walls[3].Vars[i][1] = cblas_ddot(5, &R1_Stencil[5 * i], 1, GP->R1_g2D, 1);
+      Walls[3].Vars[i][0] = R1_Stencil[5 * i];
+      Walls[3].Vars[i][1] = R1_Stencil[5 * i];
+
+      // Walls[0].Vars[i][0] = cblas_ddot(5, &R1_Stencil[5 * i], 1, GP->R1_g1R,
+      // 1); Walls[0].Vars[i][1] = cblas_ddot(5, &R1_Stencil[5 * i], 1,
+      // GP->R1_g2R, 1);
+
+      // Walls[1].Vars[i][0] = cblas_ddot(5, &R1_Stencil[5 * i], 1, GP->R1_g1L,
+      // 1); Walls[1].Vars[i][1] = cblas_ddot(5, &R1_Stencil[5 * i], 1,
+      // GP->R1_g2L, 1);
+
+      // Walls[2].Vars[i][0] = cblas_ddot(5, &R1_Stencil[5 * i], 1, GP->R1_g1U,
+      // 1); Walls[2].Vars[i][1] = cblas_ddot(5, &R1_Stencil[5 * i], 1,
+      // GP->R1_g2U, 1);
+
+      // Walls[3].Vars[i][0] = cblas_ddot(5, &R1_Stencil[5 * i], 1, GP->R1_g1D,
+      // 1); Walls[3].Vars[i][1] = cblas_ddot(5, &R1_Stencil[5 * i], 1,
+      // GP->R1_g2D, 1);
     }
   }
 
@@ -247,7 +263,7 @@ public:
         PresR = (gamma - 1.0) *
                 (ER - 0.5 * (std::pow(MOMXR, 2) + std::pow(MOMYR, 2)) / DENSR);
 
-        // Pres = (gamma - 1.0) * (E - .5 * (MOMX ^ 2 + MOMY ^ 2) / DENS);
+        // Pres = (gamma - 1i.0) * (E - .5 * (MOMX ^ 2 + MOMY ^ 2) / DENS);
 
         CsL = std::sqrt(gamma * PresL / DENSL);
         CsR = std::sqrt(gamma * PresR / DENSR);
@@ -302,18 +318,31 @@ public:
     UpdatedE = 0.0;
     UpdatedMomX = 0.0;
     UpdatedMomY = 0.0;
-    for (int i = 0; i < 2; ++i) {
-      UpdatedDens += .5 * (Walls[0].D_Values[i] - Walls[2].D_Values[i]) / dx +
-                     .5 * (Walls[1].D_Values[i] - Walls[3].D_Values[i]) / dy;
+    for (int i = 0; i < 1; ++i) {
+      UpdatedDens += (Walls[0].D_Values[i] - Walls[2].D_Values[i]) / dx;
 
-      UpdatedE += .5 * (Walls[0].E_Values[i] - Walls[2].E_Values[i]) / dx +
-                  .5 * (Walls[1].E_Values[i] - Walls[3].E_Values[i]) / dy;
+      UpdatedE += (Walls[0].E_Values[i] - Walls[2].E_Values[i]) / dx;
 
-      UpdatedMomX += .5 * (Walls[0].MX_Values[i] - Walls[2].MX_Values[i]) / dx +
-                     .5 * (Walls[1].MX_Values[i] - Walls[3].MX_Values[i]) / dy;
+      UpdatedMomX += (Walls[0].MX_Values[i] - Walls[2].MX_Values[i]) / dx;
 
-      UpdatedMomY += .5 * (Walls[0].MY_Values[i] - Walls[2].MY_Values[i]) / dx +
-                     .5 * (Walls[1].MY_Values[i] - Walls[3].MY_Values[i]) / dy;
+      UpdatedMomY += (Walls[0].MY_Values[i] - Walls[2].MY_Values[i]) / dx;
+
+      // UpdatedDens += .5 * (Walls[0].D_Values[i] - Walls[2].D_Values[i]) / dx
+      // +
+      //                .5 * (Walls[1].D_Values[i] - Walls[3].D_Values[i]) / dy;
+
+      // UpdatedE += .5 * (Walls[0].E_Values[i] - Walls[2].E_Values[i]) / dx +
+      //             .5 * (Walls[1].E_Values[i] - Walls[3].E_Values[i]) / dy;
+
+      // UpdatedMomX += .5 * (Walls[0].MX_Values[i] - Walls[2].MX_Values[i]) /
+      // dx +
+      //                .5 * (Walls[1].MX_Values[i] - Walls[3].MX_Values[i]) /
+      //                dy;
+
+      // UpdatedMomY += .5 * (Walls[0].MY_Values[i] - Walls[2].MY_Values[i]) /
+      // dx +
+      //                .5 * (Walls[1].MY_Values[i] - Walls[3].MY_Values[i]) /
+      //                dy;
     }
 
     UpdatedDens = *DENS - *dt * UpdatedDens;

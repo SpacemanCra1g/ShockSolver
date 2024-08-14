@@ -13,7 +13,7 @@ void AssignPointers(Domain &Solver, opt &Opts) {
     }
   }
 
-  if(Opts.RK == 3){
+  if (Opts.RK == 3) {
     Solver.RK_TimeStepper = &Domain::RK3;
   }
 }

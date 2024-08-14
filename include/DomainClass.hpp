@@ -122,17 +122,17 @@ public:
 
         // Access points to get left and right cells as well.
         if (i > 0) {
-          Cells[i * REdgeY + j].LCell = GetCell(i, j);
+          Cells[i * REdgeY + j].LCell = GetCell(i - 1, j);
         }
         if (j > 0) {
-          Cells[i * REdgeY + j].BCell = GetCell(i, j);
+          Cells[i * REdgeY + j].BCell = GetCell(i, j - 1);
         }
 
         if (i < xDim - 1) {
-          Cells[i * REdgeY + j].RCell = GetCell(i, j);
+          Cells[i * REdgeY + j].RCell = GetCell(i + 1, j);
         }
         if (j < REdgeY - 1) {
-          Cells[i * REdgeY + j].TCell = GetCell(i, j);
+          Cells[i * REdgeY + j].TCell = GetCell(i, j + 1);
         }
       }
     }
@@ -189,11 +189,11 @@ public:
   void DomainAdd(double a, double b) {
     // Vector add A*U + B*U^n+1/2;
     for (int i = 0; i < 4; ++i) {
-      cblas_dscal(xDim * yDim, b, Cons[i], 1);
+      cblas_dscal(xDim * yDim, a, Cons[i], 1);
     }
 
     for (int i = 0; i < 4; ++i) {
-      cblas_daxpy(xDim * yDim, a, CopyCons[i], 1, Cons[i], 1);
+      cblas_daxpy(xDim * yDim, b, CopyCons[i], 1, Cons[i], 1);
     }
   }
 
