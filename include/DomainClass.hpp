@@ -2,8 +2,10 @@
 #define DOMAINCLASS_H_
 
 #include "CellClass.hpp"
+#include "FluxClass.hpp"
 #include "GP_Kernel.hpp"
 #include "OptionsClass.hpp"
+#include <algorithm>
 #include <cblas.h>
 #include <cmath>
 #include <iostream>
@@ -25,25 +27,36 @@ public:
   int xDim, yDim, ell, nqp;
   Cell *Cells;
   double *Cons;
+  FluxClass Flux;
   // double *Prims[4] = {DENS,XVEL,YVEL,PRES};
   void (Domain::*BC)(std::string);
   void (Domain::*IC)();
   void (Domain::*RK_TimeStepper)();
   bool SlowStart;
+  bool twoD;
   GP_Kernel SolutionKer;
-  std::vector<double> FluxArray[2][4];
 
   // Class constructor, Takes in the Opts class to build internal variables
   Domain(opt Opts) {
+    if (Opts.Ndims > 1) {
+      twoD = true;
+    }
     xDim = Opts.ngc * 2 + Opts.nx;
-    yDim = Opts.ngc * 2 + Opts.ny;
-    DENS = new double[xDim * yDim];
+    if (twoD) {
+      yDim = Opts.ngc * 2 + Opts.ny;
+    } else {
+      yDim = 1;
+    }
+
+    Cons = new double[xDim * yDim * 4];
+    DENS = Cons;
     PRES = new double[xDim * yDim];
     XVEL = new double[xDim * yDim];
     YVEL = new double[xDim * yDim];
-    MOMX = new double[xDim * yDim];
-    MOMY = new double[xDim * yDim];
-    ENERGY = new double[xDim * yDim];
+    MOMX = Cons + xDim * yDim;
+    MOMY = MOMX + yDim * xDim;
+    ENERGY = MOMY + yDim * xDim;
+
     CopyBuffer = new double[xDim * yDim * 4];
 
     double *CopyCons[4] = {CopyBuffer, &CopyBuffer[xDim * yDim],
@@ -51,18 +64,28 @@ public:
                            &CopyBuffer[xDim * yDim * 3]};
 
     double *Prims[4] = {DENS, XVEL, YVEL, PRES};
-    double *Cons[4] = {DENS, MOMX, MOMY, ENERGY};
+
+    // Not sure what these are for, remember to look into them
     XQuads1 = new double[(xDim - 1) * yDim];
     YQuads1 = new double[xDim * (yDim - 1)];
+
     Buffer = new double[xDim * yDim];
     Cs = new double[xDim * yDim];
     Cells = new Cell[xDim * yDim];
     XStart = Opts.ngc;
-    YStart = Opts.ngc;
+    if (twoD) {
+      YStart = Opts.ngc;
+      REdgeY = yDim;
+      YEnd = REdgeY - Opts.ngc;
+    } else {
+      YStart = 0;
+      REdgeY = 1;
+      YEnd = 1;
+    }
     REdgeX = xDim;
-    REdgeY = yDim;
+
     XEnd = REdgeX - Opts.ngc;
-    YEnd = REdgeY - Opts.ngc;
+
     ngc = Opts.ngc;
     x0 = Opts.x0;
     y0 = Opts.y0;
@@ -81,11 +104,7 @@ public:
     ndims = Opts.Ndims;
     SlowStart = Opts.SlowStart;
     SolutionKer.GP_Kernel_init(ell, dx, dy);
-    for (int i = 0; i < 2; ++i) {
-      for (int j = 0; j < 2; ++j) {
-        FluxArray[i][j].resize(REdgeY * REdgeX);
-      }
-    }
+    Flux.Fluxinit(ndims, XStart, XEnd, YStart, YEnd, nqp, Cons);
   }
   void AssignCells() {
     for (int i = 0; i < xDim; ++i) {
@@ -125,6 +144,12 @@ public:
     }
   }
 
+  void DomainCopy() { std::copy(Cons, Cons + yDim * xDim * 4, CopyCons); }
+  void DomainAdd(double a, double b) {
+    cblas_dscal(4 * xDim * yDim, b, Cons, 1);
+    cblas_daxpy(4 * xDim * yDim, a, CopyCons, 1, Cons, 1);
+  }
+
   Cell *GetCell(int x, int y) { return &Cells[x * yDim + y]; }
 
   // Defined in the VarConvert.cpp file
@@ -144,6 +169,7 @@ public:
   void Find_Cs();
 
   // Defined in the TimeSteppers.cpp file
+
   void RK3();
   void ForwardEuler();
 

@@ -3,6 +3,8 @@
 void Domain::ForwardEuler() {
 
   // Calculate_Quad_Points();
+  std::cout << "MADE IT 1SD@!" << std::endl;
+  exit(0);
 
   // Flux_Recon();
 }

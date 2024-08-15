@@ -5,7 +5,7 @@
 # ###################
 # Domain Parameters #
 # ###################
-NDIMS 2
+NDIMS 1
 NGC 3
 
 
@@ -37,7 +37,7 @@ gamma 1.4
 CFL 0.8
 TestProblem ShuOsher
 BC ShuOsher
-RK_Method 3
+RK_Method 1
 ell 12
 MoodOrder 5
 SlowStart True

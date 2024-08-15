@@ -12,8 +12,11 @@ void AssignPointers(Domain &Solver, opt &Opts) {
       exit(0);
     }
   }
+  if (Opts.RK == 1) {
+    Solver.RK_TimeStepper = &Domain::ForwardEuler;
+  }
 
-  if(Opts.RK == 3){
+  if (Opts.RK == 3) {
     Solver.RK_TimeStepper = &Domain::RK3;
   }
 }

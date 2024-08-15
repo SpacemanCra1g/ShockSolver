@@ -33,7 +33,11 @@ public:
       }
 
       else if (!strcmp(Parameter, "NY")) {
-        ny = std::atoi(val);
+        if (Ndims > 1) {
+          ny = std::atoi(val);
+        } else {
+          ny = 1;
+        }
       }
 
       else if (!strcmp(Parameter, "NGC")) {
@@ -49,11 +53,19 @@ public:
       }
 
       else if (!strcmp(Parameter, "Y0")) {
-        y0 = std::atof(val);
+        if (Ndims > 1) {
+          y0 = std::atof(val);
+        } else {
+          y0 = 0;
+        }
       }
 
       else if (!strcmp(Parameter, "YN")) {
-        yN = std::atof(val);
+        if (Ndims > 1) {
+          yN = std::atof(val);
+        } else {
+          yN = 1;
+        }
       }
 
       else if (!strcmp(Parameter, "T0")) {

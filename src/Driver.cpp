@@ -25,6 +25,8 @@ int main() {
 
     Solver.T += Solver.dt;
 
+    (Solver.*(Solver.RK_TimeStepper))();
+
     std::cout << "The time is: " << Solver.T << " dt = :" << Solver.dt
               << std::endl;
 
