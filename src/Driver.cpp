@@ -1,16 +1,14 @@
 #include "../include/AssignMemberFunctionPointers.hpp"
 #include "../include/DomainClass.hpp"
-#include "../include/OptionsClass.hpp"
+#include "../include/Parameters.h"
 #include <iostream>
 
 int main() {
 
-  opt Opts;
-  Opts.ReadInits("Parameters");
+  // opt Opts;
+  // Opts.ReadInits("Parameters");
 
-  Domain Solver(Opts);
-
-  AssignPointers(Solver, Opts);
+  Domain Solver;
 
   Solver.AssignCells();
 
@@ -31,7 +29,7 @@ int main() {
               << std::endl;
 
     // exit(0);
-  } while (Solver.T < Solver.TN);
+  } while (Solver.T < TN);
 
   std::cout << "BC DIDNT CRASH!" << std::endl;
 

@@ -2,8 +2,11 @@
 
 void Domain::ForwardEuler() {
 
+  Flux.FOG();
   // Calculate_Quad_Points();
-  std::cout << "MADE IT 1SD@!" << std::endl;
+  for (int i = 0; i < REdgeX; ++i) {
+    std::cout << Flux.RightFlux[0][3][i] << std::endl;
+  }
   exit(0);
 
   // Flux_Recon();

@@ -1,9 +1,9 @@
 #ifndef ASSIGNMEMBERFUNCTIONPOINTERS_H_
 #define ASSIGNMEMBERFUNCTIONPOINTERS_H_
 
+#include "../include/Parameters.h"
 #include "DomainClass.hpp"
-#include "OptionsClass.hpp"
 
-void AssignPointers(Domain &, opt &);
+void AssignPointers(Domain &);
 
 #endif // ASSIGNMEMBERFUNCTIONPOINTERS_H_

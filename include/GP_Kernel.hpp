@@ -15,8 +15,10 @@
 
 #define Lg1 7
 #define Lg2 8
+#define sth 1.0 / (2.0 * std::sqrt(3.0))
 
 #include "CholeskySolver.hpp"
+#include "Parameters.h"
 #include <cblas.h>
 #include <cmath>
 #include <iostream>
@@ -26,7 +28,6 @@ class GP_Kernel {
 private:
   // Underlying structure of R1 prediction vectors
   double R1_Vec[8 * 5]; // 8 vectors length 5
-  double sth = 1.0 / (2.0 * std::sqrt(3.0));
   double R1_VecX[40] = {
       .5,         1.5,     .5,         -.5,        .5,   .5,         1.5,
       .5,         -.5,     .5,         -.5,        .5,   -.5,        -1.5,
@@ -62,10 +63,10 @@ public:
   double *R1_g1D = &R1_Vec[30];
   double *R1_g2D = &R1_Vec[35];
 
-  void GP_Kernel_init(double l, double dx, double dy) {
+  void GP_Kernel_init() {
 
-    double valX = std::sqrt(2.0) * l / dx;
-    double valY = std::sqrt(2.0) * l / dy;
+    const double valX = std::sqrt(2.0) * ell / dx;
+    const double valY = std::sqrt(2.0) * ell / dy;
 
     double ax, bx, cx, ay, by, cy;
 
@@ -97,7 +98,7 @@ public:
       ay = (R1_VecY[i] + .5) / valY;
       by = (R1_VecY[i] - .5) / valY;
 
-      R1_Vec[i] = M_PI * l * l / (2.0 * dx * dy) *
+      R1_Vec[i] = M_PI * ell * ell / (2.0 * dx * dy) *
                   (std::erf(ax) - std::erf(bx)) * (std::erf(ay) - std::erf(by));
     }
 

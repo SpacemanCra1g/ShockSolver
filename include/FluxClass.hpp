@@ -1,97 +1,207 @@
 #ifndef FLUXCLASS_H_
 #define FLUXCLASS_H_
 
-// This is maybe a mistake, but I'm going to define a Flux container to
-// hold all of flux data objects and methods
+#include "../include/Parameters.h"
+#include <cmath>
+//  This is maybe a mistake, but I'm going to define a Flux container to
+//  hold all of flux data objects and methods
 
 class FluxClass {
 
 public:
-  int ndims;
-  int Xstart;
-  int Xend;
-  int Ystart;
-  int Yend;
-  int nqp;
-  bool twoD;
   double *Cons;
-  double ***TopFlux;
-  double ***BottomFlux;
-  double ***RightFlux;
-  double ***LeftFlux;
-  void Fluxinit(int Ndims, int XStart, int XEnd, int YStart, int YEnd, int Nqp,
-                double *COns) {
-    ndims = Ndims;
-    Xstart = XStart;
-    Xend = XEnd;
-    Ystart = YStart;
-    Yend = YEnd;
-    nqp = Nqp;
-    Cons = COns;
-    if (ndims > 1) {
-      twoD = true;
 
-    } else {
-      twoD = false;
-    }
+  double FluxDir[NDIMS * 2][nqp][NumVar][xDim * yDim];
 
-    LeftFlux = new double **[nqp];
-    RightFlux = new double **[nqp];
+  double Flux[nqp][NumVar][xDim * yDim];
 
-    for (int i = 0; i < nqp; ++i) {
-      LeftFlux[i] = new double *[4];
-      RightFlux[i] = new double *[4];
-      for (int j = 0; j < 4; ++j) {
-        LeftFlux[i][j] = new double[Xend * Yend];
-        RightFlux[i][j] = new double[Xend * Yend];
-      }
-    }
+  void Fluxinit(double *COns) { Cons = COns; }
 
-    if (twoD) {
+  void FOG() {
 
-      TopFlux = new double **[nqp];
-      BottomFlux = new double **[nqp];
+    for (int qp = 0; qp < nqp; ++qp) {
+      for (int var = 0; var < NumVar; ++var) {
+        for (int xdir = 0; xdir < xDim; ++xdir) {
+          for (int ydir = 0; ydir < yDim; ++ydir) {
+            if (xdir > 0) {
+              FluxDir[Left][qp][var][idx(xdir, ydir)] =
+                  Cons[yDim * xDim * var + idx(xdir, ydir)];
+            }
 
-      for (int i = 0; i < nqp; ++i) {
-        TopFlux[i] = new double *[4];
-        BottomFlux[i] = new double *[4];
-        for (int j = 0; j < 4; ++j) {
-          TopFlux[i][j] = new double[Xend * Yend];
-          BottomFlux[i][j] = new double[Xend * Yend];
+            if (xdir < xDim - 1) {
+              FluxDir[Right][qp][var][xdir * yDim + ydir] =
+                  Cons[yDim * xDim * var + idx(xdir, ydir)];
+            }
+
+#if NDIMS > 1
+            if (ydir < yDim - 1) {
+              FluxDir[Bottom][qp][var][xdir * yDim + ydir] =
+                  Cons[yDim * xDim * var + xdir * yDim + ydir];
+            }
+
+            if (ydir > 0) {
+              FluxDir[Top][qp][var][xdir * yDim + ydir] =
+                  Cons[yDim * xDim * var + xdir * yDim + ydir];
+            }
+#endif
+          }
         }
       }
     }
   }
 
-  void FOG() {
-    for (int qp = 0; qp < nqp; ++qp) {
-      for (int var = 0; var < 4; ++var) {
-        for (int xdir = 0; xdir < Xend; ++xdir) {
-          for (int ydir = 0; ydir < Yend; ++ydir) {
-            if (xdir > 0) {
-              LeftFlux[qp][var][xdir * Yend + ydir] =
-                  Cons[Yend * Xend * var + xdir * Yend + ydir];
-            }
+  void HLL() {
 
-            if (xdir < Xend - 1) {
-              RightFlux[qp][var][xdir * Yend + ydir] =
-                  Cons[Yend * Xend * var + xdir * Yend + ydir];
-            }
+    int offset;
 
-            if (ydir < Yend - 1) {
-              BottomFlux[qp][var][xdir * Yend + ydir] =
-                  Cons[Yend * Xend * var + xdir * Yend + ydir];
-            }
+    for (int Dim = 0; Dim < NDIMS * 2; Dim += 2) {
+      for (int quadpoint = 0; quadpoint < nqp; ++quadpoint) {
+        for (int xdir = 0; xdir < xDim; ++xdir) {
+          for (int ydir = 0; ydir < yDim; ++ydir) {
 
-            if (ydir > 0) {
-              TopFlux[qp][var][xdir * Yend + ydir] =
-                  Cons[Yend * Xend * var + xdir * Yend + ydir];
+            int i = idx(xdir, ydir);
+            int iPlus1 = (Dim == 0) ? idx(xdir + 1, ydir) : idx(xdir, ydir + 1);
+
+            // FluxDir[0]
+
+            double VelL = FluxDir[Dim][quadpoint][Dim + 1][i] /
+                          FluxDir[Dim][quadpoint][Dens][i];
+            // M_FluxR[i] /  D_FluxR[i];
+
+            double VelR = FluxDir[Dim + 1][quadpoint][Dim + 1][iPlus1] /
+                          FluxDir[Dim + 1][quadpoint][Dens][iPlus1];
+            // double VelR = M_FluxL[i + 1] / D_FluxL[i + 1];
+
+            // This Pressure assumes 1D, make sure to change later
+            double PresL =
+                (GAMMA - 1.0) * (FluxDir[Dim][quadpoint][Ener][i] -
+                                 VelL * FluxDir[Dim][quadpoint][MomX][i] / 2.0);
+
+            // double PresL = (gamma - 1.0) * (E_FluxR[i] - VelL * M_FluxR[i]
+            // / 2.0);
+            //
+            double PresR =
+                (GAMMA - 1.0) *
+                (FluxDir[Dim + 1][quadpoint][Ener][iPlus1] -
+                 VelR * FluxDir[Dim + 1][quadpoint][MomX][iPlus1] / 2.0);
+
+            // double PresR =
+            //     (gamma - 1.0) * (E_FluxL[i + 1] - VelR * M_FluxL[i + 1]
+            //     / 2.0);
+
+            double CsL =
+                std::sqrt(GAMMA * PresL / FluxDir[Dim][quadpoint][Dens][i]);
+            double CsR = std::sqrt(GAMMA * PresR /
+                                   FluxDir[Dim + 1][quadpoint][Dens][iPlus1]);
+            // double CsL = std::sqrt(gamma * PresL / D_FluxR[i]);
+            // double CsR = std::sqrt(gamma * PresR / D_FluxL[i + 1]);
+
+            double SL = std::fmin(VelL - CsL, VelR - CsR);
+            double SR = std::fmax(VelL + CsL, VelR + CsR);
+
+            // HLL Wave switch, ugly but we both already know how it works so
+            // ¯\_(ツ)_/¯
+            if (0.0 <= SL) {
+              Flux[quadpoint][Dens][i] = FluxDir[Dim][quadpoint][MomX][i];
+              // D_Flux[i] = M_FluxR[i];
+              Flux[quadpoint][MomX][i] =
+                  FluxDir[Dim][quadpoint][MomX][i] * VelL + PresL;
+              // M_Flux[i] = M_FluxR[i] * VelL + PresL;
+              Flux[quadpoint][Ener][i] =
+                  VelL * (FluxDir[Dim][quadpoint][Ener][i] + PresL);
+              // E_Flux[i] = VelL * (E_FluxR[i] + PresL);
+            } else if (0.0 <= SR) {
+
+              double LF1 = FluxDir[Dim][quadpoint][MomX][i];
+              // D_Flux[i] = M_FluxR[i];
+              double LF2 = FluxDir[Dim][quadpoint][MomX][i] * VelL + PresL;
+              // M_Flux[i] = M_FluxR[i] * VelL + PresL;
+              double LF3 = VelL * (FluxDir[Dim][quadpoint][Ener][i] + PresL);
+
+              // double LF1 = M_FluxR[i];
+              // double LF2 = M_FluxR[i] * VelL + PresL;
+              // double LF3 = VelL * (E_FluxR[i] + PresL);
+
+              double RF1 = FluxDir[Dim + 1][quadpoint][MomX][iPlus1];
+              // D_Flux[i] = M_FluxR[i];
+              double RF2 =
+                  FluxDir[Dim + 1][quadpoint][MomX][iPlus1] * VelL + PresL;
+              // M_Flux[i] = M_FluxR[i] * VelL + PresL;
+              double RF3 =
+                  VelL * (FluxDir[Dim + 1][quadpoint][Ener][iPlus1] + PresL);
+
+              // double RF1 = M_FluxL[i + 1];
+              // double RF2 = M_FluxL[i + 1] * VelR + PresR;
+              // double RF3 = VelR * (E_FluxL[i + 1] + PresR);
+
+              Flux[quadpoint][Dens][i] =
+                  (SR * LF1 - SL * RF1 +
+                   SL * SR *
+                       (FluxDir[Dim + 1][quadpoint][Dens][iPlus1] -
+                        FluxDir[Dim][quadpoint][Dens][i])) /
+                  (SR - SL);
+
+              Flux[quadpoint][MomX][i] =
+                  (SR * LF2 - SL * RF2 +
+                   SL * SR *
+                       (FluxDir[Dim + 1][quadpoint][MomX][iPlus1] -
+                        FluxDir[Dim][quadpoint][MomX][i])) /
+                  (SR - SL);
+
+              // M_Flux[i] =
+              //     SR * LF2 - SL * RF2 + SL * SR * (M_FluxL[i + 1] -
+              //     M_FluxR[i]);
+              // M_Flux[i] /= (SR - SL);
+              //
+              Flux[quadpoint][Ener][i] =
+                  (SR * LF3 - SL * RF3 +
+                   SL * SR *
+                       (FluxDir[Dim + 1][quadpoint][Ener][iPlus1] -
+                        FluxDir[Dim][quadpoint][Ener][i])) /
+                  (SR - SL);
+
+              // E_Flux[i] =
+              //     SR * LF3 - SL * RF3 + SL * SR * (E_FluxL[i + 1] -
+              //     E_FluxR[i]);
+              // E_Flux[i] /= (SR - SL);
+
+              // D_Flux[i] =
+              //     SR * LF1 - SL * RF1 + SL * SR * (D_FluxL[i + 1] -
+              //     D_FluxR[i]);
+              // D_Flux[i] /= (SR - SL);
+
+              // M_Flux[i] =
+              //     SR * LF2 - SL * RF2 + SL * SR * (M_FluxL[i + 1] -
+              //     M_FluxR[i]);
+              // M_Flux[i] /= (SR - SL);
+
+              // E_Flux[i] =
+              //     SR * LF3 - SL * RF3 + SL * SR * (E_FluxL[i + 1] -
+              //     E_FluxR[i]);
+              // E_Flux[i] /= (SR - SL);
+
+            } else {
+
+              Flux[quadpoint][Dens][i] =
+                  FluxDir[Dim + 1][quadpoint][MomX][iPlus1];
+              // D_Flux[i] = M_FluxR[i];
+              Flux[quadpoint][MomX][i] =
+                  FluxDir[Dim + 1][quadpoint][MomX][iPlus1] * VelR + PresR;
+              // M_Flux[i] = M_FluxR[i] * VelL + PresL;
+              Flux[quadpoint][Ener][i] =
+                  VelR * (FluxDir[Dim + 1][quadpoint][Ener][iPlus1] + PresR);
+
+              // D_Flux[i] = M_FluxL[i + 1];
+              // M_Flux[i] = M_FluxL[i + 1] * VelR + PresR;
+              // E_Flux[i] = VelR * (E_FluxL[i + 1] + PresR);
             }
           }
         }
       }
     }
   }
+
+  void Reconstruction() {}
 };
 
 #endif // FLUXCLASS_H_

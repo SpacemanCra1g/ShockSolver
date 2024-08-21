@@ -1,12 +1,13 @@
 #ifndef CELLCLASS_H_
 #define CELLCLASS_H_
 
+#include "../include/Parameters.h"
 #include "GP_Kernel.hpp"
 #include <string>
 
 class Cell {
 public:
-  double *DENS, *PRES, *XVEL, *YVEL, *MOMX, *MOMY, *ENERGY, *gamma;
+  double *DENS, *PRES, *XVEL, *YVEL, *MOMX, *MOMY, *ENERGY;
   double *Cs;
   Cell *LCell, *RCell, *TCell, *BCell;
   int x, y;
