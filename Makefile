@@ -32,9 +32,7 @@ $(OUTDIR):
 
 clean:
 	rm -f *.ex OutputData/* && rm -r $(OBJ) $(OUTDIR)
-run:
-	make && ./$(TARGET)
 new:
 	make clean && make
-every:
-	make clean && make && ./$(TARGET)
+run:
+	make new && ./$(TARGET)

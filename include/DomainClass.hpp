@@ -24,7 +24,7 @@ public:
   /***********************************************/
   double *DENS, *PRES, *XVEL, *YVEL, *MOMX, *MOMY, *ENERGY, *Cs, *Buffer;
   double T, dt, dt_sim;
-  double *CopyBuffer, *CopyCons;
+  double *CopyBuffer;
 
   Cell *Cells;
   double *Cons;
@@ -61,6 +61,9 @@ public:
   // Defined in the IC.cpp file
   void ShuOsherIC();
 
+  // Defined in the IO.cpp file
+  void writeResults();
+
   /***********************************************/
   /*************** Class Constructor *************/
   /***********************************************/
@@ -74,27 +77,22 @@ public:
     dt_sim = 1E-10;
 
     SolutionKer.GP_Kernel_init();
-    Flux.Fluxinit(Cons);
 
     Cons = new double[xDim * yDim * NumVar];
-    DENS = Cons;
+    DENS = &Cons[0];
     PRES = new double[xDim * yDim];
     XVEL = new double[xDim * yDim];
-    YVEL = new double[xDim * yDim];
-    MOMX = Cons + xDim * yDim;
-    ENERGY = MOMX + yDim * xDim;
+
+    MOMX = &Cons[xDim * yDim];
+    ENERGY = &Cons[Ener * (xDim * yDim)];
 
 #if NumVar > 3
+    YVEL = new double[xDim * yDim];
     MOMY = ENERGY + yDim * xDim;
 #endif
 
-    CopyBuffer = new double[xDim * yDim * 4];
-
-    double *CopyCons[4] = {CopyBuffer, &CopyBuffer[xDim * yDim],
-                           &CopyBuffer[xDim * yDim * 2],
-                           &CopyBuffer[xDim * yDim * 3]};
-
-    double *Prims[4] = {DENS, XVEL, YVEL, PRES};
+    CopyBuffer = new double[xDim * yDim * NumVar];
+    Flux.Fluxinit(Cons, &dt);
 
 /**********Member Function Pointers***********/
 #if TestProblem == ShuOsher

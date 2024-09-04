@@ -1,32 +1,29 @@
 #include "../include/DomainClass.hpp"
 
 void Domain::ForwardEuler() {
-
+#if SpaceMethod == Weno
+  Flux.WENO();
+#elif SpaceMethod == Fog
   Flux.FOG();
+#endif
   // Calculate_Quad_Points();
-  for (int i = 0; i < REdgeX; ++i) {
-    std::cout << Flux.RightFlux[0][3][i] << std::endl;
-  }
-  exit(0);
+  Flux.HLL();
 
-  // Flux_Recon();
+  Flux.Recon();
+
+  (*this.*BC)("Cons");
 }
 
 void Domain::RK3() {
 
-  // for (int i = 0; i < 4; ++i) {
-  //   std::copy(Cons[i], Cons[i] + xDim * yDim, CopyCons[i]);
-  // }
+  DomainCopy();
 
-  // ForwardEuler;
+  ForwardEuler();
 
-  // BC
+  ForwardEuler();
 
-  //     ForwardEuler;
+  DomainAdd(.75, .25);
 
-  // Domain_ADD;
-
-  // Forward Euler;
-
-  // Domain_Add
+  ForwardEuler();
+  DomainAdd(1.0 / 3.0, 2.0 / 3.0);
 }

@@ -5,12 +5,7 @@
 
 int main() {
 
-  // opt Opts;
-  // Opts.ReadInits("Parameters");
-
   Domain Solver;
-
-  Solver.AssignCells();
 
   (Solver.*(Solver.IC))();
 
@@ -25,13 +20,11 @@ int main() {
 
     (Solver.*(Solver.RK_TimeStepper))();
 
-    std::cout << "The time is: " << Solver.T << " dt = :" << Solver.dt
-              << std::endl;
+    std::cout << "The time is: " << Solver.T;
+    std::cout << " dt = :" << Solver.dt << std::endl;
 
-    // exit(0);
   } while (Solver.T < TN);
 
-  std::cout << "BC DIDNT CRASH!" << std::endl;
-
+  Solver.writeResults();
   return 0;
 }

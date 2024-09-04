@@ -4,7 +4,7 @@
 
 void Domain::NeumannBC(std::string Vars) {
   if (Vars == "Cons") {
-    for (int i = 0; i < ngc; ++i) {
+    for (int i = 0; i < NGC; ++i) {
       // Copies the Left edge of the X dimention
       cblas_dcopy(yDim, &DENS[XStart * yDim], 1, &DENS[yDim * i], 1);
       cblas_dcopy(yDim, &ENERGY[XStart * yDim], 1, &ENERGY[yDim * i], 1);
@@ -35,7 +35,7 @@ void Domain::NeumannBC(std::string Vars) {
     }
 
   } else if (Vars == "Prims") {
-    for (int i = 0; i < ngc; ++i) {
+    for (int i = 0; i < NGC; ++i) {
       // Copies the Left edge of the X dimention
       cblas_dcopy(yDim, &DENS[XStart * yDim], 1, &DENS[yDim * i], 1);
       cblas_dcopy(yDim, &PRES[XStart * yDim], 1, &PRES[yDim * i], 1);
@@ -73,39 +73,61 @@ void Domain::NeumannBC(std::string Vars) {
 }
 void Domain::ShuOsherBC(std::string Vars) {
   if (Vars == "Cons") {
-    for (int i = 0; i < ngc; ++i) {
+    for (int i = 0; i < NGC; ++i) {
 
-      // Copies the Far Left edge of the X dimention
-      // This should never change from the inits, so should be good.
-      cblas_dcopy(yDim, &DENS[0], 1, &DENS[yDim * i], 1);
-      cblas_dcopy(yDim, &ENERGY[0], 1, &ENERGY[yDim * i], 1);
-      cblas_dcopy(yDim, &MOMX[0], 1, &MOMX[yDim * i], 1);
-      cblas_dcopy(yDim, &MOMY[0], 1, &MOMY[yDim * i], 1);
+#if NDIMS == 1
 
-      // Copies the Right edge of the X dimention
-      // We can do something similar to what we did for the left end
-      // We need some slight changes for the DENS variable however
+      for (int var = 0; var < NDIMS; ++var) {
+        // Left edge of X direction
+        std::fill(&Cons[Tidx(var, 1, 0)], &Cons[Tidx(var, NGC, 0)],
+                  Cons[Tidx(var, 0, 0)]);
 
-      cblas_dcopy(yDim, &ENERGY[(REdgeX - 1) * yDim], 1,
-                  &ENERGY[(XEnd + i) * yDim], 1);
+        // Right edge of X direction
+        std::fill(&Cons[Tidx(var, XEnd, 0)], &Cons[Tidx(var, REdgeX, 0)],
+                  Cons[Tidx(var, REdgeX - 1, 0)]);
+      }
 
-      std::fill(&MOMY[(XEnd + i) * yDim], &MOMY[(XEnd + i + 1) * yDim], 0.0);
-      std::fill(&MOMX[(XEnd + i) * yDim], &MOMX[(XEnd + i + 1) * yDim], 0.0);
+//       // Copies the Far Left edge of the X dimention
+//       // This should never change from the inits, so should be good.
+//       cblas_dcopy(yDim, &DENS[0], 1, &DENS[yDim * i], 1);
+//       cblas_dcopy(yDim, &ENERGY[0], 1, &ENERGY[yDim * i], 1);
+//       cblas_dcopy(yDim, &MOMX[0], 1, &MOMX[yDim * i], 1);
+// #if NDIMS > 1
+//       cblas_dcopy(yDim, &MOMY[0], 1, &MOMY[yDim * i], 1);
+// #endif
 
-      cblas_dcopy(yDim, &DENS[(REdgeX - 1) * yDim], 1, &DENS[(XEnd + i) * yDim],
-                  1);
+//       // Copies the Right edge of the X dimention
+//       // We can do something similar to what we did for the left end
+//       // We need some slight changes for the DENS variable however
 
-      // Copies the Left edge of the Y dimention
-      cblas_dcopy(xDim, &DENS[YStart], yDim, &DENS[i], yDim);
-      cblas_dcopy(xDim, &ENERGY[YStart], yDim, &ENERGY[i], yDim);
-      cblas_dcopy(xDim, &MOMX[YStart], yDim, &MOMX[i], yDim);
-      cblas_dcopy(xDim, &MOMY[YStart], yDim, &MOMY[i], yDim);
+//       cblas_dcopy(yDim, &ENERGY[(REdgeX - 1) * yDim], 1,
+//                   &ENERGY[(XEnd + i) * yDim], 1);
 
-      // Copies the Right edge of the Y dimention
-      cblas_dcopy(xDim, &DENS[YEnd - 1], yDim, &DENS[YEnd + i], yDim);
-      cblas_dcopy(xDim, &ENERGY[YEnd - 1], yDim, &ENERGY[YEnd + i], yDim);
-      cblas_dcopy(xDim, &MOMX[YEnd - 1], yDim, &MOMX[YEnd + i], yDim);
-      cblas_dcopy(xDim, &MOMY[YEnd - 1], yDim, &MOMY[YEnd + i], yDim);
+// #if NDIMS > 1
+//       std::fill(&MOMY[(XEnd + i) * yDim], &MOMY[(XEnd + i + 1) * yDim], 0.0);
+// #endif
+//       std::fill(&MOMX[(XEnd + i) * yDim], &MOMX[(XEnd + i + 1) * yDim], 0.0);
+
+//       cblas_dcopy(yDim, &DENS[(REdgeX - 1) * yDim], 1, &DENS[(XEnd + i) *
+//       yDim],
+//                   1);
+
+//       // Copies the Left edge of the Y dimention
+//       cblas_dcopy(xDim, &DENS[YStart], yDim, &DENS[i], yDim);
+//       cblas_dcopy(xDim, &ENERGY[YStart], yDim, &ENERGY[i], yDim);
+//       cblas_dcopy(xDim, &MOMX[YStart], yDim, &MOMX[i], yDim);
+// #if NDIMS > 1
+//       cblas_dcopy(xDim, &MOMY[YStart], yDim, &MOMY[i], yDim);
+// #endif
+
+//       // Copies the Right edge of the Y dimention
+//       cblas_dcopy(xDim, &DENS[YEnd - 1], yDim, &DENS[YEnd + i], yDim);
+//       cblas_dcopy(xDim, &ENERGY[YEnd - 1], yDim, &ENERGY[YEnd + i], yDim);
+//       cblas_dcopy(xDim, &MOMX[YEnd - 1], yDim, &MOMX[YEnd + i], yDim);
+// #if NDIMS > 1
+//       cblas_dcopy(xDim, &MOMY[YEnd - 1], yDim, &MOMY[YEnd + i], yDim);
+// #endif
+#endif
     }
   }
 }

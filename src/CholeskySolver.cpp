@@ -1,9 +1,7 @@
 #include "../include/CholeskySolver.hpp"
 #include <iostream>
-const int MAX = 100;
 
 void Cholesky_Decomposition(double *__restrict A, int n) {
-  double *lower = new double[n * n];
 
   double sum1 = 0.0;
   double sum2 = 0.0;
