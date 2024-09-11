@@ -26,9 +26,17 @@
 class GP_Kernel {
 
 private:
+  double R1_Vec1D[2 * 3];
+  double R1_VecX1D[2 * 3] = {1.5, .5, -.5, .5, -.5, -1.5};
+  double R1_C1D[9];
+  double R1_DeltX1D[9] = {0.0, 1.0, 2.0, -1.0, 0.0, 1.0, -2.0, -1.0, 0.0};
+
   // Underlying structure of R1 prediction vectors
   double R1_Vec[8 * 5]; // 8 vectors length 5
-  double R1_VecX[40] = {
+                        // This is for 2 quad points on each face
+
+  double R1_VecX[40] = { // one length 5 vec for each quad point
+                         // reconstruction in the X direction
       .5,         1.5,     .5,         -.5,        .5,   .5,         1.5,
       .5,         -.5,     .5,         -.5,        .5,   -.5,        -1.5,
       -.5,        -.5,     .5,         -.5,        -1.5, -.5,        sth,
@@ -36,15 +44,17 @@ private:
       -1.0 - sth, -sth,    sth,        1 + sth,    sth,  -1.0 + sth, sth,
       -sth,       1 - sth, -sth,       -1.0 - sth, -sth};
 
-  double R1_VecY[40] = {
+  double R1_VecY[40] = { // one length 5 vec for each quad point
+                         // reconstruction in the Y direction
       sth, sth, -1 + sth, sth, 1 + sth, -sth, -sth, -1 - sth, -sth, 1 - sth,
       sth, sth, -1 + sth, sth, 1 + sth, -sth, -sth, -1 - sth, -sth, 1 - sth,
       .5,  .5,  -.5,      .5,  1.5,     .5,   .5,   -.5,      .5,   1.5,
       -.5, -.5, -1.5,     -.5, .5,      -.5,  -.5,  -1.5,     -.5,  .5};
 
-  double R1_C[25];
+  double R1_C[25]; // Radius 1 2D kernal
 
   // index by (m-1)*5 + (n-1)
+  // These are the offset ammounts for the 2D 2qp
   double R1_DeltY[25] = {0.0,  0.0,  1.0,  0.0, -1.0, 0.0,  0.0, 1.0, 0.0,
                          -1.0, -1.0, -1.0, 0.0, -1.0, -2.0, 0.0, 0.0, 1.0,
                          0.0,  -1.0, 1.0,  1.0, 2.0,  1.0,  0.0};
@@ -64,6 +74,9 @@ public:
   double *R1_g2U = &R1_Vec[25];
   double *R1_g1D = &R1_Vec[30];
   double *R1_g2D = &R1_Vec[35];
+
+  double *R1_g1R1D = R1_Vec1D;
+  double *R1_g1L1D = R1_Vec1D + 3;
 
   void GP_Kernel_init() {
 
@@ -120,6 +133,17 @@ public:
     }
 
     cblas_dscal(40, 0.5, R1_Vec, 1);
+  }
+
+  void TVector(int ndims, int NQP, int qp, int dir, int vecSize,
+               double *inputVec) {
+    switch (ndims) {
+    case 1:
+      switch (dir) {
+      case Right:
+        switch (vecSize) {}
+      }
+    }
   }
 };
 

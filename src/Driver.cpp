@@ -1,4 +1,3 @@
-#include "../include/AssignMemberFunctionPointers.hpp"
 #include "../include/DomainClass.hpp"
 #include "../include/Parameters.h"
 #include <iostream>
@@ -10,8 +9,6 @@ int main() {
   (Solver.*(Solver.IC))();
 
   (Solver.*(Solver.BC))("Cons");
-
-  Solver.SolvePressure();
 
   do {
     Solver.Find_dt();

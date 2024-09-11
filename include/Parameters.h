@@ -6,7 +6,7 @@
 /***************
  * X Parameters *
  ****************/
-#define NX 100
+#define NX 1000
 #define X0 0.0
 #define XN 9.0
 

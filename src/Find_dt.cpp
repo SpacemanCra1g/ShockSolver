@@ -18,6 +18,7 @@ void Domain::Find_Cs() {
 }
 
 void Domain::Find_dt() {
+  SolvePressure();
   Find_Cs();
 
   for (int i = 0; i < xDim * yDim; ++i) {
