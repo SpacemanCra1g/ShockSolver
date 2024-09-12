@@ -1,6 +1,7 @@
 #ifndef FLUXCLASS_H_
 #define FLUXCLASS_H_
 
+#include "../include/GP_Kernel.hpp"
 #include "../include/Parameters.h"
 #include <cmath>
 //  This is maybe a mistake, but I'm going to define a Flux container to
@@ -9,6 +10,7 @@
 class FluxClass {
 
 public:
+  GP_Kernel *Kern;
   double *Cons;
   double *dt;
 
@@ -23,6 +25,11 @@ public:
 
   // Defined in the src/FOG.cpp file
   void FOG();
+
+  // Defined in the src/GP-FVM.cpp file
+  void GP();
+  void GPR1(int, int, int, int);
+  void GPR2(int, int, int, int);
 
   // Defined in the src/WENO.cpp file
   void WENO();

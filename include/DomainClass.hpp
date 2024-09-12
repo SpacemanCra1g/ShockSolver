@@ -69,6 +69,14 @@ public:
   /***********************************************/
   Domain() {
 
+#if SpaceMethod == Gp1
+    SolutionKer.calculate_Preds1D(1);
+    Flux.Kern = &SolutionKer;
+#elif SpaceMethod == Gp2
+    SolutionKer.calculate_Preds1D(2);
+    Flux.Kern = &SolutionKer;
+#endif
+
     Buffer = new double[xDim * yDim];
     Cs = new double[xDim * yDim];
     Cells = new Cell[xDim * yDim];

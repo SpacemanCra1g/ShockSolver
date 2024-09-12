@@ -21,13 +21,13 @@ private:
   long double quad_exact(long double y, long double x);
 
 public:
-  void calculate_Preds1D(const int R);
-
   double R1Left[3];
   double R1Right[3];
 
   double R2Left[5];
   double R2Right[5];
+
+  void calculate_Preds1D(const int R);
 };
 
 #endif // GP_KERNEL_H_

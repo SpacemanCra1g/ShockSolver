@@ -66,6 +66,7 @@ void GP_Kernel::calculate_Preds1D(const int R) {
   long double Sum = 0.0;
 
   for (int i = 0; i < StencilSize; ++i) {
+    // Sum += std::fabs(TLeft[i]);
     Sum += TLeft[i];
   }
   for (int i = 0; i < StencilSize; ++i) {
@@ -74,10 +75,11 @@ void GP_Kernel::calculate_Preds1D(const int R) {
 
   Sum = 0.0;
   for (int i = 0; i < StencilSize; ++i) {
-    Sum += TLeft[StencilSize + i];
+    Sum += TRight[i];
+    // Sum += std::fabs(TRight[i]);
   }
   for (int i = 0; i < StencilSize; ++i) {
-    TLeft[StencilSize + i] /= Sum;
+    TRight[i] /= Sum;
   }
 
   // std::cout << std::endl;

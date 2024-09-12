@@ -5,6 +5,8 @@ void Domain::ForwardEuler() {
   Flux.WENO();
 #elif SpaceMethod == Fog
   Flux.FOG();
+#elif SpaceMethod == Gp1 or SpaceMethod == Gp2
+  Flux.GP();
 #endif
   // Calculate_Quad_Points();
   Flux.HLL();
