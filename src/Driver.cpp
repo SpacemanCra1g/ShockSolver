@@ -6,6 +6,8 @@ int main() {
 
   Domain Solver;
 
+  Solver.SolutionKer.calculate_Preds1D(2);
+
   (Solver.*(Solver.IC))();
 
   (Solver.*(Solver.BC))("Cons");

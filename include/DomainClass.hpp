@@ -76,7 +76,7 @@ public:
     T = T0;
     dt_sim = 1E-10;
 
-    SolutionKer.GP_Kernel_init();
+    // SolutionKer.GP_Kernel_init();
 
     Cons = new double[xDim * yDim * NumVar];
     DENS = &Cons[0];

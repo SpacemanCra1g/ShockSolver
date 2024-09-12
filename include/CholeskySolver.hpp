@@ -3,8 +3,8 @@
 
 #include <cmath>
 
-void Cholesky_Decomposition(double *__restrict, int);
+void Cholesky_Decomposition(long double A[], int);
 
-void Cholesky_BackSub(double *__restrict, int, int, double *__restrict);
+void Cholesky_BackSub(long double A[], int, int, long double B[]);
 
 #endif // CHOLESKYSOLVER_H_

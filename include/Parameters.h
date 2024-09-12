@@ -44,7 +44,7 @@
 #define BC ShuOsher
 
 #define RK_Method 3
-#define ell 12.0
+#define ell 6.0
 #define MoodOrder 5
 #define SlowStart True
 
@@ -76,6 +76,7 @@
 #define REdgeY 1
 #define YEnd 1
 #define dy dx
+#define sigdel (ell * 1.4142135623730950488016887240L)
 
 #else
 #define yDim (2 * NGC + NY)
