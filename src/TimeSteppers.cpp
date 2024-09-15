@@ -1,22 +1,26 @@
 #include "../include/DomainClass.hpp"
 
 void Domain::ForwardEuler() {
-#if SpaceMethod == Weno
-  Flux.WENO();
-#elif SpaceMethod == Fog
-  Flux.FOG();
-#elif SpaceMethod == Gp1 or SpaceMethod == Gp2
-  Flux.GP();
-#endif
-  // Calculate_Quad_Points();
+  Flux.SpaceRecon();
+
   Flux.HLL();
 
   Flux.Recon();
+
+#if SpaceMethod == Mood53
+  while (!MoodFinished) {
+    MoodFinished = Flux.Detection(MoodFinished);
+  }
+#endif
 
   (*this.*BC)("Cons");
 }
 
 void Domain::RK3() {
+#if SpaceMethod == Mood53
+  std::fill(Flux.MoodOrd, Flux.MoodOrd + yDim * xDim, 5);
+  std::copy(Cons, Cons + NumVar * xDim * yDim, ConsCopy);
+#endif
 
   DomainCopy();
 

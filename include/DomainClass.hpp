@@ -25,10 +25,13 @@ public:
   double *DENS, *PRES, *XVEL, *YVEL, *MOMX, *MOMY, *ENERGY, *Cs, *Buffer;
   double T, dt, dt_sim;
   double *CopyBuffer;
+  double *ConsCopy;
+  bool MoodFinished = true;
 
   Cell *Cells;
   double *Cons;
   double *Prims[NumVar];
+
   FluxClass Flux;
   // double *Prims[4] = {DENS,XVEL,YVEL,PRES};
   void (Domain::*BC)(std::string);
@@ -75,6 +78,14 @@ public:
 #elif SpaceMethod == Gp2
     SolutionKer.calculate_Preds1D(2);
     Flux.Kern = &SolutionKer;
+#elif SpaceMethod == Mood53
+    SolutionKer.calculate_Preds1D(1);
+    SolutionKer.calculate_Preds1D(2);
+    Flux.Kern = &SolutionKer;
+    Flux.MoodOrd = new int[xDim * yDim];
+    Flux.Troubled = new bool[xDim * yDim];
+    std::fill(Flux.MoodOrd, Flux.MoodOrd + yDim * xDim, 5);
+    std::fill(Flux.Troubled, Flux.Troubled + yDim * xDim, false);
 #endif
 
     Buffer = new double[xDim * yDim];
@@ -101,6 +112,11 @@ public:
 
     CopyBuffer = new double[xDim * yDim * NumVar];
     Flux.Fluxinit(Cons, &dt);
+
+#if SpaceMethod == Mood53
+    ConsCopy = new double[xDim * yDim * NumVar];
+    Flux.Uin = ConsCopy;
+#endif
 
 /**********Member Function Pointers***********/
 #if TestProblem == ShuOsher
