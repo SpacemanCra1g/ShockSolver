@@ -2,6 +2,7 @@
 
 void Domain::ForwardEuler() {
   Flux.SpaceRecon();
+  MoodFinished = false;
 
   Flux.HLL();
 

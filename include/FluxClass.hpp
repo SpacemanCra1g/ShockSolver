@@ -32,9 +32,9 @@ public:
   void GP(int, int, int, int);
   void GPR1(int, int, int, int);
   void GPR2(int, int, int, int);
-  void GPR1Side(int, int, int, int, int);
-  void FOGSide(int, int, int, int, int);
-  void GPR2Side(int, int, int, int, int);
+  void GPR1Side(double *, int, int, int, int, int);
+  void FOGSide(double *, int, int, int, int, int);
+  void GPR2Side(double *, int, int, int, int, int);
   void Mood(int, int, int, int);
 
   // Defined in the src/WENO.cpp file
@@ -42,6 +42,7 @@ public:
 
   // Defined in the src/HLL.cpp file
   void HLL();
+  void HLLSide(int, int);
 
   // Defined in the src/Detection.cpp file
   bool Detection(bool);
@@ -98,9 +99,10 @@ public:
   }
 
   void ReconSide(int quad, int var, int x, int y) {
-    Cons[Tidx(var, x, y)] -=
+    Cons[Tidx(var, x, y)] =
+        Uin[Tidx(var, x, y)] -
         *dt * (Flux[quad][var][idx(x, y)] - Flux[quad][var][idx(x - 1, y)]) /
-        dx;
+            dx;
   }
 };
 

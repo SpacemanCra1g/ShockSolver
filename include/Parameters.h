@@ -6,7 +6,7 @@
 /***************
  * X Parameters *
  ****************/
-#define NX 300
+#define NX 1000
 #define X0 0.0
 #define XN 9.0
 
@@ -36,14 +36,14 @@
 /****************
  *Run Parameters *
  *****************/
-#define SpaceMethod Mood53
+#define SpaceMethod Weno
 
 #define GAMMA 1.4
 #define CFL 0.8
 #define TestProblem ShuOsher
 #define BC ShuOsher
 
-#define RK_Method 1
+#define RK_Method 3
 #define ell 6.0
 #define MoodOrder 5
 #define SlowStart True
