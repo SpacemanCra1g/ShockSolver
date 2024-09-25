@@ -1,6 +1,25 @@
 #include "../include/DomainClass.hpp"
 #include <cblas.h>
 
+void Domain::ShockTubeIC() {
+  for (int i = 0; i < REdgeX; ++i) {
+    if (dx * (i - XStart) <= 0.5) {
+      DENSP[i] = RhoL;
+      PRES[i] = PL;
+      XVEL[i] = XVelL;
+      YVEL[i] = YVelL;
+      ZVEL[i] = ZVelL;
+    } else {
+      DENSP[i] = RhoR;
+      PRES[i] = PR;
+      XVEL[i] = XVelR;
+      YVEL[i] = YVelR;
+      ZVEL[i] = ZVelR;
+    }
+  }
+  Prims2Cons();
+}
+
 void Domain::ShuOsherIC() {
 
   for (int i = 0; i < REdgeX; ++i) {
@@ -21,13 +40,5 @@ void Domain::ShuOsherIC() {
       PRES[i] = 1.;
     }
   }
-
-  // We copy the x-axis we just wrote to all rows in y
-  // for (int i = 1; i < REdgeY; ++i) {
-  //   cblas_dcopy(xDim, &DENS[0], yDim, &DENS[i], yDim);
-  //   cblas_dcopy(xDim, &PRES[0], yDim, &PRES[i], yDim);
-  //   cblas_dcopy(xDim, &XVEL[0], yDim, &XVEL[i], yDim);
-  //   cblas_dcopy(xDim, &YVEL[0], yDim, &YVEL[i], yDim);
-  // }
   Prims2Cons();
 }

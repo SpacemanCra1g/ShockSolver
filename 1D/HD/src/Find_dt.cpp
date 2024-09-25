@@ -12,7 +12,7 @@ double FindMinimum(double *Array, const int size) {
 
 void Domain::Find_Cs() {
 
-  for (int i = 0; i < xDim * yDim; ++i) {
+  for (int i = 0; i < xDim; ++i) {
     Cs[i] = std::sqrt(PRES[i] * GAMMA / DENS[i]);
   }
 }
@@ -21,19 +21,10 @@ void Domain::Find_dt() {
   SolvePressure();
   Find_Cs();
 
-  for (int i = 0; i < xDim * yDim; ++i) {
+  for (int i = 0; i < xDim; ++i) {
     Buffer[i] = dx / (std::fabs(XVEL[i]) + Cs[i]);
   }
-  dt = FindMinimum(Buffer, xDim * yDim);
-
-#if NDIMS > 1
-  for (int i = 0; i < xDim * yDim; ++i) {
-    Buffer[i] = dy / (std::fabs(YVEL[i] + Cs[i]));
-  }
-
-  dt = std::fmin(FindMinimum(Buffer, xDim * yDim), dt);
-#endif
-
+  dt = FindMinimum(Buffer, xDim);
   dt *= CFL;
 
   if (T + dt > TN) {

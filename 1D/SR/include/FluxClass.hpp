@@ -42,6 +42,7 @@ public:
   // Defined in the src/HLL.cpp file
   void HLL();
   void HLLSide(int);
+  void SR_Flux(double *C, double *P, double *Flux);
 
   // Defined in the src/Detection.cpp file
   bool Detection(bool);

@@ -1,10 +1,10 @@
 #include "../include/FluxClass.hpp"
 
-void FluxClass::WENO(int qp, int var, int xdir, int ydir) {
+void FluxClass::WENO(int qp, int var, int xdir) {
 
   // Probably slow to do this pointer aliasing, but certainly makes
   // the code much easier to write
-  double *Center = &Cons[Tidx(var, xdir, ydir)];
+  double *Center = &Cons[Tidx(var, xdir)];
 
   double p1L = (-1.0 / 6.0) * (Center[-2]) + (5.0 / 6.0) * (Center[-1]) +
                (1.0 / 3.0) * (Center[0]);
@@ -63,16 +63,6 @@ void FluxClass::WENO(int qp, int var, int xdir, int ydir) {
 
   // Populate the Fluxes, of each variable
 
-  FluxDir[Left][qp][var][idx(xdir, ydir)] = w1L * p1L + w2L * p2L + w3L * p3L;
-  FluxDir[Right][qp][var][idx(xdir, ydir)] = w1R * p1R + w2R * p2R + w3R * p3R;
+  FluxDir[Left][qp][var][idx(xdir)] = w1L * p1L + w2L * p2L + w3L * p3L;
+  FluxDir[Right][qp][var][idx(xdir)] = w1R * p1R + w2R * p2R + w3R * p3R;
 }
-
-#if NDIMS > 1
-if (ydir < yDim - 1) {
-  FluxDir[Bottom][qp][var][xdir * yDim + ydir] = Cons[Tidx(var, xdir, ydir)];
-}
-
-if (ydir > 0) {
-  FluxDir[Top][qp][var][xdir * yDim + ydir] = Cons[Tidx(var, xdir, ydir)];
-}
-#endif

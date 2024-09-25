@@ -8,9 +8,7 @@ bool FluxClass::Detection(bool MoodFinished) {
 
   bool DMP;
 
-  int k, ord, ord_derr;
-
-  double divV, gradP, pL, pR, pT, pB, threshold1, threshold2, Ca, Mach;
+  double divV, gradP, pL, pR, threshold1, Ca, Mach;
 
   MoodFinished = true;
 
@@ -18,73 +16,67 @@ bool FluxClass::Detection(bool MoodFinished) {
 
   threshold1 = 5.0;
 
-  threshold2 = threshold1;
-
   for (int x = 2; x < REdgeX - 2; ++x) {
-    for (int y = YStart; y < YEnd; ++y) {
-      if (MoodOrd[idx(x, y)] == 1) {
-        continue;
-      }
+    if (MoodOrd[x] == 1) {
+      continue;
+    }
 
-      if ((Cons[Tidx(Dens, x, y)] <= 0.) ||
-          (std::isnan(Cons[Tidx(Dens, x, y)]))) {
-        Troubled[idx(x, y)] = true;
-        continue;
-      }
+    if ((Cons[Tidx(Dens, x)] <= 0.) || (std::isnan(Cons[Tidx(Dens, x)]))) {
+      Troubled[x] = true;
+      continue;
+    }
 
-      p = GetPres(x, y);
+    p = GetPres(x);
 
-      if (p <= 0.0 || std::isnan(p)) {
-        Troubled[idx(x, y)] = true;
-        continue;
-      }
+    if (p <= 0.0 || std::isnan(p)) {
+      Troubled[x] = true;
+      continue;
+    }
 
-      // First shock detector
-      divV = (Uin[Tidx(MomX, x + 1, y)] - Uin[Tidx(MomX, x - 1, y)]) / dx;
-      divV *= 0.5 / Uin[Tidx(Dens, x, y)];
-      divV -= 0.5 *
-              (Uin[Tidx(MomX, x, y)] *
-               (Uin[Tidx(Dens, x + 1, y)] - Uin[Tidx(Dens, x - 1, y)]) / dx) /
-              std::pow(Uin[Tidx(Dens, x, y)], 2);
+    // First shock detector
+    divV = (Uin[Tidx(MomX, x + 1)] - Uin[Tidx(MomX, x - 1)]) / dx;
+    divV *= 0.5 / Uin[Tidx(Dens, x)];
+    divV -= 0.5 *
+            (Uin[Tidx(MomX, x)] *
+             (Uin[Tidx(Dens, x + 1)] - Uin[Tidx(Dens, x - 1)]) / dx) /
+            std::pow(Uin[Tidx(Dens, x)], 2);
 
-      // Define Soundspeed
-      Ca = GetPresUin(x, y) * GAMMA / Uin[(Tidx(Dens, x, y))];
+    // Define Soundspeed
+    Ca = GetPresUin(x) * GAMMA / Uin[(Tidx(Dens, x))];
 
-      Mach = std::pow(Uin[Tidx(MomX, x, y)], 2) / pow(Uin[Tidx(Dens, x, y)], 2);
-      Mach = std::sqrt(Mach / Ca);
+    Mach = std::pow(Uin[Tidx(MomX, x)], 2) / pow(Uin[Tidx(Dens, x)], 2);
+    Mach = std::sqrt(Mach / Ca);
 
-      // Second Shock detector
+    // Second Shock detector
 
-      pL = GetPresUin(x - 1, y);
-      pR = GetPresUin(x + 1, y);
+    pL = GetPresUin(x - 1);
+    pR = GetPresUin(x + 1);
 
-      gradP = 0.5 * (std::fabs(pR - pL) / std::fmin(pL, pR)) / dx;
-      if (divV < -dx * dx && Mach > 0.2 && gradP > threshold1) {
-        // std::cout << "DPM Called" << std::endl;
-        // exit(0);
-        DMP = true;
-      } else {
-        DMP = false;
-      }
+    gradP = 0.5 * (std::fabs(pR - pL) / std::fmin(pL, pR)) / dx;
+    if (divV < -dx * dx && Mach > 0.2 && gradP > threshold1) {
+      // std::cout << "DPM Called" << std::endl;
+      // exit(0);
+      DMP = true;
+    } else {
+      DMP = false;
+    }
 
-      if (DMP) {
-        UL = Uin[Tidx(Dens, x - 1, y)];
-        UM = Uin[Tidx(Dens, x, y)];
-        UR = Uin[Tidx(Dens, x + 1, y)];
+    if (DMP) {
+      UL = Uin[Tidx(Dens, x - 1)];
+      UM = Uin[Tidx(Dens, x)];
+      UR = Uin[Tidx(Dens, x + 1)];
 
-        Minlocal = std::fmin(std::fmin(UL, UM), UR);
-        Maxlocal = std::fmax(std::fmin(UL, UM), UR);
+      Minlocal = std::fmin(std::fmin(UL, UM), UR);
+      Maxlocal = std::fmax(std::fmin(UL, UM), UR);
 
-        Mm = Maxlocal - Minlocal;
+      Mm = Maxlocal - Minlocal;
 
-        // Plateau detection
-        if (Mm > dx * dx * dx) {
-          if (Cons[Tidx(Dens, x, y)] > Maxlocal ||
-              Cons[Tidx(Dens, x, y)] < Minlocal) {
-            Troubled[idx(x, y)] = true;
+      // Plateau detection
+      if (Mm > dx * dx * dx) {
+        if (Cons[Tidx(Dens, x)] > Maxlocal || Cons[Tidx(Dens, x)] < Minlocal) {
+          Troubled[x] = true;
 
-            if (false) {
-            }
+          if (false) {
           }
         }
       }
@@ -92,64 +84,62 @@ bool FluxClass::Detection(bool MoodFinished) {
   }
 
   for (int x = 2; x < REdgeX - 2; ++x) {
-    for (int y = YStart; y < YEnd; ++y) {
-      if (!Troubled[idx(x, y)]) {
-        continue;
-      }
-      MoodFinished = false;
 
-      MoodOrd[(idx(x, y))] -= 2;
-      if (MoodOrd[(idx(x, y))] < 0) {
-        std::cout << "1 called trouble" << std::endl;
-        exit(0);
-      }
+    if (!Troubled[x]) {
+      continue;
+    }
+    MoodFinished = false;
 
-      int LOrd, ROrd;
-      LOrd = std::fmin(MoodOrd[(idx(x - 1, y))], MoodOrd[(idx(x, y))]);
-      ROrd = std::fmin(MoodOrd[(idx(x + 1, y))], MoodOrd[(idx(x, y))]);
+    MoodOrd[x] -= 2;
+    if (MoodOrd[x] < 0) {
+      std::cout << "1 called trouble" << std::endl;
+      exit(0);
+    }
 
-      if (LOrd == 3) {
-        for (int var = 0; var < NumVar; ++var) {
-          GPR1Side(Uin, 0, var, x, y, Left);
-          GPR1Side(Uin, 0, var, x - 1, y, Right);
-          HLLSide(x - 1, y);
-        }
-      } else if (LOrd == 1) {
-        for (int var = 0; var < NumVar; ++var) {
-          FOGSide(Uin, 0, var, x, y, Left);
-          FOGSide(Uin, 0, var, x - 1, y, Right);
-          HLLSide(x - 1, y);
-        }
+    int LOrd, ROrd;
+    LOrd = std::fmin(MoodOrd[(idx(x - 1))], MoodOrd[x]);
+    ROrd = std::fmin(MoodOrd[(idx(x + 1))], MoodOrd[x]);
+
+    if (LOrd == 3) {
+      for (int var = 0; var < NumVar; ++var) {
+        GPR1Side(Uin, 0, var, x, Left);
+        GPR1Side(Uin, 0, var, x - 1, Right);
+        HLLSide(x - 1);
       }
-      if (ROrd == 3) {
-        for (int var = 0; var < NumVar; ++var) {
-          GPR1Side(Uin, 0, var, x, y, Right);
-          GPR1Side(Uin, 0, var, x + 1, y, Left);
-          HLLSide(x + 1, y);
-        }
-      } else if (ROrd == 1) {
-        for (int var = 0; var < NumVar; ++var) {
-          FOGSide(Uin, 0, var, x, y, Right);
-          FOGSide(Uin, 0, var, x + 1, y, Left);
-          HLLSide(x + 1, y);
-        }
+    } else if (LOrd == 1) {
+      for (int var = 0; var < NumVar; ++var) {
+        FOGSide(Uin, 0, var, x, Left);
+        FOGSide(Uin, 0, var, x - 1, Right);
+        HLLSide(x - 1);
+      }
+    }
+    if (ROrd == 3) {
+      for (int var = 0; var < NumVar; ++var) {
+        GPR1Side(Uin, 0, var, x, Right);
+        GPR1Side(Uin, 0, var, x + 1, Left);
+        HLLSide(x + 1);
+      }
+    } else if (ROrd == 1) {
+      for (int var = 0; var < NumVar; ++var) {
+        FOGSide(Uin, 0, var, x, Right);
+        FOGSide(Uin, 0, var, x + 1, Left);
+        HLLSide(x + 1);
       }
     }
   }
 
   for (int x = 2; x < REdgeX - 2; ++x) {
-    for (int y = YStart; y < YEnd; ++y) {
-      if (!Troubled[idx(x, y)]) {
-        continue;
-      }
-      for (int var = 0; var < NumVar; ++var) {
-        ReconSide(0, var, x, y);
-        ReconSide(0, var, x - 1, y);
-        ReconSide(0, var, x + 1, y);
-      }
-      Troubled[idx(x, y)] = false;
-      ++count;
+
+    if (!Troubled[x]) {
+      continue;
     }
+    for (int var = 0; var < NumVar; ++var) {
+      ReconSide(0, var, x);
+      ReconSide(0, var, x - 1);
+      ReconSide(0, var, x + 1);
+    }
+    Troubled[x] = false;
+    ++count;
   }
   std::cout << count << " Troubled Cells" << std::endl;
   return MoodFinished;

@@ -8,27 +8,21 @@
 #include <algorithm>
 #include <cblas.h>
 #include <cmath>
-#include <iostream>
-#include <vector>
-// #include <lapacke.h>
-
-// extern "C" {
-// extern void cblas_dscal(int, double, double *, int);
-// }
 
 class Domain {
 public:
   /***********************************************/
   /*********** Internal Data Objects *************/
   /***********************************************/
-  double *DENS, *PRES, *XVEL, *YVEL, *MOMX, *MOMY, *ENERGY, *Cs, *Buffer;
+  double *DENS, *DENSP, *PRES, *XVEL, *YVEL, *ZVEL;
+  double *MOMX, *MOMY, *MOMZ, *ENERGY, *Cs, *Buffer;
   double T, dt, dt_sim;
   double *CopyBuffer;
   double *ConsCopy;
   bool MoodFinished = true;
 
   double *Cons;
-  double *Prims[NumVar];
+  double *Prims;
 
   FluxClass Flux;
 
@@ -46,6 +40,19 @@ public:
   void Prims2Cons();
   void Cons2Prim();
   void SolvePressure();
+  double Lorenz(int x);
+  double Enthalpy(int x);
+  double IDGas(int x);
+  double dh_dTau(int x);
+  double dh_dP(int x);
+  double Tau(int x);
+  double dFp_dP(int x);
+  double F(int x);
+  void Pressure(int x);
+  double Newton(int x);
+  double LorenzFromP(int x);
+  double EnthalpyFromCons(int x);
+  double IDGasFromCons(int x);
 
   // Defined in the BC.cpp file
   void ShuOsherBC(std::string);
@@ -54,6 +61,8 @@ public:
   // Defined in the Find_dt.cpp flie
   void Find_dt();
   void Find_Cs();
+  double SRHD_CS(int i);
+  double HD_CS(int i);
 
   // Defined in the TimeSteppers.cpp file
   void RK3();
@@ -61,6 +70,7 @@ public:
 
   // Defined in the IC.cpp file
   void ShuOsherIC();
+  void ShockTubeIC();
 
   // Defined in the IO.cpp file
   void writeResults();
@@ -95,12 +105,19 @@ public:
     // SolutionKer.GP_Kernel_init();
 
     Cons = new double[xDim * NumVar];
-    DENS = &Cons[0];
-    PRES = new double[xDim];
-    XVEL = new double[xDim];
+    Prims = new double[xDim * NumVar];
 
-    MOMX = &Cons[xDim];
-    ENERGY = &Cons[Ener * (xDim)];
+    DENS = Cons;
+    MOMX = Cons + xDim;
+    MOMY = Cons + 2 * xDim;
+    MOMZ = Cons + 3 * xDim;
+    ENERGY = Cons + 4 * xDim;
+
+    DENSP = Prims;
+    XVEL = DENSP + xDim;
+    YVEL = XVEL + xDim;
+    ZVEL = YVEL + xDim;
+    PRES = ZVEL + xDim;
 
     CopyBuffer = new double[xDim * NumVar];
     Flux.Fluxinit(Cons, &dt);
@@ -111,13 +128,16 @@ public:
 #endif
 
 /**********Member Function Pointers***********/
-#if TestProblem == ShuOsher
+#if TestProblem == SHUOSHER
     BC = &Domain::ShuOsherBC;
     IC = &Domain::ShuOsherIC;
+#elif TestProblem == SHOCKTUBE
+    IC = &Domain::ShockTubeIC;
+    BC = &Domain::ShuOsherBC;
 #else
 
-#if BC == Neumann
-    BC = &Domain::NeumannBC;
+#if BCs == NEUMANN
+    BCs = &Domain::NeumannBC;
 #else
     std::cout << "Invalid Boundary Conditions \nExiting" << std::endl;
     exit(0);

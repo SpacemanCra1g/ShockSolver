@@ -19,8 +19,8 @@ void Domain::ForwardEuler() {
 
 void Domain::RK3() {
 #if SpaceMethod == Mood53
-  std::fill(Flux.MoodOrd, Flux.MoodOrd + yDim * xDim, 5);
-  std::copy(Cons, Cons + NumVar * xDim * yDim, ConsCopy);
+  std::fill(Flux.MoodOrd, Flux.MoodOrd + xDim, 5);
+  std::copy(Cons, Cons + NumVar * xDim, ConsCopy);
 #endif
 
   DomainCopy();

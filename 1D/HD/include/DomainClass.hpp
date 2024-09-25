@@ -1,7 +1,6 @@
 #ifndef DOMAINCLASS_H_
 #define DOMAINCLASS_H_
 
-#include "CellClass.hpp"
 #include "FluxClass.hpp"
 #include "GP_Kernel.hpp"
 #include "Parameters.h"
@@ -28,12 +27,11 @@ public:
   double *ConsCopy;
   bool MoodFinished = true;
 
-  Cell *Cells;
   double *Cons;
   double *Prims[NumVar];
 
   FluxClass Flux;
-  // double *Prims[4] = {DENS,XVEL,YVEL,PRES};
+
   void (Domain::*BC)(std::string);
   void (Domain::*IC)();
   void (Domain::*RK_TimeStepper)();
@@ -82,39 +80,33 @@ public:
     SolutionKer.calculate_Preds1D(1);
     SolutionKer.calculate_Preds1D(2);
     Flux.Kern = &SolutionKer;
-    Flux.MoodOrd = new int[xDim * yDim];
-    Flux.Troubled = new bool[xDim * yDim];
-    std::fill(Flux.MoodOrd, Flux.MoodOrd + yDim * xDim, 5);
-    std::fill(Flux.Troubled, Flux.Troubled + yDim * xDim, false);
+    Flux.MoodOrd = new int[xDim];
+    Flux.Troubled = new bool[xDim];
+    std::fill(Flux.MoodOrd, Flux.MoodOrd + xDim, 5);
+    std::fill(Flux.Troubled, Flux.Troubled + xDim, false);
 #endif
 
-    Buffer = new double[xDim * yDim];
-    Cs = new double[xDim * yDim];
-    Cells = new Cell[xDim * yDim];
+    Buffer = new double[xDim];
+    Cs = new double[xDim];
 
     T = T0;
     dt_sim = 1E-10;
 
     // SolutionKer.GP_Kernel_init();
 
-    Cons = new double[xDim * yDim * NumVar];
+    Cons = new double[xDim * NumVar];
     DENS = &Cons[0];
-    PRES = new double[xDim * yDim];
-    XVEL = new double[xDim * yDim];
+    PRES = new double[xDim];
+    XVEL = new double[xDim];
 
-    MOMX = &Cons[xDim * yDim];
-    ENERGY = &Cons[Ener * (xDim * yDim)];
+    MOMX = &Cons[xDim];
+    ENERGY = &Cons[Ener * (xDim)];
 
-#if NumVar > 3
-    YVEL = new double[xDim * yDim];
-    MOMY = ENERGY + yDim * xDim;
-#endif
-
-    CopyBuffer = new double[xDim * yDim * NumVar];
+    CopyBuffer = new double[xDim * NumVar];
     Flux.Fluxinit(Cons, &dt);
 
 #if SpaceMethod == Mood53
-    ConsCopy = new double[xDim * yDim * NumVar];
+    ConsCopy = new double[xDim * NumVar];
     Flux.Uin = ConsCopy;
 #endif
 
@@ -138,55 +130,13 @@ public:
     RK_TimeStepper = &Domain::RK3;
 #endif
   }
-  void AssignCells() {
-    for (int i = 0; i < xDim; ++i) {
-      for (int j = 0; j < yDim; ++j) {
-        // Each cell stores memory locations corresponding to its position in
-        // this array.
-        // This approach, while memory intensive, should prevent
-        // copying memory.
-        Cells[idx(i, j)].DENS = &DENS[idx(i, j)];
-        Cells[idx(i, j)].PRES = &PRES[idx(i, j)];
-        Cells[idx(i, j)].XVEL = &XVEL[idx(i, j)];
-        Cells[idx(i, j)].YVEL = &YVEL[idx(i, j)];
-        Cells[idx(i, j)].MOMX = &MOMX[idx(i, j)];
-        Cells[idx(i, j)].MOMY = &MOMY[idx(i, j)];
-        Cells[idx(i, j)].ENERGY = &ENERGY[idx(i, j)];
-        Cells[idx(i, j)].Cs = &Cs[idx(i, j)];
-        Cells[idx(i, j)].x = i;
-        Cells[idx(i, j)].y = j;
-        Cells[idx(i, j)].GP_Weight = &SolutionKer;
 
-        // Access points to get left and right cells as well.
-        if (i > 0) {
-          Cells[idx(i, j)].LCell = &Cells[idx(i - 1, j)];
-        }
-        if (j > 0) {
-          Cells[idx(i, j)].BCell = &Cells[idx(i, j - 1)];
-        }
-
-        if (i > xDim - 1) {
-          Cells[idx(i, j)].RCell = &Cells[idx(i + 1, j)];
-        }
-        if (j > yDim - 1) {
-          Cells[idx(i, j)].TCell = &Cells[idx(i, j + 1)];
-        }
-      }
-    }
-  }
-
-  void DomainCopy() {
-    std::copy(Cons, Cons + yDim * xDim * NumVar, CopyBuffer);
-  }
+  void DomainCopy() { std::copy(Cons, Cons + xDim * NumVar, CopyBuffer); }
 
   void DomainAdd(double a, double b) {
-    cblas_dscal(NumVar * xDim * yDim, b, Cons, 1);
-    cblas_daxpy(NumVar * xDim * yDim, a, CopyBuffer, 1, Cons, 1);
+    cblas_dscal(NumVar * xDim, b, Cons, 1);
+    cblas_daxpy(NumVar * xDim, a, CopyBuffer, 1, Cons, 1);
   }
-
-  Cell *GetCell(int x, int y) { return &Cells[idx(x, y)]; }
-
-  void TestLapacke(double val) { cblas_dscal(25, val, DENS, 1); }
 };
 
 #endif // DOMAINCLASS_H_

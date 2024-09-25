@@ -16,9 +16,9 @@ public:
   bool MoodFinished = true;
   double *Uin;
 
-  double FluxDir[NDIMS * 2][nqp][NumVar][xDim * yDim];
+  double FluxDir[NDIMS * 2][nqp][NumVar][xDim];
 
-  double Flux[nqp][NumVar][xDim * yDim];
+  double Flux[nqp][NumVar][xDim];
 
   void Fluxinit(double *COns, double *DT) {
     Cons = COns;
@@ -26,23 +26,22 @@ public:
   }
 
   // Defined in the src/FOG.cpp file
-  void FOG(int, int, int, int);
+  void FOG(int, int, int);
 
   // Defined in the src/GP-FVM.cpp file
-  void GP(int, int, int, int);
-  void GPR1(int, int, int, int);
-  void GPR2(int, int, int, int);
-  void GPR1Side(double *, int, int, int, int, int);
-  void FOGSide(double *, int, int, int, int, int);
-  void GPR2Side(double *, int, int, int, int, int);
-  void Mood(int, int, int, int);
+  void GPR1(int, int, int);
+  void GPR2(int, int, int);
+  void GPR1Side(double *, int, int, int, int);
+  void FOGSide(double *, int, int, int, int);
+  void GPR2Side(double *, int, int, int, int);
+  void Mood(int, int, int);
 
   // Defined in the src/WENO.cpp file
-  void WENO(int, int, int, int);
+  void WENO(int, int, int);
 
   // Defined in the src/HLL.cpp file
   void HLL();
-  void HLLSide(int, int);
+  void HLLSide(int);
 
   // Defined in the src/Detection.cpp file
   bool Detection(bool);
@@ -51,58 +50,50 @@ public:
     for (int quad = 0; quad < nqp; ++quad) {
       for (int var = 0; var < NumVar; ++var) {
         for (int x = 2; x < REdgeX - 2; ++x) {
-          for (int y = YStart; y < YEnd; ++y) {
+
 #if SpaceMethod == Weno
-            WENO(quad, var, x, y);
+          WENO(quad, var, x);
 #elif SpaceMethod == Fog
-            FOG(quad, var, x, y);
+          FOG(quad, var, x);
 #elif SpaceMethod == Gp1
-            GPR1(quad, var, x, y);
+          GPR1(quad, var, x);
 #elif SpaceMethod == Gp2
-            GPR2(quad, var, x, y);
+          GPR2(quad, var, x);
 #elif SpaceMethod == Mood53
-            Mood(quad, var, x, y);
+          Mood(quad, var, x);
 #endif
-          }
         }
       }
     }
   }
 
-  double GetPres(int x, int y) {
-    return (GAMMA - 1.0) *
-           (Cons[Tidx(Ener, x, y)] -
-            0.5 * (Cons[Tidx(MomX, x, y)] * Cons[Tidx(MomX, x, y)] /
-                   Cons[Tidx(Dens, x, y)]));
+  double GetPres(int x) {
+    return (GAMMA - 1.0) * (Cons[Tidx(Ener, x)] -
+                            0.5 * (Cons[Tidx(MomX, x)] * Cons[Tidx(MomX, x)] /
+                                   Cons[Tidx(Dens, x)]));
   }
 
-  double GetPresUin(int x, int y) {
-    return (GAMMA - 1.0) *
-           (Uin[Tidx(Ener, x, y)] -
-            0.5 * (Uin[Tidx(MomX, x, y)] * Uin[Tidx(MomX, x, y)] /
-                   Uin[Tidx(Dens, x, y)]));
+  double GetPresUin(int x) {
+    return (GAMMA - 1.0) * (Uin[Tidx(Ener, x)] -
+                            0.5 * (Uin[Tidx(MomX, x)] * Uin[Tidx(MomX, x)] /
+                                   Uin[Tidx(Dens, x)]));
   }
 
   void Recon() {
     for (int quad = 0; quad < nqp; ++quad) {
       for (int var = 0; var < NumVar; ++var) {
         for (int x = XStart; x < XEnd; ++x) {
-          for (int y = YStart; y < YEnd; ++y) {
-            Cons[Tidx(var, x, y)] -=
-                *dt *
-                (Flux[quad][var][idx(x, y)] - Flux[quad][var][idx(x - 1, y)]) /
-                dx;
-          }
+          Cons[Tidx(var, x)] -=
+              *dt * (Flux[quad][var][x] - Flux[quad][var][x - 1]) / dx;
         }
       }
     }
   }
 
-  void ReconSide(int quad, int var, int x, int y) {
-    Cons[Tidx(var, x, y)] =
-        Uin[Tidx(var, x, y)] -
-        *dt * (Flux[quad][var][idx(x, y)] - Flux[quad][var][idx(x - 1, y)]) /
-            dx;
+  void ReconSide(int quad, int var, int x) {
+    Cons[Tidx(var, x)] =
+        Uin[Tidx(var, x)] -
+        *dt * (Flux[quad][var][x] - Flux[quad][var][x - 1]) / dx;
   }
 };
 

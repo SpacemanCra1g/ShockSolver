@@ -8,9 +8,12 @@ int main() {
 
   Domain Solver;
 
-  Solver.SolutionKer.calculate_Preds1D(2);
-
   (Solver.*(Solver.IC))();
+
+  // for (int i = 0; i < REdgeX; i++) {
+  //   std::cout << Solver.ENERGY[i] << std::endl;
+  // }
+  // exit(0);
 
   (Solver.*(Solver.BC))("Cons");
 
