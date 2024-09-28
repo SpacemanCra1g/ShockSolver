@@ -12,7 +12,7 @@ double Enthalpy(double *P) {
 
 double Lorenz(double *P) {
   return std::pow(
-      1.0 - P[VelX] * P[VelX] + P[VelY] * P[VelY] + P[VelZ] * P[VelZ], -0.5);
+      1.0 - (P[VelX] * P[VelX] + P[VelY] * P[VelY] + P[VelZ] * P[VelZ]), -0.5);
 }
 
 void Prims2Cons(double *P, double Cons[5]) {
@@ -37,16 +37,17 @@ double LorenzFromP(double *C, double PRES) {
   for (int i = MomX; i <= MomZ; ++i) {
     Norm += C[i] * C[i];
   }
-  return std::sqrt(Ep / (Ep + Norm));
+
+  return 1.0 / std::sqrt(1 - Norm / Ep);
 }
 
 double dh_dTau(double PRES) { return (GAMMA / (GAMMA - 1)) * PRES; }
 
-double Tau(double *C, double PRES) { return (LorenzFromP(C, PRES) / PRES); }
+double Tau(double *C, double PRES) { return (LorenzFromP(C, PRES) / C[Dens]); }
 
 double EnthalpyFromP(double *C, double PRES) {
 #if EOS == IdealGas
-  return 1 + (GAMMA / (GAMMA - 1.0)) * (PRES * Tau(C, PRES) / C[Dens]);
+  return 1 + (GAMMA / (GAMMA - 1.0)) * (PRES * Tau(C, PRES));
 #endif
 }
 
@@ -110,12 +111,12 @@ void SignalSpeed(double *P, double CS, double &CSL, double &CSR) {
   for (int i = VelX; i <= VelZ; ++i) {
     Norm += P[i] * P[i];
   }
-  double Lap = 1.0 - Norm * CS * CS;
-  double nu = 1.0 - P[VelX] * P[VelX] -
-              CS * CS * (P[VelY] * P[VelY] + P[VelZ] * P[VelZ]);
+  double Lap = 1.0 - Norm * CS;
+  double nu =
+      1.0 - P[VelX] * P[VelX] - CS * (P[VelY] * P[VelY] + P[VelZ] * P[VelZ]);
   double Lor = Lorenz(P);
-  double Val = Lor * P[VelX] * (1 - CS * CS);
+  double Val = Lor * P[VelX] * (1 - CS);
 
-  CSL = (Val - CS * std::sqrt(nu)) / (Lor * Lap);
-  CSR = (Val + CS * std::sqrt(nu)) / (Lor * Lap);
+  CSL = (Val - std::sqrt(CS * nu)) / (Lor * Lap);
+  CSR = (Val + std::sqrt(nu * CS)) / (Lor * Lap);
 }

@@ -7,10 +7,10 @@ void Domain::Prims2Cons() {
     L = Lorenz(i);
     g = DENSP[i] * Enthalpy(i) * L * L;
 
-    MOMX[i] = L * XVEL[i];
+    MOMX[i] = g * XVEL[i];
     MOMY[i] = g * YVEL[i];
     MOMZ[i] = g * ZVEL[i];
-    DENS[i] = g * DENSP[i];
+    DENS[i] = L * DENSP[i];
     ENERGY[i] = g - PRES[i];
   }
 }
@@ -35,13 +35,13 @@ void Domain::SolvePressure() {
 
 double Domain::Lorenz(int x) {
   return std::pow(
-      1.0 - XVEL[x] * XVEL[x] + YVEL[x] * YVEL[x] + ZVEL[x] * ZVEL[x], -0.5);
+      1.0 - (XVEL[x] * XVEL[x] + YVEL[x] * YVEL[x] + ZVEL[x] * ZVEL[x]), -0.5);
 }
 
 double Domain::LorenzFromP(int x) {
+  double Norm = MOMX[x] * MOMX[x] + MOMY[x] * MOMY[x] + MOMZ[x] * MOMZ[x];
   double Ep = std::pow(ENERGY[x] + PRES[x], 2);
-  return std::sqrt(
-      Ep / (Ep + MOMX[x] * MOMX[x] + MOMY[x] * MOMY[x] + MOMZ[x] * MOMZ[x]));
+  return 1.0 / std::sqrt(1.0 - Norm / Ep);
 }
 
 double Domain::Enthalpy(int x) {

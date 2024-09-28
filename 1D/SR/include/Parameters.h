@@ -16,13 +16,13 @@
 #define PL (40.0 / 3.0)
 #define PR (0.000001 * (2.0 / 3.0))
 
-#define XVelL 0.0
-#define YVelL 0.0
-#define ZVelL 0.0
+#define XVelL 0.2
+#define YVelL 0.2
+#define ZVelL 0.2
 
-#define XVelR 0.0
-#define YVelR 0.0
-#define ZVelR 0.0
+#define XVelR 0.3
+#define YVelR 0.3
+#define ZVelR 0.3
 
 /****************
  * Y Parameters *

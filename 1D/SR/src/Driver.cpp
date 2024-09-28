@@ -1,4 +1,5 @@
 #include "../include/DomainClass.hpp"
+#include "../include/GenVarConvert.hpp"
 #include "../include/Parameters.h"
 // #include <cfenv>
 #include <iostream>
@@ -10,8 +11,14 @@ int main() {
 
   (Solver.*(Solver.IC))();
 
-  // for (int i = 0; i < REdgeX; i++) {
-  //   std::cout << Solver.ENERGY[i] << std::endl;
+  // for (int i = 0; i < REdgeX * NumVar; i++) {
+  //   std::cout << Solver.Prims[i] << std::endl;
+  // }
+  // std::cout << "\n \n" << std::endl;
+  // Solver.Prims2Cons();
+  // Solver.Cons2Prim();
+  // for (int i = 0; i < REdgeX * NumVar; i++) {
+  //   std::cout << Solver.Prims[i] << std::endl;
   // }
   // exit(0);
 

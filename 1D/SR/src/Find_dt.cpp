@@ -26,15 +26,15 @@ void Domain::Find_dt() {
   double Lor;
 
   for (int i = 0; i < xDim; ++i) {
-    Lap = 1 - (XVEL[i] * XVEL[i] + YVEL[i] * YVEL[i] + ZVEL[i] * ZVEL[i]) *
-                  Cs[i] * Cs[i];
-    nu = 1 - XVEL[i] * XVEL[i] -
-         Cs[i] * Cs[i] * (YVEL[i] * YVEL[i] + ZVEL[i] * ZVEL[i]);
+    Lap =
+        1 - (XVEL[i] * XVEL[i] + YVEL[i] * YVEL[i] + ZVEL[i] * ZVEL[i]) * Cs[i];
+    nu =
+        1 - XVEL[i] * XVEL[i] - Cs[i] * (YVEL[i] * YVEL[i] + ZVEL[i] * ZVEL[i]);
     Lor = Lorenz(i);
-    double Val = Lor * XVEL[i] * (1 - Cs[i] * Cs[i]);
+    double Val = Lor * XVEL[i] * (1 - Cs[i]);
     Buffer[i] =
-        dx / std::max(std::fabs((Val - Cs[i] * std::sqrt(nu)) / (Lor * Lap)),
-                      std::fabs((Val + Cs[i] * std::sqrt(nu)) / (Lor * Lap)));
+        dx / std::max(std::fabs((Val - std::sqrt(nu * Cs[i])) / (Lor * Lap)),
+                      std::fabs((Val + std::sqrt(nu * Cs[i])) / (Lor * Lap)));
   }
   dt = FindMinimum(Buffer, xDim);
   dt *= CFL;
