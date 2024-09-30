@@ -40,19 +40,7 @@ public:
   void Prims2Cons();
   void Cons2Prim();
   void SolvePressure();
-  double Lorenz(int x);
-  double Enthalpy(int x);
-  double IDGas(int x);
-  double dh_dTau(int x);
-  double dh_dP(int x);
-  double Tau(int x);
-  double dFp_dP(int x);
-  double F(int x);
-  void Pressure(int x);
-  double Newton(int x);
-  double LorenzFromP(int x);
-  double EnthalpyFromCons(int x);
-  double IDGasFromCons(int x);
+  void Press(int x);
 
   // Defined in the BC.cpp file
   void ShuOsherBC(std::string);

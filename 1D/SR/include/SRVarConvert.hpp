@@ -10,7 +10,7 @@ double Enthalpy(double *P);
 
 double Lorenz(double *P);
 
-void Prims2Cons(double *P, double Cons[5]);
+void PrimConvert(double *P, double Cons[5]);
 
 double LorenzFromP(double *C, double PRES);
 
@@ -30,9 +30,9 @@ double Newton(double *C, double PRES);
 
 double Pressure(double *C);
 
-void Cons2Prim(double *C, double Prims[5]);
+void ConConvert(double *C, double Prims[5]);
 
-double SRHD_CS(double *C, double *P);
+double SRH_CS(double *C, double *P);
 
 void SignalSpeed(double *P, double CS, double &CSL, double &CSR);
 

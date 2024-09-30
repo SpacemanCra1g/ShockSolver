@@ -1,5 +1,5 @@
 #include "../include/FluxClass.hpp"
-#include "../include/GenVarConvert.hpp"
+#include "../include/SRVarConvert.hpp"
 
 void FluxClass::HLL() {
 
@@ -13,7 +13,7 @@ void FluxClass::HLL() {
 
   for (int Dim = 0; Dim < NDIMS * 2; Dim += 2) {
     for (int quadpoint = 0; quadpoint < nqp; ++quadpoint) {
-      for (int xdir = 1; xdir < xDim - 1; ++xdir) {
+      for (int xdir = 1; xdir < xDim - 2; ++xdir) {
 
         i = xdir;
         iPlus1 = i + 1;
@@ -23,11 +23,11 @@ void FluxClass::HLL() {
           ConR[var] = FluxDir[Left][quadpoint][var][iPlus1];
         }
 
-        Cons2Prim(ConL, PrimL);
-        Cons2Prim(ConR, PrimR);
+        ConConvert(ConL, PrimL);
+        ConConvert(ConR, PrimR);
 
-        CsL = SRHD_CS(ConL, PrimL);
-        CsR = SRHD_CS(ConR, PrimR);
+        CsL = SRH_CS(ConL, PrimL);
+        CsR = SRH_CS(ConR, PrimR);
 
         // CsL = std::sqrt(GAMMA * PresL / FluxDir[Dim +
         // 1][quadpoint][Dens][i]); CsR = std::sqrt(GAMMA * PresR /

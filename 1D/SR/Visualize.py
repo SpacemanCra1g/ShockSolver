@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 p = np.loadtxt("./OutputData/Pressure.dat")
 rho = np.loadtxt("./OutputData/Density.dat")
 u = np.loadtxt("./OutputData/VelocityX.dat")
-# v = np.loadtxt("./OutputData/VelocityY.dat")
+v = np.loadtxt("./OutputData/VelocityY.dat")
+w = np.loadtxt("./OutputData/VelocityY.dat")
 
 
 plotVar = rho

@@ -1,97 +1,49 @@
 #include "../include/DomainClass.hpp"
+#include "../include/SRVarConvert.hpp"
 
 void Domain::Prims2Cons() {
-  double g;
-  double L;
-  for (int i = 0; i < xDim; ++i) {
-    L = Lorenz(i);
-    g = DENSP[i] * Enthalpy(i) * L * L;
 
-    MOMX[i] = g * XVEL[i];
-    MOMY[i] = g * YVEL[i];
-    MOMZ[i] = g * ZVEL[i];
-    DENS[i] = L * DENSP[i];
-    ENERGY[i] = g - PRES[i];
+  double P[NumVar], C[NumVar];
+
+  for (int i = 0; i < xDim; ++i) {
+    for (int var = 0; var < NumVar; ++var) {
+      P[var] = Prims[Tidx(var, i)];
+    }
+
+    PrimConvert(P, C);
+
+    for (int var = 0; var < NumVar; ++var) {
+      Cons[Tidx(var, i)] = C[var];
+    }
   }
 }
 
 void Domain::Cons2Prim() {
-  double L;
+
+  double P[NumVar], C[NumVar];
   for (int i = 0; i < xDim; ++i) {
-    Pressure(i);
-    L = LorenzFromP(i);
-    DENSP[i] = DENS[i] / L;
-    XVEL[i] = MOMX[i] / (ENERGY[i] + PRES[i]);
-    YVEL[i] = MOMY[i] / (ENERGY[i] + PRES[i]);
-    ZVEL[i] = MOMZ[i] / (ENERGY[i] + PRES[i]);
+    for (int var = 0; var < NumVar; ++var) {
+      C[var] = Cons[Tidx(var, i)];
+    }
+
+    ConConvert(C, P);
+
+    for (int var = 0; var < NumVar; ++var) {
+      Prims[Tidx(var, i)] = P[var];
+    }
   }
+}
+
+void Domain::Press(int x) {
+  double C[NumVar];
+  for (int i = 0; i < NumVar; ++i) {
+    C[i] = Cons[Tidx(i, x)];
+  }
+  PRES[x] = Pressure(C);
 }
 
 void Domain::SolvePressure() {
   for (int i = 0; i < xDim; ++i) {
-    Pressure(i);
+    Press(i);
   }
-}
-
-double Domain::Lorenz(int x) {
-  return std::pow(
-      1.0 - (XVEL[x] * XVEL[x] + YVEL[x] * YVEL[x] + ZVEL[x] * ZVEL[x]), -0.5);
-}
-
-double Domain::LorenzFromP(int x) {
-  double Norm = MOMX[x] * MOMX[x] + MOMY[x] * MOMY[x] + MOMZ[x] * MOMZ[x];
-  double Ep = std::pow(ENERGY[x] + PRES[x], 2);
-  return 1.0 / std::sqrt(1.0 - Norm / Ep);
-}
-
-double Domain::Enthalpy(int x) {
-#if EOS == IdealGas
-  return IDGas(x);
-#endif
-}
-
-double Domain::EnthalpyFromCons(int x) {
-#if EOS == IdealGas
-  return IDGasFromCons(x);
-#endif
-}
-
-double Domain::IDGasFromCons(int x) {
-  return 1 + (GAMMA / (GAMMA - 1)) * (PRES[x] * Tau(x));
-}
-
-double Domain::IDGas(int x) {
-  return 1 + (GAMMA / (GAMMA - 1)) * (PRES[x] / DENSP[x]);
-}
-
-double Domain::dh_dTau(int x) { return (GAMMA / (GAMMA - 1)) * PRES[x]; }
-
-double Domain::dh_dP(int x) { return (GAMMA / (GAMMA - 1)) * Tau(x); }
-
-double Domain::Tau(int x) { return (LorenzFromP(x) / DENS[x]); }
-
-double Domain::F(int x) {
-  return DENS[x] * EnthalpyFromCons(x) * LorenzFromP(x) - ENERGY[x] - PRES[x];
-}
-
-double Domain::dFp_dP(int x) {
-  double L = LorenzFromP(x);
-  double MNorm =
-      std::pow(MOMX[x], 2) + std::pow(MOMY[x], 2) + std::pow(MOMZ[x], 2);
-  return DENS[x] * L * dh_dP(x) -
-         (MNorm * L * L * L / std::pow(ENERGY[x] + PRES[x], 3)) *
-             (L * dh_dTau(x) + DENS[x] * EnthalpyFromCons(x)) -
-         1.0;
-}
-
-double Domain::Newton(int x) { return PRES[x] - F(x) / dFp_dP(x); }
-
-void Domain::Pressure(int x) {
-  double PresLast;
-  PRES[x] = 1.0;
-  do {
-    PresLast = PRES[x];
-    PRES[x] = Newton(x);
-    // std::cout << PRES[x] << std::endl;
-  } while (std::fabs(PresLast - PRES[x]) > std::pow(10.0, -10.0));
 }

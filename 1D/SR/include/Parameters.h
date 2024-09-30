@@ -6,7 +6,7 @@
 /****************
  * X Parameters *
  ****************/
-#define NX 50
+#define NX 300
 #define X0 0.0
 #define XN 1.0
 
@@ -16,13 +16,13 @@
 #define PL (40.0 / 3.0)
 #define PR (0.000001 * (2.0 / 3.0))
 
-#define XVelL 0.2
-#define YVelL 0.2
-#define ZVelL 0.2
+#define XVelL 0.0
+#define YVelL 0.0
+#define ZVelL 0.0
 
-#define XVelR 0.3
-#define YVelR 0.3
-#define ZVelR 0.3
+#define XVelR 0.0
+#define YVelR 0.0
+#define ZVelR 0.0
 
 /****************
  * Y Parameters *
@@ -34,12 +34,12 @@
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN 1.8
+#define TN .36
 
 /*****************
  *Run Parameters *
  *****************/
-#define SpaceMethod Weno
+#define SpaceMethod Fog
 
 #define GAMMA (5.0 / 3.0)
 #define CFL 0.8

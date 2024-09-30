@@ -1,6 +1,6 @@
 #include "../include/DomainClass.hpp"
-#include "../include/GenVarConvert.hpp"
 #include "../include/Parameters.h"
+#include "../include/SRVarConvert.hpp"
 // #include <cfenv>
 #include <iostream>
 
@@ -23,6 +23,7 @@ int main() {
   // exit(0);
 
   (Solver.*(Solver.BC))("Cons");
+  int counter = 0;
 
   do {
     Solver.Find_dt();
@@ -33,8 +34,14 @@ int main() {
 
     std::cout << "The time is: " << Solver.T;
     std::cout << " dt = :" << Solver.dt << std::endl;
+    counter++;
 
-  } while (Solver.T < TN);
+  } while (Solver.T < TN); // x while (counter < 26); // (Solver.T < TN);
+
+  // Solver.Cons2Prim();
+  // for (int i = 0; i < xDim * NumVar; ++i) {
+  //   std::cout << Solver.Prims[i] << std::endl;
+  // }
 
   Solver.writeResults();
   return 0;

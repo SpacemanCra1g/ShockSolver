@@ -1,4 +1,5 @@
 #include "../include/DomainClass.hpp"
+#include "../include/SRVarConvert.hpp"
 
 double FindMinimum(double *Array, const int size) {
   double Min = 1E100;
@@ -12,30 +13,34 @@ double FindMinimum(double *Array, const int size) {
 
 void Domain::Find_Cs() {
 
-  for (int i = 0; i < xDim; ++i) {
-    // Cs[i] = HR_CS(i);
-    Cs[i] = SRHD_CS(i);
-  }
+  // for (int i = 0; i < xDim; ++i) {
+  //   // Cs[i] = HR_CS(i);
+  //   Cs[i] = SRHD_CS(i);
+  //   std::cout << Cs[i] << std::endl;
+  // }
+  // exit(0);
 }
 
 void Domain::Find_dt() {
   Cons2Prim();
   Find_Cs();
-  double Lap;
-  double nu;
-  double Lor;
+  double Cs;
+  double CsL, CsR;
+  double P[NumVar], C[NumVar];
 
   for (int i = 0; i < xDim; ++i) {
-    Lap =
-        1 - (XVEL[i] * XVEL[i] + YVEL[i] * YVEL[i] + ZVEL[i] * ZVEL[i]) * Cs[i];
-    nu =
-        1 - XVEL[i] * XVEL[i] - Cs[i] * (YVEL[i] * YVEL[i] + ZVEL[i] * ZVEL[i]);
-    Lor = Lorenz(i);
-    double Val = Lor * XVEL[i] * (1 - Cs[i]);
-    Buffer[i] =
-        dx / std::max(std::fabs((Val - std::sqrt(nu * Cs[i])) / (Lor * Lap)),
-                      std::fabs((Val + std::sqrt(nu * Cs[i])) / (Lor * Lap)));
+    for (int var = 0; var < NumVar; ++var) {
+      P[var] = Prims[Tidx(var, i)];
+      C[var] = Cons[Tidx(var, i)];
+    }
+
+    Cs = SRH_CS(C, P);
+
+    SignalSpeed(P, Cs, CsL, CsR);
+
+    Buffer[i] = std::fmax(dx / CsL, dx / CsR);
   }
+
   dt = FindMinimum(Buffer, xDim);
   dt *= CFL;
 
@@ -54,6 +59,10 @@ void Domain::Find_dt() {
 double Domain::HD_CS(int i) { return std::sqrt(PRES[i] * GAMMA / DENS[i]); }
 
 double Domain::SRHD_CS(int i) {
-  return (std::pow(Tau(i), 2) / Enthalpy(i)) * dh_dTau(i) *
-         (1.0 / (dh_dP(i) - Tau(i)));
+  double P[NumVar], C[NumVar];
+  for (int var = 0; var < NumVar; ++var) {
+    P[var] = Prims[Tidx(var, i)];
+    C[var] = Cons[Tidx(var, i)];
+  }
+  return SRH_CS(C, P);
 }

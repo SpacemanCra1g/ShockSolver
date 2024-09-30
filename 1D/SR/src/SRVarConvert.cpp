@@ -1,4 +1,4 @@
-#include "../include/GenVarConvert.hpp"
+#include "../include/SRVarConvert.hpp"
 
 double IDGas(double *P) {
   return 1 + (GAMMA / (GAMMA - 1.0)) * (P[Pres] / P[DensP]);
@@ -15,7 +15,7 @@ double Lorenz(double *P) {
       1.0 - (P[VelX] * P[VelX] + P[VelY] * P[VelY] + P[VelZ] * P[VelZ]), -0.5);
 }
 
-void Prims2Cons(double *P, double Cons[5]) {
+void PrimConvert(double *P, double *Cons) {
   double g;
   double L;
 
@@ -86,7 +86,7 @@ double Pressure(double *C) {
   return PRES;
 }
 
-void Cons2Prim(double *C, double Prims[5]) {
+void ConConvert(double *C, double Prims[5]) {
   {
     double L;
     for (int i = 0; i < xDim; ++i) {
@@ -101,7 +101,7 @@ void Cons2Prim(double *C, double Prims[5]) {
   }
 }
 
-double SRHD_CS(double *C, double *P) {
+double SRH_CS(double *C, double *P) {
   return (std::pow(Tau(C, P[Pres]), 2) / Enthalpy(P)) * dh_dTau(P[Pres]) *
          (1.0 / (dh_dP(C, P[Pres]) - Tau(C, P[Pres])));
 }
