@@ -32,7 +32,7 @@ double Pressure(double *C);
 
 void ConConvert(double *C, double Prims[5]);
 
-double SRH_CS(double *C, double *P);
+double SRH_CS(double *P);
 
 void SignalSpeed(double *P, double CS, double &CSL, double &CSR);
 

@@ -10,11 +10,11 @@
 #define X0 0.0
 #define XN 1.0
 
-#define RhoL 10.0
+#define RhoL 1.0
 #define RhoR 1.0
 
-#define PL (40.0 / 3.0)
-#define PR (0.000001 * (2.0 / 3.0))
+#define PL (1000)
+#define PR (0.01)
 
 #define XVelL 0.0
 #define YVelL 0.0
@@ -34,12 +34,12 @@
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN .36
+#define TN .4
 
 /*****************
  *Run Parameters *
  *****************/
-#define SpaceMethod Fog
+#define SpaceMethod Weno
 
 #define GAMMA (5.0 / 3.0)
 #define CFL 0.8

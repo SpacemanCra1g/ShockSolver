@@ -8,7 +8,7 @@
  ****************/
 #define NX 500
 #define X0 0.0
-#define XN 9.0
+#define XN 1.0
 
 /***************nn
  * Y Parameters *
@@ -22,12 +22,12 @@
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN 1.8
+#define TN .25
 
 /****************
  *Run Parameters *
  *****************/
-#define SpaceMethod Weno
+#define SpaceMethod Mood53
 
 #define GAMMA 1.4
 #define CFL 0.8

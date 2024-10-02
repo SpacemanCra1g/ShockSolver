@@ -26,8 +26,8 @@ void FluxClass::HLL() {
         ConConvert(ConL, PrimL);
         ConConvert(ConR, PrimR);
 
-        CsL = SRH_CS(ConL, PrimL);
-        CsR = SRH_CS(ConR, PrimR);
+        CsL = SRH_CS(PrimL);
+        CsR = SRH_CS(PrimR);
 
         // CsL = std::sqrt(GAMMA * PresL / FluxDir[Dim +
         // 1][quadpoint][Dens][i]); CsR = std::sqrt(GAMMA * PresR /

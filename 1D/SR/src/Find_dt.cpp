@@ -23,18 +23,17 @@ void Domain::Find_Cs() {
 
 void Domain::Find_dt() {
   Cons2Prim();
-  Find_Cs();
+  // Find_Cs();
   double Cs;
   double CsL, CsR;
-  double P[NumVar], C[NumVar];
+  double P[NumVar];
 
   for (int i = 0; i < xDim; ++i) {
     for (int var = 0; var < NumVar; ++var) {
       P[var] = Prims[Tidx(var, i)];
-      C[var] = Cons[Tidx(var, i)];
     }
 
-    Cs = SRH_CS(C, P);
+    Cs = SRHD_CS(i);
 
     SignalSpeed(P, Cs, CsL, CsR);
 
@@ -59,10 +58,9 @@ void Domain::Find_dt() {
 double Domain::HD_CS(int i) { return std::sqrt(PRES[i] * GAMMA / DENS[i]); }
 
 double Domain::SRHD_CS(int i) {
-  double P[NumVar], C[NumVar];
+  double P[NumVar];
   for (int var = 0; var < NumVar; ++var) {
     P[var] = Prims[Tidx(var, i)];
-    C[var] = Cons[Tidx(var, i)];
   }
-  return SRH_CS(C, P);
+  return SRH_CS(P);
 }

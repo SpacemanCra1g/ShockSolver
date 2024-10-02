@@ -11,8 +11,13 @@ double Enthalpy(double *P) {
 }
 
 double Lorenz(double *P) {
-  return std::pow(
-      1.0 - (P[VelX] * P[VelX] + P[VelY] * P[VelY] + P[VelZ] * P[VelZ]), -0.5);
+
+  double Norm = 0.0;
+  for (int var = VelX; var <= VelZ; var++) {
+    Norm += std::pow(P[var], 2);
+  }
+
+  return std::pow(1.0 - Norm, -0.5);
 }
 
 void PrimConvert(double *P, double *Cons) {
@@ -22,12 +27,12 @@ void PrimConvert(double *P, double *Cons) {
   L = Lorenz(P);
   g = P[DensP] * Enthalpy(P) * L * L;
 
-  Cons[0] = L * P[0];
+  Cons[Dens] = L * P[DensP];
 
-  for (int i = 1; i < 4; ++i) {
+  for (int i = VelX; i <= VelZ; ++i) {
     Cons[i] = g * P[i];
   }
-  Cons[4] = g - P[4];
+  Cons[4] = g - P[Pres];
 }
 
 double LorenzFromP(double *C, double PRES) {
@@ -62,8 +67,12 @@ double F(double *C, double PRES) {
 
 double dFp_dP(double *C, double PRES) {
   double L = LorenzFromP(C, PRES);
-  double MNorm =
-      std::pow(C[MomX], 2) + std::pow(C[MomY], 2) + std::pow(C[MomZ], 2);
+  double MNorm = 0.0;
+
+  for (int var = MomX; var <= MomZ; ++var) {
+    MNorm += std::pow(C[var], 2);
+  }
+
   return C[Dens] * L * dh_dP(C, PRES) -
          (MNorm * L * L * L / std::pow(C[Ener] + PRES, 3)) *
              (L * dh_dTau(PRES) + C[Dens] * EnthalpyFromP(C, PRES)) -
@@ -101,22 +110,18 @@ void ConConvert(double *C, double Prims[5]) {
   }
 }
 
-double SRH_CS(double *C, double *P) {
-  return (std::pow(Tau(C, P[Pres]), 2) / Enthalpy(P)) * dh_dTau(P[Pres]) *
-         (1.0 / (dh_dP(C, P[Pres]) - Tau(C, P[Pres])));
-}
+double SRH_CS(double *P) { return GAMMA * P[Pres] / (P[DensP] * Enthalpy(P)); }
 
 void SignalSpeed(double *P, double CS, double &CSL, double &CSR) {
   double Norm = 0.0;
   for (int i = VelX; i <= VelZ; ++i) {
     Norm += P[i] * P[i];
   }
-  double Lap = 1.0 - Norm * CS;
-  double nu =
-      1.0 - P[VelX] * P[VelX] - CS * (P[VelY] * P[VelY] + P[VelZ] * P[VelZ]);
-  double Lor = Lorenz(P);
-  double Val = Lor * P[VelX] * (1 - CS);
 
-  CSL = (Val - std::sqrt(CS * nu)) / (Lor * Lap);
-  CSR = (Val + std::sqrt(nu * CS)) / (Lor * Lap);
+  double sroot = std::sqrt(
+      CS * (1 - P[VelX] * P[VelX] -
+            (P[VelY] * P[VelY] + P[VelZ] * P[VelZ]) * CS * (1 - Norm)));
+
+  CSR = (P[VelX] * (1 - CS) + sroot) / (1 - Norm * CS);
+  CSL = (P[VelX] * (1 - CS) - sroot) / (1 - Norm * CS);
 }

@@ -3,7 +3,7 @@
 
 void Domain::ShockTubeIC() {
   for (int i = 0; i < REdgeX; ++i) {
-    if (dx * (i - XStart) <= 0.5) {
+    if ((float)i / (float)REdgeX <= 0.5) {
       DENSP[i] = RhoL;
       PRES[i] = PL;
       XVEL[i] = XVelL;
