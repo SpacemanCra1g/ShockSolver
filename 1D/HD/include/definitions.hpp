@@ -7,4 +7,10 @@
 #define Gp2 4
 #define Mood53 5
 
+#define Outflow 0
+#define ShuBC
+
+#define Sod 0
+#define ShuOsher 1
+
 #endif // DEFINITIONS_H_

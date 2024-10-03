@@ -3,6 +3,7 @@
 
 #include "../include/GP_Kernel.hpp"
 #include "../include/Parameters.h"
+
 #include <cmath>
 
 class FluxClass {
@@ -46,26 +47,8 @@ public:
   // Defined in the src/Detection.cpp file
   bool Detection(bool);
 
-  void SpaceRecon() {
-    for (int quad = 0; quad < nqp; ++quad) {
-      for (int var = 0; var < NumVar; ++var) {
-        for (int x = 2; x < REdgeX - 2; ++x) {
-
-#if SpaceMethod == Weno
-          WENO(quad, var, x);
-#elif SpaceMethod == Fog
-          FOG(quad, var, x);
-#elif SpaceMethod == Gp1
-          GPR1(quad, var, x);
-#elif SpaceMethod == Gp2
-          GPR2(quad, var, x);
-#elif SpaceMethod == Mood53
-          Mood(quad, var, x);
-#endif
-        }
-      }
-    }
-  }
+  // Defined in the TimeStepper.cpp file
+  void SpaceRecon();
 
   double GetPres(int x) {
     return (GAMMA - 1.0) * (Cons[Tidx(Ener, x)] -

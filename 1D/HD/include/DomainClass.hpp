@@ -61,6 +61,7 @@ public:
 
   // Defined in the IC.cpp file
   void ShuOsherIC();
+  void SodIC();
 
   // Defined in the IO.cpp file
   void writeResults();
@@ -114,14 +115,11 @@ public:
 #if TestProblem == ShuOsher
     BC = &Domain::ShuOsherBC;
     IC = &Domain::ShuOsherIC;
+#elif TestProblem == Sod
+    BC = &Domain::NeumannBC;
+    IC = &Domain::SodIC;
 #else
 
-#if BC == Neumann
-    BC = &Domain::NeumannBC;
-#else
-    std::cout << "Invalid Boundary Conditions \nExiting" << std::endl;
-    exit(0);
-#endif
 #endif
 
 #if RK_Method == 1
