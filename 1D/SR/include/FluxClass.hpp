@@ -50,7 +50,7 @@ public:
   void SpaceRecon() {
     for (int quad = 0; quad < nqp; ++quad) {
       for (int var = 0; var < NumVar; ++var) {
-        for (int x = 2; x < REdgeX - 2; ++x) {
+        for (int x = XStart - 2; x < XEnd + 2; ++x) {
 
 #if SpaceMethod == Weno
           WENO(quad, var, x);

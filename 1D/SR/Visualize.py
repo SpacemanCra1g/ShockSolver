@@ -27,7 +27,10 @@ if len(np.shape(p)) == 1:
 
 
 
-    plt.plot(x,p/1000,'r-', markerfacecolor='none')
+    plt.plot(x,u,'r-')
+    plt.plot(x,rho/35,'k-')
+    plt.plot(x,p/1000,'g-')
+    # plt.scatter(x,u,color='b')
     plt.title("GP-R1 RK3, nx = 256 NN")
     plt.grid()
 

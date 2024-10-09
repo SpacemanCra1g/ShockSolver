@@ -3,7 +3,7 @@
 
 void Domain::ShockTubeIC() {
   for (int i = 0; i < REdgeX; ++i) {
-    if ((float)i / (float)REdgeX <= 0.5) {
+    if (i * dx < 0.5) {
       DENSP[i] = RhoL;
       PRES[i] = PL;
       XVEL[i] = XVelL;
@@ -15,6 +15,17 @@ void Domain::ShockTubeIC() {
       XVEL[i] = XVelR;
       YVEL[i] = YVelR;
       ZVEL[i] = ZVelR;
+      //   DENSP[i] = 1.0;
+      //   PRES[i] = 1000.0;
+      //   XVEL[i] = 0.0;
+      //   YVEL[i] = 0.0;
+      //   ZVEL[i] = 0.0;
+      // } else {
+      //   DENSP[i] = 1.0;
+      //   PRES[i] = .01;
+      //   XVEL[i] = 0.0;
+      //   YVEL[i] = .84;
+      //   ZVEL[i] = 0.0;
     }
   }
   Prims2Cons();

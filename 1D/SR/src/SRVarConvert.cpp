@@ -1,4 +1,5 @@
 #include "../include/SRVarConvert.hpp"
+#include <iostream>
 
 double IDGas(double *P) {
   return 1 + (GAMMA / (GAMMA - 1.0)) * (P[Pres] / P[DensP]);
@@ -15,6 +16,10 @@ double Lorenz(double *P) {
   double Norm = 0.0;
   for (int var = VelX; var <= VelZ; var++) {
     Norm += std::pow(P[var], 2);
+    if (Norm >= 1.0) {
+      std::cout << "Vel excedes 1 " << Norm << std::endl;
+      exit(0);
+    }
   }
 
   return std::pow(1.0 - Norm, -0.5);
@@ -42,6 +47,10 @@ double LorenzFromP(double *C, double PRES) {
   for (int i = MomX; i <= MomZ; ++i) {
     Norm += C[i] * C[i];
   }
+  // if (Norm >= 1.0) {
+  // std::cout << "Vel excedes 1 " << Norm << std::endl;
+  // exit(0);
+  // }
 
   return 1.0 / std::sqrt(1 - Norm / Ep);
 }
@@ -80,17 +89,30 @@ double dFp_dP(double *C, double PRES) {
 }
 
 double Newton(double *C, double PRES) {
-  return PRES - F(C, PRES) / dFp_dP(C, PRES);
+  double var = PRES - F(C, PRES) / dFp_dP(C, PRES);
+  if (var <= 0.0) {
+    var = std::pow(10.0, -10);
+  }
+  return var;
 }
 
 double Pressure(double *C) {
   double PresLast;
   double PRES;
+  int count = 0;
   PRES = 1.0;
   do {
     PresLast = PRES;
     PRES = Newton(C, PRES);
-  } while (std::fabs(PresLast - PRES) > std::pow(10.0, -12.0));
+    count += 1;
+    if (count == 30) {
+      std::cout << "Stuck here " << std::endl;
+      std::cout << PRES << std::endl;
+    }
+    if (count > 30) {
+      std::cout << PRES - PresLast << std::endl;
+    }
+  } while (std::fabs(PresLast - PRES) > std::pow(10.0, -8.0));
 
   return PRES;
 }

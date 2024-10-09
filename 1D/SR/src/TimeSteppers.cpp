@@ -1,10 +1,40 @@
 #include "../include/DomainClass.hpp"
 
+void ReMax(int i, double *P) {
+
+  for (int k = 0; k < i; ++k) {
+    if (P[k] < .01) {
+      P[k] = .01;
+    }
+  }
+}
+
 void Domain::ForwardEuler() {
   Flux.SpaceRecon();
   MoodFinished = false;
 
+  // for (int var = DensP; var <= Pres; ++var) {
+  //   for (int i = 0; i < REdgeX; ++i) {
+  //     std::cout << Flux.FluxDir[Left][0][var][i] << " "
+  //               << Flux.FluxDir[Right][0][var][i] << std::endl;
+  //   }
+  //   std::cout << "$$$$$$$$$$$$$$$$$$$$$$$" << "\n " << "the var is" << var
+  //             << "\n"
+  //             << std::endl;
+  // }
+  // exit(0);
+
   Flux.HLL();
+
+  // for (int var = DensP; var <= Pres; ++var) {
+  //   for (int i = 0; i < REdgeX; ++i) {
+  //     std::cout << Flux.Flux[0][var][i] << std::endl;
+  //   }
+  //   std::cout << "$$$$$$$$$$$$$$$$$$$$$$$" << "\n " << "the var is" << var
+  //             << "\n"
+  //             << std::endl;
+  // }
+  // exit(0);
 
   Flux.Recon();
 
@@ -33,4 +63,5 @@ void Domain::RK3() {
 
   ForwardEuler();
   DomainAdd(1.0 / 3.0, 2.0 / 3.0);
+  ReMax(REdgeX, &Prims[Tidx(Pres, 0)]);
 }

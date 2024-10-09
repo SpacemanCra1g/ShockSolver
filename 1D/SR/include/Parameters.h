@@ -6,7 +6,7 @@
 /****************
  * X Parameters *
  ****************/
-#define NX 300
+#define NX 200
 #define X0 0.0
 #define XN 1.0
 
@@ -21,7 +21,7 @@
 #define ZVelL 0.0
 
 #define XVelR 0.0
-#define YVelR 0.0
+#define YVelR 0.9
 #define ZVelR 0.0
 
 /****************
@@ -39,7 +39,7 @@
 /*****************
  *Run Parameters *
  *****************/
-#define SpaceMethod Weno
+#define SpaceMethod Fog
 
 #define GAMMA (5.0 / 3.0)
 #define CFL 0.8

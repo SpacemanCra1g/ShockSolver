@@ -2,13 +2,9 @@
 
 void FluxClass::FOG(int qp, int var, int xdir) {
 
-  if (xdir > 0) {
-    FluxDir[Left][qp][var][xdir] = Cons[Tidx(var, xdir)];
-  }
+  FluxDir[Left][qp][var][xdir] = Cons[Tidx(var, xdir)];
 
-  if (xdir < xDim - 1) {
-    FluxDir[Right][qp][var][xdir] = Cons[Tidx(var, xdir)];
-  }
+  FluxDir[Right][qp][var][xdir] = Cons[Tidx(var, xdir)];
 
 #if NDIMS > 1
   if (ydir < yDim - 1) {

@@ -10,60 +10,54 @@ void FluxClass::HLL() {
   double PrimR[5];
   double ConL[5];
   double ConR[5];
+  int quadpoint = 0;
 
-  for (int Dim = 0; Dim < NDIMS * 2; Dim += 2) {
-    for (int quadpoint = 0; quadpoint < nqp; ++quadpoint) {
-      for (int xdir = 1; xdir < xDim - 2; ++xdir) {
+  for (int xdir = XStart - 1; xdir < XEnd; ++xdir) {
 
-        i = xdir;
-        iPlus1 = i + 1;
+    i = xdir;
+    iPlus1 = i + 1;
 
-        for (int var = 0; var < NumVar; ++var) {
-          ConL[var] = FluxDir[Right][quadpoint][var][i];
-          ConR[var] = FluxDir[Left][quadpoint][var][iPlus1];
-        }
+    for (int var = 0; var < NumVar; ++var) {
+      ConL[var] = FluxDir[Right][quadpoint][var][i];
+      ConR[var] = FluxDir[Left][quadpoint][var][iPlus1];
+    }
 
-        ConConvert(ConL, PrimL);
-        ConConvert(ConR, PrimR);
+    ConConvert(ConL, PrimL);
+    ConConvert(ConR, PrimR);
 
-        CsL = SRH_CS(PrimL);
-        CsR = SRH_CS(PrimR);
+    CsL = SRH_CS(PrimL);
+    CsR = SRH_CS(PrimR);
 
-        // CsL = std::sqrt(GAMMA * PresL / FluxDir[Dim +
-        // 1][quadpoint][Dens][i]); CsR = std::sqrt(GAMMA * PresR /
-        // FluxDir[Dim][quadpoint][Dens][iPlus1]);p
-        double LambdaLL, LambdaLR;
-        double LambdaRL, LambdaRR;
+    double LambdaLL, LambdaLR;
+    double LambdaRL, LambdaRR;
 
-        SignalSpeed(PrimL, CsL, LambdaLL, LambdaLR);
-        SignalSpeed(PrimR, CsR, LambdaRL, LambdaRR);
+    SignalSpeed(PrimL, CsL, LambdaLL, LambdaLR);
+    SignalSpeed(PrimR, CsR, LambdaRL, LambdaRR);
 
-        SL = std::fmin(LambdaLL, LambdaRL);
-        SR = std::fmax(LambdaLR, LambdaRR);
+    SL = std::fmin(LambdaLL, LambdaRL);
+    SR = std::fmax(LambdaLR, LambdaRR);
 
-        double FL[5];
-        double FR[5];
+    double FL[5];
+    double FR[5];
 
-        SR_Flux(ConL, PrimL, FL);
-        SR_Flux(ConR, PrimR, FR);
+    SR_Flux(ConL, PrimL, FL);
+    SR_Flux(ConR, PrimR, FR);
 
-        if (0.0 <= SL) {
-          for (int var = 0; var < NumVar; ++var) {
-            Flux[quadpoint][var][i] = FL[var];
-          }
+    if (0.0 <= SL) {
+      for (int var = 0; var < NumVar; ++var) {
+        Flux[quadpoint][var][i] = FL[var];
+      }
 
-        } else if (0.0 <= SR) {
-          for (int var = 0; var < NumVar; ++var) {
-            Flux[quadpoint][var][i] = (SR * FL[var] - SL * FR[var] +
-                                       SL * SR * (ConR[var] - ConL[var])) /
-                                      (SR - SL);
-          }
+    } else if (0.0 <= SR) {
+      for (int var = 0; var < NumVar; ++var) {
+        Flux[quadpoint][var][i] =
+            (SR * FL[var] - SL * FR[var] + SL * SR * (ConR[var] - ConL[var])) /
+            (SR - SL);
+      }
 
-        } else {
-          for (int var = 0; var < NumVar; ++var) {
-            Flux[quadpoint][var][i] = FR[var];
-          }
-        }
+    } else {
+      for (int var = 0; var < NumVar; ++var) {
+        Flux[quadpoint][var][i] = FR[var];
       }
     }
   }
