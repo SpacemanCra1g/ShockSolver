@@ -100,18 +100,18 @@ double Pressure(double *C) {
   double PresLast;
   double PRES;
   int count = 0;
-  PRES = 1.0;
+  double check = -1.0;
+  PRES = pow(10.0, check);
   do {
     PresLast = PRES;
     PRES = Newton(C, PRES);
     count += 1;
     if (count == 30) {
-      std::cout << "Stuck here " << std::endl;
-      std::cout << PRES << std::endl;
+      check += 1.0;
+      PRES = std::pow(10.0, check);
+      count = 0;
     }
-    if (count > 30) {
-      std::cout << PRES - PresLast << std::endl;
-    }
+
   } while (std::fabs(PresLast - PRES) > std::pow(10.0, -8.0));
 
   return PRES;

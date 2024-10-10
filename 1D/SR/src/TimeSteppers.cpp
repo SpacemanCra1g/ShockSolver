@@ -13,28 +13,7 @@ void Domain::ForwardEuler() {
   Flux.SpaceRecon();
   MoodFinished = false;
 
-  // for (int var = DensP; var <= Pres; ++var) {
-  //   for (int i = 0; i < REdgeX; ++i) {
-  //     std::cout << Flux.FluxDir[Left][0][var][i] << " "
-  //               << Flux.FluxDir[Right][0][var][i] << std::endl;
-  //   }
-  //   std::cout << "$$$$$$$$$$$$$$$$$$$$$$$" << "\n " << "the var is" << var
-  //             << "\n"
-  //             << std::endl;
-  // }
-  // exit(0);
-
   Flux.HLL();
-
-  // for (int var = DensP; var <= Pres; ++var) {
-  //   for (int i = 0; i < REdgeX; ++i) {
-  //     std::cout << Flux.Flux[0][var][i] << std::endl;
-  //   }
-  //   std::cout << "$$$$$$$$$$$$$$$$$$$$$$$" << "\n " << "the var is" << var
-  //             << "\n"
-  //             << std::endl;
-  // }
-  // exit(0);
 
   Flux.Recon();
 

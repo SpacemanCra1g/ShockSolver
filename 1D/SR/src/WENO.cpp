@@ -65,4 +65,21 @@ void FluxClass::WENO(int qp, int var, int xdir) {
 
   FluxDir[Left][qp][var][idx(xdir)] = w1L * p1L + w2L * p2L + w3L * p3L;
   FluxDir[Right][qp][var][idx(xdir)] = w1R * p1R + w2R * p2R + w3R * p3R;
+
+  if (var == Pres) {
+    double PresTest =
+        (Cons[Tidx(Pres, xdir)] - FluxDir[Left][qp][Pres][idx(xdir)]) *
+        (FluxDir[Right][qp][Pres][idx(xdir)] - Cons[Tidx(Pres, xdir)]);
+
+    double DensTest =
+        (Cons[Tidx(Dens, xdir)] - FluxDir[Left][qp][Dens][idx(xdir)]) *
+        (FluxDir[Right][qp][Dens][idx(xdir)] - Cons[Tidx(Dens, xdir)]);
+
+    if (PresTest < 0.0 || DensTest < 0.0) {
+      for (int var = Dens; var <= Ener; ++var) {
+        FluxDir[Left][qp][var][idx(xdir)] = Cons[Tidx(var, xdir)];
+        FluxDir[Right][qp][var][idx(xdir)] = Cons[Tidx(var, xdir)];
+      }
+    }
+  }
 }

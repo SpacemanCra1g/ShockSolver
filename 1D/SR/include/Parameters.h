@@ -17,11 +17,11 @@
 #define PR (0.01)
 
 #define XVelL 0.0
-#define YVelL 0.0
+#define YVelL 0.99
 #define ZVelL 0.0
 
 #define XVelR 0.0
-#define YVelR 0.9
+#define YVelR 0.0
 #define ZVelR 0.0
 
 /****************
@@ -47,7 +47,7 @@
 #define BCs NEUMANN
 #define EOS IdealGas
 
-#define RK_Method 1
+#define RK_Method 3
 #define ell 6.0
 #define MoodOrder 5
 #define SlowStart True
