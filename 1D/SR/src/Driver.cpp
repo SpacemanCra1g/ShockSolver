@@ -23,7 +23,8 @@ int main() {
 
     (Solver.*(Solver.RK_TimeStepper))();
 
-    std::cout << "The time is: " << Solver.T << std::endl;
+    std::cout << "The time is: " << Solver.T << " dt = " << Solver.dt
+              << std::endl;
 
     for (int i = 0; i < REdgeX; ++i) {
       if (maxx < Solver.Prims[Tidx(VelY, i)]) {
@@ -33,8 +34,8 @@ int main() {
 
     counter++;
 
-    // } while (Solver.T < TN);
-  } while (counter < 20);
+  } while (Solver.T < TN);
+  // } while (counter < 20);
 
   Solver.writeResults();
   return 0;
