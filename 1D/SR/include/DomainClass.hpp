@@ -1,7 +1,6 @@
 #ifndef DOMAINCLASS_H_
 #define DOMAINCLASS_H_
 
-#include "FluxClass.hpp"
 #include "GP_Kernel.hpp"
 #include "Parameters.h"
 
@@ -14,106 +13,78 @@ public:
   /***********************************************/
   /*********** Internal Data Objects *************/
   /***********************************************/
-  double *DENS, *DENSP, *PRES, *XVEL, *YVEL, *ZVEL;
-  double *MOMX, *MOMY, *MOMZ, *ENERGY, *Cs, *Buffer;
+  double *Dens, *DensP, *Pres, *Xvel, *Yvel, *Zvel;
+  double *MomX, *MomY, *MomZ, *Energy, *Cs, *Buffer;
+  double **FluxWalls_Cons;
+  double **FluxWalls_Prims;
+  double *CellFlux;
   double T, dt, dt_sim;
   double *CopyBuffer;
   double *ConsCopy;
+  double *Cons, *Prims;
   bool MoodFinished = true;
+  int *MoodOrd;
+  int *Troubled;
 
-  double *Cons;
-  double *Prims;
-
-  FluxClass Flux;
-
-  void (Domain::*BC)(std::string);
+  void (Domain::*BC)();
   void (Domain::*IC)();
   void (Domain::*RK_TimeStepper)();
 
-  GP_Kernel SolutionKer;
-
-  /***********************************************/
-  /******* Methods defined in other Files ********/
-  /***********************************************/
-
-  // Defined in the VarConvert.cpp file
-  void Prims2Cons();
-  void Cons2Prim();
-  void SolvePressure();
-  void Press(int x);
-
-  // Defined in the BC.cpp file
-  void ShuOsherBC(std::string);
-  void NeumannBC(std::string);
-
-  // Defined in the Find_dt.cpp flie
-  void Find_dt();
-  void Find_Cs();
-  double SRHD_CS(int i);
-  double HD_CS(int i);
-
-  // Defined in the TimeSteppers.cpp file
-  void RK3();
-  void ForwardEuler();
-
-  // Defined in the IC.cpp file
-  void ShuOsherIC();
-  void ShockTubeIC();
-
-  // Defined in the IO.cpp file
-  void writeResults();
+  GP_Kernel Ker;
 
   /***********************************************/
   /*************** Class Constructor *************/
   /***********************************************/
   Domain() {
 
-#if SpaceMethod == Gp1
-    SolutionKer.calculate_Preds1D(1);
-    Flux.Kern = &SolutionKer;
-#elif SpaceMethod == Gp2
-    SolutionKer.calculate_Preds1D(2);
-    Flux.Kern = &SolutionKer;
-#elif SpaceMethod == Mood53
-    SolutionKer.calculate_Preds1D(1);
-    SolutionKer.calculate_Preds1D(2);
-    Flux.Kern = &SolutionKer;
-    Flux.MoodOrd = new int[xDim];
-    Flux.Troubled = new bool[xDim];
-    std::fill(Flux.MoodOrd, Flux.MoodOrd + xDim, 5);
-    std::fill(Flux.Troubled, Flux.Troubled + xDim, false);
-#endif
-
+    // Allocate Variables
+    Cons = new double[NumVar * xDim];
+    Prims = new double[NumVar * xDim];
     Buffer = new double[xDim];
     Cs = new double[xDim];
 
+    FluxWalls_Cons = new double *[2];
+    FluxWalls_Cons[LEFT] = new double[NumVar * xDim];
+    FluxWalls_Cons[RIGHT] = new double[NumVar * xDim];
+
+    FluxWalls_Prims = new double *[2];
+    FluxWalls_Prims[LEFT] = new double[NumVar * xDim];
+    FluxWalls_Prims[RIGHT] = new double[NumVar * xDim];
+
+    CellFlux = new double[NumVar * xDim];
+    CopyBuffer = new double[NumVar * xDim];
+    Buffer = new double[xDim];
+    Cs = new double[xDim];
+
+#if SpaceMethod == GPR1
+    SolutionKer.calculate_Preds1D(1);
+
+#elif SpaceMethod == GPR2
+    SolutionKer.calculate_Preds1D(2);
+
+#elif SpaceMethod == MOOD531
+    SolutionKer.calculate_Preds1D(1);
+    SolutionKer.calculate_Preds1D(2);
+
+    MoodOrd = new int[xDim];
+    Troubled = new bool[xDim];
+    ConsCopy = new double[NumVar * xDim];
+#endif
+
+    Dens = Cons;
+    MomX = Dens + xDim;
+    MomY = MomX + xDim;
+    MomZ = MomY + xDim;
+    Energy = MomZ + xDim;
+
+    DensP = Prims;
+    Xvel = DensP + xDim;
+    Yvel = Xvel + xDim;
+    Zvel = Yvel + xDim;
+    Pres = Zvel + xDim;
+
     T = T0;
     dt_sim = 1E-10;
-
-    // SolutionKer.GP_Kernel_init();
-
-    Cons = new double[xDim * NumVar];
-    Prims = new double[xDim * NumVar];
-
-    DENS = Cons;
-    MOMX = Cons + xDim;
-    MOMY = Cons + 2 * xDim;
-    MOMZ = Cons + 3 * xDim;
-    ENERGY = Cons + 4 * xDim;
-
-    DENSP = Prims;
-    XVEL = DENSP + xDim;
-    YVEL = XVEL + xDim;
-    ZVEL = YVEL + xDim;
-    PRES = ZVEL + xDim;
-
-    CopyBuffer = new double[xDim * NumVar];
-    Flux.Fluxinit(Cons, &dt);
-
-#if SpaceMethod == Mood53
-    ConsCopy = new double[xDim * NumVar];
-    Flux.Uin = ConsCopy;
-#endif
 
 /**********Member Function Pointers***********/
 #if TestProblem == SHUOSHER
@@ -124,8 +95,8 @@ public:
     BC = &Domain::ShuOsherBC;
 #else
 
-#if BCs == NEUMANN
-    BCs = &Domain::NeumannBC;
+#if BCS == NEUMANN
+    BCS = &Domain::NeumannBC;
 #else
     std::cout << "Invalid Boundary Conditions \nExiting" << std::endl;
     exit(0);
@@ -138,6 +109,66 @@ public:
     RK_TimeStepper = &Domain::RK3;
 #endif
   }
+
+  /***********************************************/
+  /******* Methods defined in other Files ********/
+  /***********************************************/
+
+  // Defined in the VarConvert.cpp file
+  void Prims2Cons(double *, double *, int, int);
+  void Cons2Prim(double *, double *, int, int);
+
+  void SolvePressure();
+  void Press(int x);
+
+  // Defined in the BC.cpp file
+  void ShuOsherBC();
+  void NeumannBC();
+
+  // Defined in the Find_dt.cpp flie
+  void Find_dt();
+  void Find_Cs(double *Uin, int start, int end);
+  // double SRHD_CS(int i);
+  // double HD_CS(int i);
+  void SignalSpeed(double *Uin, int i, double &CSL, double &CSR);
+
+  // Defined in the TimeSteppers.cpp file
+  void RK3();
+  void ForwardEuler();
+
+  // Defined in the IC.cpp file
+  void ShuOsherIC();
+  void ShockTubeIC();
+
+  // Defined in the EnergyInverter.cpp file
+  int EnergyInverter(double *Uin, double *Uout, int i);
+
+  // Defined in the IO.cpp file
+  void writeResults();
+
+  // Defined in the src/FOG.cpp file
+  void Fog(int);
+
+  // Defined in the src/GP-FVM.cpp file
+  void GP1(int xdir);
+  void GP2(int xdir);
+  // void GPR1Side(double *, int, int, int, int);
+  // void FOGSide(double *, int, int, int, int);
+  // void GPR2Side(double *, int, int, int, int);
+  // void Mood(int, int, int);
+
+  // Defined in the src/WENO.cpp file
+  void Weno(int xdir);
+
+  // Defined in the src/HLL.cpp file
+  void Hll();
+  void HllSide(int);
+  void SR_Flux(double *C, double *P, double *Flux);
+
+  // Defined in the src/Detection.cpp file
+  bool Detection(bool);
+
+  void SpaceRecon();
 
   void DomainCopy() { std::copy(Cons, Cons + xDim * NumVar, CopyBuffer); }
 

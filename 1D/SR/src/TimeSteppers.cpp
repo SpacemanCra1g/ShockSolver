@@ -1,14 +1,5 @@
 #include "../include/DomainClass.hpp"
 
-void ReMax(int i, double *P) {
-
-  for (int k = 0; k < i; ++k) {
-    if (P[k] < .01) {
-      P[k] = .01;
-    }
-  }
-}
-
 void Domain::ForwardEuler() {
   Flux.SpaceRecon();
   MoodFinished = false;
@@ -23,7 +14,7 @@ void Domain::ForwardEuler() {
   }
 #endif
 
-  (*this.*BC)("Cons");
+  (*this.*BC)();
 }
 
 void Domain::RK3() {
@@ -42,5 +33,4 @@ void Domain::RK3() {
 
   ForwardEuler();
   DomainAdd(1.0 / 3.0, 2.0 / 3.0);
-  ReMax(REdgeX, &Prims[Tidx(Pres, 0)]);
 }

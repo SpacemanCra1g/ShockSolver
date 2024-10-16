@@ -4,17 +4,17 @@
 void Domain::ShockTubeIC() {
   for (int i = 0; i < REdgeX; ++i) {
     if (i * dx < 0.5) {
-      DENSP[i] = RhoL;
-      PRES[i] = PL;
-      XVEL[i] = XVelL;
-      YVEL[i] = YVelL;
-      ZVEL[i] = ZVelL;
+      DensP[i] = RHOL;
+      Pres[i] = PL;
+      Xvel[i] = XVELL;
+      Yvel[i] = YVELL;
+      Zvel[i] = ZVELL;
     } else {
-      DENSP[i] = RhoR;
-      PRES[i] = PR;
-      XVEL[i] = XVelR;
-      YVEL[i] = YVelR;
-      ZVEL[i] = ZVelR;
+      DensP[i] = RHOR;
+      Pres[i] = PR;
+      Xvel[i] = XVELR;
+      Yvel[i] = YVELR;
+      Zvel[i] = ZVELR;
     }
   }
   Prims2Cons();
@@ -24,20 +24,20 @@ void Domain::ShuOsherIC() {
 
   for (int i = 0; i < REdgeX; ++i) {
     if (dx * (i - XStart) <= 0.5) {
-      DENS[i] = 3.857143;
-      XVEL[i] = 2.629369;
+      Dens[i] = 3.857143;
+      Xvel[i] = 2.629369;
 #if NDIMS > 1
-      YVEL[i] u = 0.0;
+      Yvel[i] u = 0.0;
 #endif
-      PRES[i] = 10.33333;
+      Pres[i] = 10.33333;
     } else {
-      DENS[i] =
+      Dens[i] =
           1.0 + (0.2 * std::sin(5.0 * (-4.5 + (dx * 0.5 + dx * (i - XStart)))));
-      XVEL[i] = 0.;
+      Xvel[i] = 0.;
 #if NDIMS > 1
-      YVEL[i] = 0.;
+      Yvel[i] = 0.;
 #endif
-      PRES[i] = 1.;
+      Pres[i] = 1.;
     }
   }
   Prims2Cons();

@@ -1,7 +1,7 @@
-#include "../include/FluxClass.hpp"
-#include "../include/SRVarConvert.hpp"
+#include "../include/DomainClass.hpp"
+// #include "../include/SRVarConvert.hpp"
 
-void FluxClass::HLL() {
+void Domain::Hll() {
 
   int i, iPlus1;
 
@@ -11,8 +11,13 @@ void FluxClass::HLL() {
   double ConL[5];
   double ConR[5];
   int quadpoint = 0;
+  int Start = XStart - 1;
+  int Stop = XEnd;
 
-  for (int xdir = XStart - 1; xdir < XEnd; ++xdir) {
+  Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], Start, Stop);
+  Cons2Prim(FluxWalls_Cons[RIGHT], FluxWalls_Prims[RIGHT], Start, Stop);
+
+  for (int xdir = Start; xdir < Stop; ++xdir) {
 
     i = xdir;
     iPlus1 = i + 1;
