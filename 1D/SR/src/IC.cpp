@@ -17,7 +17,7 @@ void Domain::ShockTubeIC() {
       Zvel[i] = ZVELR;
     }
   }
-  Prims2Cons();
+  Prims2Cons(Prims, Cons, 0, REdgeX);
 }
 
 void Domain::ShuOsherIC() {
@@ -40,5 +40,5 @@ void Domain::ShuOsherIC() {
       Pres[i] = 1.;
     }
   }
-  Prims2Cons();
+  Prims2Cons(Prims, Cons, 0, REdgeX);
 }

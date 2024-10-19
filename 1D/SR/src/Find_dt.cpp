@@ -2,8 +2,8 @@
 // #include "../include/SRVarConvert.hpp"
 
 double FindMinimum(double *Array, const int size) {
-  double Min = 1E100;
-  for (int i = 0; i < size; ++i) {
+  double Min = 1.e10;
+  for (int i = XStart - 1; i < size; ++i) {
     if (Min > Array[i]) {
       Min = Array[i];
     }
@@ -11,13 +11,14 @@ double FindMinimum(double *Array, const int size) {
   return Min;
 }
 
-void Domain::SignalSpeed(double *Uin, int i, double &CSL, double &CSR) {
+void Domain::SignalSpeed(double *Uin, double *CS, int i, double &CSL,
+                         double &CSR) {
   double v2, Delt2, Nu2, vx, vy, vz, sroot, cs2, lor;
 
   vx = Uin[Tidx(VELX, i)];
   vy = Uin[Tidx(VELY, i)];
   vz = Uin[Tidx(VELZ, i)];
-  cs2 = Cs[i];
+  cs2 = CS[i];
 
   v2 = vx * vx + vy * vy + vz * vz;
 
@@ -28,33 +29,34 @@ void Domain::SignalSpeed(double *Uin, int i, double &CSL, double &CSR) {
 
   sroot = std::sqrt(cs2 * Nu2);
 
-  CSR = (lor * vx * (1.0 - cs2) - sroot) / (lor * Delt2);
-  CSL = (lor * vx * (1.0 - cs2) + sroot) / (lor * Delt2);
+  CSL = (lor * vx * (1.0 - cs2) - sroot) / (lor * Delt2);
+  CSR = (lor * vx * (1.0 - cs2) + sroot) / (lor * Delt2);
 }
 
-void Domain::Find_Cs(double *Uin, int start, int end) {
+void Domain::Find_Cs(double *Uin, double *CS, int start, int end) {
   double h;
   for (int i = start; i < end; ++i) {
 #if EOS == IDEAL
-    h = 1 + (GAMMA / (GAMMA - 1)) * Uin[Tidx(PRES, i)] / Uin[Tidx(DENSP, i)];
-    Cs[i] = GAMMA * Uin[Tidx(PRES, i)] / (h * Uin[Tidx(DENSP, i)]);
+    h = 1.0 +
+        (GAMMA / (GAMMA - 1.0)) * Uin[Tidx(PRES, i)] / Uin[Tidx(DENSP, i)];
+    CS[i] = GAMMA * Uin[Tidx(PRES, i)] / (h * Uin[Tidx(DENSP, i)]);
 #endif
   }
 }
 
 void Domain::Find_dt() {
   double CsL, CsR;
-  Cons2Prim(Cons, Prims, 0, xDim);
-  Find_Cs(Prims, 0, xDim);
+  Cons2Prim(Cons, Prims, XStart - 1, XEnd + 1);
+  Find_Cs(Prims, Cs, XStart - 1, XEnd + 1);
 
-  for (int i = 0; i < xDim; ++i) {
+  for (int i = XStart - 1; i < XEnd + 1; ++i) {
 
-    SignalSpeed(Cs, i, CsL, CsR);
+    SignalSpeed(Prims, Cs, i, CsL, CsR);
 
-    Buffer[i] = std::fmax(dx / CsL, dx / CsR);
+    Buffer[i] = std::fmax(dx / std::fabs(CsL), dx / std::fabs(CsR));
   }
 
-  dt = FindMinimum(Buffer, xDim);
+  dt = FindMinimum(Buffer, XEnd + 1);
   dt *= CFL;
 
   if (T + dt > TN) {

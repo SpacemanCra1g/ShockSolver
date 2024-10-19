@@ -1,40 +1,45 @@
 #include "../include/DomainClass.hpp"
 
-void Domain::GP1(int xdir) {
+void Domain::GP1(int start, int stop) {
   double valueLeft;
   double valueRight;
 
-  for (int var = 0; var < NumVar; ++var) {
-    valueLeft = 0.0;
-    valueRight = 0.0;
+  for (int xdir = start; xdir < stop; ++xdir) {
+    for (int var = 0; var < NumVar; ++var) {
+      valueLeft = 0.0;
+      valueRight = 0.0;
 
-    for (int i = 0; i < 3; ++i) {
-      valueLeft += Cons[Tidx(var, xdir - 1 + i)] * Ker.R1Left[i];
-      valueRight += Cons[Tidx(var, xdir - 1 + i)] * Ker.R1Right[i];
+      for (int i = 0; i < 3; ++i) {
+        valueLeft += Cons[Tidx(var, xdir - 1 + i)] * Ker.R1Left[i];
+        valueRight += Cons[Tidx(var, xdir - 1 + i)] * Ker.R1Right[i];
+      }
+
+      // These are flipped from where they should be. Need to figure out
+      FluxWalls_Cons[LEFT][Tidx(var, xdir)] = valueRight;
+      FluxWalls_Cons[RIGHT][Tidx(var, xdir)] = valueLeft;
     }
-
-    // These are flipped from where they should be. Need to figure out
-    FluxWalls_Cons[LEFT][Tidx(var, xdir)] = valueRight;
-    FluxWalls_Cons[RIGHT][Tidx(var, xdir)] = valueLeft;
   }
 }
 
-void Domain::GP2(int xdir) {
+void Domain::GP2(int start, int stop) {
   double valueLeft;
   double valueRight;
 
-  for (int var = 0; var < NumVar; ++var) {
-    valueLeft = 0.0;
-    valueRight = 0.0;
+  for (int xdir = start; xdir < stop; ++xdir) {
 
-    for (int i = 0; i < 5; ++i) {
-      valueLeft += Cons[Tidx(var, xdir - 2 + i)] * Ker.R2Left[i];
-      valueRight += Cons[Tidx(var, xdir - 2 + i)] * Ker.R2Right[i];
+    for (int var = 0; var < NumVar; ++var) {
+      valueLeft = 0.0;
+      valueRight = 0.0;
+
+      for (int i = 0; i < 5; ++i) {
+        valueLeft += Cons[Tidx(var, xdir - 2 + i)] * Ker.R2Left[i];
+        valueRight += Cons[Tidx(var, xdir - 2 + i)] * Ker.R2Right[i];
+      }
+
+      // These are flipped from where they should be. Need to figure out
+      FluxWalls_Cons[LEFT][Tidx(var, xdir)] = valueRight;
+      FluxWalls_Cons[RIGHT][Tidx(var, xdir)] = valueLeft;
     }
-
-    // These are flipped from where they should be. Need to figure out
-    FluxWalls_Cons[LEFT][Tidx(var, xdir)] = valueRight;
-    FluxWalls_Cons[RIGHT][Tidx(var, xdir)] = valueLeft;
   }
 }
 

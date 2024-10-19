@@ -14,7 +14,7 @@ long double GP_Kernel::intg_predvec(long double x, int dir) {
 
   // These are flipped from the paper, and I think the github version is
   // wrong
-  if (dir == Left) {
+  if (dir == LEFT) {
     return quad_cross(x, -0.5);
   } else {
     return quad_cross(x, 0.5);
@@ -55,8 +55,8 @@ void GP_Kernel::calculate_Preds1D(const int R) {
       C[j + i * StencilSize] = intg_kernel(stencil[i], stencil[j]);
     }
 
-    TRight[i] = intg_predvec(stencil[i], Left);
-    TLeft[i] = intg_predvec(stencil[i], Right);
+    TRight[i] = intg_predvec(stencil[i], LEFT);
+    TLeft[i] = intg_predvec(stencil[i], RIGHT);
   }
 
   Cholesky_Decomposition(C, StencilSize);

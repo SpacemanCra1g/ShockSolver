@@ -15,6 +15,7 @@ public:
   /***********************************************/
   double *Dens, *DensP, *Pres, *Xvel, *Yvel, *Zvel;
   double *MomX, *MomY, *MomZ, *Energy, *Cs, *Buffer;
+  double *RS_CsL, *RS_CsR;
   double **FluxWalls_Cons;
   double **FluxWalls_Prims;
   double *CellFlux;
@@ -29,6 +30,7 @@ public:
   void (Domain::*BC)();
   void (Domain::*IC)();
   void (Domain::*RK_TimeStepper)();
+  void (Domain::*SpaceRecon)(int, int);
 
   GP_Kernel Ker;
 
@@ -55,20 +57,31 @@ public:
     CopyBuffer = new double[NumVar * xDim];
     Buffer = new double[xDim];
     Cs = new double[xDim];
+    RS_CsL = new double[xDim];
+    RS_CsR = new double[xDim];
 
 #if SpaceMethod == GPR1
     SolutionKer.calculate_Preds1D(1);
+    SpaceRecon = &Domain::GP1;
 
 #elif SpaceMethod == GPR2
     SolutionKer.calculate_Preds1D(2);
+    SpaceRecon = &Domain::GP2;
 
 #elif SpaceMethod == MOOD531
     SolutionKer.calculate_Preds1D(1);
     SolutionKer.calculate_Preds1D(2);
+    SpaceRecon = &Domain::Mood;
 
     MoodOrd = new int[xDim];
     Troubled = new bool[xDim];
     ConsCopy = new double[NumVar * xDim];
+
+#elif SpaceMethod == FOG
+    SpaceRecon = &Domain::Fog;
+
+#elif SpaceMethod == WENO
+    SpaceRecon = &Domain::Weno;
 #endif
 
     Dens = Cons;
@@ -127,10 +140,11 @@ public:
 
   // Defined in the Find_dt.cpp flie
   void Find_dt();
-  void Find_Cs(double *Uin, int start, int end);
+  void Find_Cs(double *Uin, double *SSVector, int start, int stop);
   // double SRHD_CS(int i);
   // double HD_CS(int i);
-  void SignalSpeed(double *Uin, int i, double &CSL, double &CSR);
+  void SignalSpeed(double *Uin, double *SSVector, int i, double &CSL,
+                   double &CSR);
 
   // Defined in the TimeSteppers.cpp file
   void RK3();
@@ -147,28 +161,39 @@ public:
   void writeResults();
 
   // Defined in the src/FOG.cpp file
-  void Fog(int);
+  void Fog(int, int);
 
   // Defined in the src/GP-FVM.cpp file
-  void GP1(int xdir);
-  void GP2(int xdir);
+  void GP1(int, int);
+  void GP2(int, int);
   // void GPR1Side(double *, int, int, int, int);
   // void FOGSide(double *, int, int, int, int);
   // void GPR2Side(double *, int, int, int, int);
   // void Mood(int, int, int);
 
   // Defined in the src/WENO.cpp file
-  void Weno(int xdir);
+  void Weno(int, int);
+
+  // Defined in the src/MoodSolve.cpp file
+  void Mood(int, int);
 
   // Defined in the src/HLL.cpp file
-  void Hll();
+  void Hll(int, int);
   void HllSide(int);
-  void SR_Flux(double *C, double *P, double *Flux);
+
+  // Defined in the src/UpdateSolution.cpp file
+  void Recon(int start, int stop);
 
   // Defined in the src/Detection.cpp file
   bool Detection(bool);
 
-  void SpaceRecon();
+  // Defined in the src/NewtonPressureFinder.cpp
+  int NaiveNewton(double *Uin, double *Uout, int i);
+
+  // Defined in the src/SR_Flux.cpp file
+  void SR_Flux(double *Dest, double *P, double *C, int i, int DestinationIdx);
+  void SR_HLL_Flux(double *Dest, double *PrL, double *CL, double *PrR,
+                   double *CR, double SL, double SR, int i);
 
   void DomainCopy() { std::copy(Cons, Cons + xDim * NumVar, CopyBuffer); }
 

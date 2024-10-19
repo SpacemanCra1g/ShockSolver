@@ -8,19 +8,17 @@
 #define PRESURE_FIX_SOLVE 2
 
 void Domain::Prims2Cons(double *Uin, double *Uout, int start, int stop) {
-
+  double v2, Lor, h, alpha;
   for (int i = start; i < stop; ++i) {
-    double v2, v, Lor, h, alpha;
 
     v2 = std::pow(Uin[Tidx(VELX, i)], 2) + std::pow(Uin[Tidx(VELY, i)], 2) +
          std::pow(Uin[Tidx(VELZ, i)], 2);
 
-    v = std::sqrt(v2);
-
-    Lor = 1.0 / (std::sqrt(1 - v));
+    Lor = 1.0 / (std::sqrt(1.0 - v2));
 
 #if EOS == IDEAL
-    h = 1 + (GAMMA / (GAMMA - 1)) * Uin[Tidx(PRES, i)] / Uin[Tidx(DENSP, i)];
+    h = 1.0 +
+        (GAMMA / (GAMMA - 1.0)) * Uin[Tidx(PRES, i)] / Uin[Tidx(DENSP, i)];
 #endif
 
     alpha = Uin[Tidx(DENSP, i)] * h * Lor * Lor;
@@ -29,21 +27,41 @@ void Domain::Prims2Cons(double *Uin, double *Uout, int start, int stop) {
     Uout[Tidx(MOMX, i)] = Uin[Tidx(VELX, i)] * alpha;
     Uout[Tidx(MOMY, i)] = Uin[Tidx(VELY, i)] * alpha;
     Uout[Tidx(MOMZ, i)] = Uin[Tidx(VELZ, i)] * alpha;
-    Uout[Tidx(ENER, i)] = alpha - Uin[Tidx(VELZ, i)];
+    Uout[Tidx(ENER, i)] = alpha - Uin[Tidx(PRES, i)];
   }
 }
 
 void Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
   int SolMethod;
-  int err;
+  int err = 0;
 
   for (int i = start; i < stop; ++i) {
     SolMethod = ENERGY_SOLVE;
 
     if (SolMethod == ENERGY_SOLVE) {
       err = EnergyInverter(Uin, Uout, i);
+      // err = NaiveNewton(Uin, Uout, i);
       if (err) {
-        SolMethod = PRESURE_FIX_SOLVE;
+        if (err == 1) {
+          std::cout << "The equation does not admit a solution" << std::endl;
+          std::cout << "Cell Number: " << i << std::endl;
+          // double x = std::sqrt(-2.0);
+        } else if (err == 2) {
+          std::cout << "Negative Pressure" << std::endl;
+        } else if (err == 4) {
+          std::cout << "Pressure is NaN" << std::endl;
+        } else if (err == 3) {
+          std::cout << "Other Problem" << std::endl;
+        }
+
+        std::cout << "Failure at Time: " << T << std::endl;
+        std::cout << "The Cons were :" << std::endl;
+        for (int var = 0; var < NumVar; ++var) {
+          std::cout << Uin[Tidx(var, i)] << std::endl;
+        }
+        writeResults();
+        exit(0);
+        // SolMethod = PRESURE_FIX_SOLVE;
       }
     }
 

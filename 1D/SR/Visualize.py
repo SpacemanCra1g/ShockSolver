@@ -14,10 +14,9 @@ if len(np.shape(p)) == 1:
     with  open("include/Parameters.h",'r') as f:
         param = f.readlines()
 
-    N = int(param[8][11:])
-    xstart = float(param[9][11])
-
-    xend = float(param[10][11])
+    N = int(param[5][11:])
+    xstart = float(param[6][11])
+    xend = float(param[7][11])
 
 
     deltaX = (xend-xstart)/N
@@ -33,6 +32,7 @@ if len(np.shape(p)) == 1:
     # plt.scatter(x,u,color='b')
     plt.title("GP-R1 RK3, nx = 256 NN")
     plt.grid()
+    plt.legend(["Vx","Rho","Pres"])
 
     plt.show()
 
