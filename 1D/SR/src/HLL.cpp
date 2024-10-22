@@ -12,6 +12,15 @@ void FluxClass::HLL() {
   double ConR[5];
   int quadpoint = 0;
 
+  // for (int xdir = XStart - 1; xdir < XEnd; ++xdir) {
+  //   for (int var = 0; var < NumVar; ++var) {
+  //     std::cout << FluxDir[Left][quadpoint][var][xdir] << " ";
+  //   }
+  //   std::cout << xdir;
+  //   std::cout << std::endl;
+  // }
+  // exit(0);
+
   for (int xdir = XStart - 1; xdir < XEnd; ++xdir) {
 
     i = xdir;
@@ -25,8 +34,16 @@ void FluxClass::HLL() {
     ConConvert(ConL, PrimL);
     ConConvert(ConR, PrimR);
 
+    // for (int var = 0; var < NumVar; ++var) {
+    //   std::cout << PrimR[var] << " ";
+    // }
+    // std::cout << i + 1;
+    // std::cout << std::endl;
+
     CsL = SRH_CS(PrimL);
     CsR = SRH_CS(PrimR);
+
+    // std::cout << CsL << " " << CsR << " " << i << std::endl;
 
     double LambdaLL, LambdaLR;
     double LambdaRL, LambdaRR;
@@ -34,14 +51,65 @@ void FluxClass::HLL() {
     SignalSpeed(PrimL, CsL, LambdaLL, LambdaLR);
     SignalSpeed(PrimR, CsR, LambdaRL, LambdaRR);
 
+    // std::cout << LambdaLL << " " << LambdaLR << " " << LambdaRL << " "
+    //           << LambdaRR << " " << i;
+    // std::cout << std::endl;
+
     SL = std::fmin(LambdaLL, LambdaRL);
     SR = std::fmax(LambdaLR, LambdaRR);
+
+    // std::cout << SL << " " << SR << " " << i << std::endl;
 
     double FL[5];
     double FR[5];
 
     SR_Flux(ConL, PrimL, FL);
     SR_Flux(ConR, PrimR, FR);
+
+    std::cout << "####################" << std::endl;
+    std::cout << "Cell Number " << i << std::endl;
+
+    std::cout << "Con Left" << "            ";
+    for (int var = 0; var < NumVar; ++var) {
+      std::cout << ConL[var] << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Con Right" << "            ";
+    for (int var = 0; var < NumVar; ++var) {
+      std::cout << ConR[var] << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Prim Left" << "            ";
+    for (int var = 0; var < NumVar; ++var) {
+      std::cout << PrimL[var] << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Prim Right" << "            ";
+    for (int var = 0; var < NumVar; ++var) {
+      std::cout << PrimR[var] << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Flux Left" << "            ";
+    for (int var = 0; var < NumVar; ++var) {
+      std::cout << FL[var] << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Flux Right" << "            ";
+    for (int var = 0; var < NumVar; ++var) {
+      std::cout << FR[var] << " ";
+    }
+
+    std::cout << std::endl;
+    std::cout << "SL" << "            ";
+    std::cout << SL << std::endl;
+
+    std::cout << "SR" << "            ";
+    std::cout << SR << std::endl;
 
     if (0.0 <= SL) {
       for (int var = 0; var < NumVar; ++var) {
@@ -60,6 +128,13 @@ void FluxClass::HLL() {
         Flux[quadpoint][var][i] = FR[var];
       }
     }
+
+    std::cout << "FLUX " << "            ";
+
+    for (int var = 0; var < NumVar; ++var) {
+      std::cout << Flux[quadpoint][var][i] << " ";
+    }
+    std::cout << "\n\n\n" << std::endl;
   }
 };
 

@@ -6,7 +6,7 @@
 /****************
  * X Parameters *
  ****************/
-#define NX 200
+#define NX 50
 #define X0 0.0
 #define XN 1.0
 
@@ -21,7 +21,7 @@
 #define ZVelL 0.0
 
 #define XVelR 0.0
-#define YVelR 0.9
+#define YVelR 0.0
 #define ZVelR 0.0
 
 /****************

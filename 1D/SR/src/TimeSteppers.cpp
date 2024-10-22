@@ -25,6 +25,7 @@ void Domain::ForwardEuler() {
   // exit(0);
 
   Flux.HLL();
+  exit(0);
 
   // for (int var = DensP; var <= Pres; ++var) {
   //   for (int i = 0; i < REdgeX; ++i) {
