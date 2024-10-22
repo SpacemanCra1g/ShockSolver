@@ -1,5 +1,4 @@
 #include "../include/DomainClass.hpp"
-// #include "../include/SRVarConvert.hpp"
 
 void Domain::Hll(int Start, int Stop) {
 
@@ -14,20 +13,43 @@ void Domain::Hll(int Start, int Stop) {
   // int Start = XStart - 1;
   // int Stop = XEnd;
 
+  // for (int i = XStart - 1; i < XEnd; ++i) {
+  //   for (int var = 0; var < NumVar; ++var) {
+  //     std::cout << FluxWalls_Cons[LEFT][Tidx(var, i)] << " ";
+  //   }
+  //   std::cout << i;
+  //   std::cout << std::endl;
+  // }
+  // exit(0);
+
   Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], Start, Stop);
   Cons2Prim(FluxWalls_Cons[RIGHT], FluxWalls_Prims[RIGHT], Start, Stop);
+
+  // for (int i = XStart - 1; i < XEnd; ++i) {
+  //   for (int var = 0; var < NumVar; ++var) {
+  //     std::cout << FluxWalls_Prims[LEFT][Tidx(var, i + 1)] << " ";
+  //   }
+  //   std::cout << i;
+  //   std::cout << std::endl;
+  // }
+  // exit(0);
 
   Find_Cs(FluxWalls_Prims[LEFT], RS_CsL, Start, Stop);
   Find_Cs(FluxWalls_Prims[RIGHT], RS_CsR, Start, Stop);
 
-  for (int i = Start; i < Stop; ++i) {
-    std::cout << RS_CsL[i] << " " << i << std::endl;
-  }
+  // for (int i = Start; i < Stop; ++i) {
+  //   std::cout << RS_CsR[i] << " " << RS_CsL[i + 1] << " " << i << std::endl;
+  // }
+  // exit(0);
 
-  std::cout << "\n \n" << std::endl;
-  for (int i = Start; i < Stop; ++i) {
-    std::cout << RS_CsR[i] << " " << i << std::endl;
-  }
+  // for (int i = Start; i < Stop; ++i) {
+  //   std::cout << RS_CsL[i] << " " << i << std::endl;
+  // }
+
+  // std::cout << "\n \n" << std::endl;
+  // for (int i = Start; i < Stop; ++i) {
+  //   std::cout << RS_CsR[i] << " " << i << std::endl;
+  // }
   // exit(0);
 
   for (int i = Start; i < Stop; ++i) {
@@ -53,12 +75,19 @@ void Domain::Hll(int Start, int Stop) {
     SL = std::fmin(Lambda_Left_Minus, Lambda_Right_Minus);
     SR = std::fmax(Lambda_Left_Plus, Lambda_Right_Plus);
 
+    // std::cout << Lambda_Left_Minus << " " << Lambda_Left_Plus << " "
+    //           << Lambda_Right_Minus << " " << Lambda_Right_Plus << " " << i;
+    // std::cout << std::endl;
+    // //
+    // std::cout << SL << " " << SR << " " << i << std::endl;
+
     // std::cout << " Cell " << i << std::endl;
     // std::cout << "Left lambda " << RS_CsR[i] << " " << LambdaLL << " "
     //           << LambdaLR << " " << SL << std::endl;
     // std::cout << "Right lambda " << RS_CsL[i + 1] << " " << LambdaRL << " "
     //           << LambdaRR << " " << SR << std::endl;
     // std::cout << std::endl;
+    //
 
     // Left side Flux
     if (0.0 <= SL) {
@@ -78,6 +107,7 @@ void Domain::Hll(int Start, int Stop) {
       SR_Flux(CellFlux, RightState_Prims, RightState_Cons, RightIdx, i);
     }
   }
+  // WriteLog(CellFlux, int xDim, "HLL Cell Flux");
   // exit(0);
 };
 
@@ -160,7 +190,7 @@ void Domain::Hll(int Start, int Stop) {
 //     Flux[quadpoint][Dens][i] = FluxDir[Dim][quadpoint][MomX][iPlus1];
 
 //     Flux[quadpoint][MomX][i] =
-//         FluxDir[Dim][quadpoint][MomX][iPlus1] * VelR + PresR;
+//         fluxdir[Dim][quadpoint][MomX][iPlus1] * VelR + PresR;
 
 //     Flux[quadpoint][Ener][i] =
 //         VelR * (FluxDir[Dim][quadpoint][Ener][iPlus1] + PresR);

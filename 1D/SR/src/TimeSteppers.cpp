@@ -15,7 +15,7 @@ void Domain::ForwardEuler() {
 
   MoodFinished = false;
 
-  Hll(XStart - 1, XEnd + 1);
+  Hll(XStart - 1, XEnd);
 
   Recon(XStart, XEnd);
 

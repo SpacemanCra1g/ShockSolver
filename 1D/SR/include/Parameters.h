@@ -16,11 +16,11 @@
 #define PL 1000
 #define PR 0.01
 
-#define XVELL 0.1
-#define YVELL 0.0
+#define XVELL 0.0
+#define YVELL 0.9
 #define ZVELL 0.0
 
-#define XVELR 0.1
+#define XVELR 0.0
 #define YVELR 0.0
 #define ZVELR 0.0
 
@@ -28,7 +28,7 @@
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN .01
+#define TN .4
 
 /*****************
  *Run Parameters *
@@ -38,7 +38,7 @@
 #define BCS SHOCKTUBEBC
 #define CFL 0.8
 #define EOS IDEAL
-#define RK_Method 1
+#define RK_Method 3
 #define ell 6.0
 #define MoodOrder 5
 #define SlowStart true

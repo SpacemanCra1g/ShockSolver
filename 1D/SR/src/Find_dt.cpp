@@ -13,7 +13,7 @@ double FindMinimum(double *Array, const int size) {
 
 void Domain::SignalSpeed(double *Uin, double *CS, int i, double &CSL,
                          double &CSR) {
-  double v2, Delt2, Nu2, vx, vy, vz, sroot, cs2, lor;
+  double vx, vy, vz, cs2, v2, sroot; // Delt2, Nu2, lor;
 
   vx = Uin[Tidx(VELX, i)];
   vy = Uin[Tidx(VELY, i)];
@@ -22,15 +22,22 @@ void Domain::SignalSpeed(double *Uin, double *CS, int i, double &CSL,
 
   v2 = vx * vx + vy * vy + vz * vz;
 
-  lor = 1.0 / (std::sqrt(1.0 - v2));
+  sroot =
+      std::sqrt(cs2 * (1.0 - vx * vx - (vy + vy + vz * vz) * cs2 * (1.0 - v2)));
 
-  Delt2 = 1.0 - v2 * cs2;
-  Nu2 = 1.0 - vx * vx - cs2 * (vy * vy + vz * vz);
+  // lor = 1.0 / (std::sqrt(1.0 - v2));
 
-  sroot = std::sqrt(cs2 * Nu2);
+  // Delt2 = 1.0 - v2 * cs2;
+  // Nu2 = 1.0 - vx * vx - cs2 * (vy * vy + vz * vz);
 
-  CSL = (lor * vx * (1.0 - cs2) - sroot) / (lor * Delt2);
-  CSR = (lor * vx * (1.0 - cs2) + sroot) / (lor * Delt2);
+  // sroot = std::sqrt(cs2 * Nu2);
+
+  CSR = (vx * (1.0 - cs2) + sroot) / (1.0 - v2 * cs2);
+  CSL = (vx * (1.0 - cs2) - sroot) / (1.0 - v2 * cs2);
+  // double Norm = 0.0;
+  // for (int var = VELX; var <= VELZ; ++var){
+  //     Norm += Uin[Tidx(var,i)] * Uin[Tidx(var,i)];
+  // }
 }
 
 void Domain::Find_Cs(double *Uin, double *CS, int start, int end) {
