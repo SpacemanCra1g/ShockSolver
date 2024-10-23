@@ -23,12 +23,13 @@ if len(np.shape(p)) == 1:
     xstart += deltaX/2 #adjust the interval one half deltax away from the start
 
     x = np.arange(xstart,xend,deltaX)
+    # print(x)
 
 
 
-    plt.plot(x,u,'r-')
+    plt.plot(x,u,'b')
     plt.plot(x,rho/35,'k-')
-    plt.plot(x,p/1000,'g-')
+    plt.plot(x,p/1000,'r')
     # plt.scatter(x,u,color='b')
     plt.title("GP-R1 RK3, nx = 256 NN")
     plt.grid()

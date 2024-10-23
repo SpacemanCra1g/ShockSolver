@@ -3,7 +3,7 @@
 
 void Domain::ShockTubeIC() {
   for (int i = 0; i < REdgeX; ++i) {
-    if (i * dx < 0.5) {
+    if ((i - NGC) * dx + dx * 0.5 < 0.5) {
       DensP[i] = RHOL;
       Pres[i] = PL;
       Xvel[i] = XVELL;

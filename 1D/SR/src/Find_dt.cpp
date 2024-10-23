@@ -53,7 +53,12 @@ void Domain::Find_Cs(double *Uin, double *CS, int start, int end) {
 
 void Domain::Find_dt() {
   double CsL, CsR;
-  Cons2Prim(Cons, Prims, XStart - 1, XEnd + 1);
+  int err;
+  err = Cons2Prim(Cons, Prims, XStart - 1, XEnd + 1);
+  if (err) {
+    std::cout << "Con Conversion failure in the find dt stage" << std::endl;
+    exit(0);
+  }
   Find_Cs(Prims, Cs, XStart - 1, XEnd + 1);
 
   for (int i = XStart - 1; i < XEnd + 1; ++i) {

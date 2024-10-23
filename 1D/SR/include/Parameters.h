@@ -3,7 +3,7 @@
 /****************
  * X Parameters *
  ****************/
-#define NX 200
+#define NX 400
 #define X0 0.0
 #define XN 1.0
 
@@ -17,23 +17,23 @@
 #define PR 0.01
 
 #define XVELL 0.0
-#define YVELL 0.9
+#define YVELL 0.0
 #define ZVELL 0.0
 
 #define XVELR 0.0
-#define YVELR 0.0
+#define YVELR 0.9
 #define ZVELR 0.0
 
 /****************
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN .4
+#define TN 0.4
 
 /*****************
  *Run Parameters *
  *****************/
-#define SpaceMethod FOG
+#define SpaceMethod WENO
 #define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
 #define CFL 0.8

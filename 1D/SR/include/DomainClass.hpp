@@ -129,7 +129,7 @@ public:
 
   // Defined in the VarConvert.cpp file
   void Prims2Cons(double *, double *, int, int);
-  void Cons2Prim(double *, double *, int, int);
+  int Cons2Prim(double *, double *, int, int);
 
   void SolvePressure();
   void Press(int x);
@@ -187,8 +187,11 @@ public:
   // Defined in the src/Detection.cpp file
   bool Detection(bool);
 
-  // Defined in the src/NewtonPressureFinder.cpp
+  // Defined in the src/NewtonPressureFinder.cpp file
   int NaiveNewton(double *Uin, double *Uout, int i);
+
+  // Defined in the src/PressureFix.cpp file
+  int PressureFix(double *Uin, double *Uout, int i);
 
   // Defined in the src/SR_Flux.cpp file
   void SR_Flux(double *Dest, double *P, double *C, int i, int DestinationIdx);

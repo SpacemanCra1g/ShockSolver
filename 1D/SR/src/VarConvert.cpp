@@ -6,6 +6,7 @@
 
 #define ENERGY_SOLVE 1
 #define PRESURE_FIX_SOLVE 2
+#define MIN_DENSITY 1.e-5
 
 void Domain::Prims2Cons(double *Uin, double *Uout, int start, int stop) {
   double v2, Lor, h, alpha;
@@ -31,11 +32,18 @@ void Domain::Prims2Cons(double *Uin, double *Uout, int start, int stop) {
   }
 }
 
-void Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
+int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
   int SolMethod;
   int err = 0;
 
   for (int i = start; i < stop; ++i) {
+
+    if (Uin[Tidx(DENS, i)] < 0.0) {
+      std::cout << "WARNING!\n Density is Negative at Cell " << i << std::endl;
+      std::cout << "Time is " << T << std::endl;
+      Uin[Tidx(DENS, i)] = MIN_DENSITY;
+    }
+
     SolMethod = ENERGY_SOLVE;
 
     if (SolMethod == ENERGY_SOLVE) {
@@ -45,7 +53,9 @@ void Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
         if (err == 1) {
           std::cout << "The equation does not admit a solution" << std::endl;
           std::cout << "Cell Number: " << i << std::endl;
+          std::cout << "We shall try the pressure Fix" << std::endl;
           // double x = std::sqrt(-2.0);
+          // return i;
         } else if (err == 2) {
           std::cout << "Negative Pressure" << std::endl;
         } else if (err == 4) {
@@ -59,20 +69,23 @@ void Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
         for (int var = 0; var < NumVar; ++var) {
           std::cout << Uin[Tidx(var, i)] << std::endl;
         }
-        writeResults();
-        exit(0);
-        // SolMethod = PRESURE_FIX_SOLVE;
+        // writeResults();
+        // exit(0);
+        SolMethod = PRESURE_FIX_SOLVE;
       }
     }
 
     if (SolMethod == PRESURE_FIX_SOLVE) {
-      // err = PressureFix(Uin, Uout, i);
+      err = PressureFix(Uin, Uout, i);
       if (err) {
         std::cout << "CRASH REPORT" << std::endl;
         std::cout << "Failure in Pressure fix" << std::endl;
+        std::sqrt(-2.0);
+        return i;
       }
     }
   }
+  return err;
 }
 
 void Domain::Press(int x) {

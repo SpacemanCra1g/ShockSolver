@@ -74,15 +74,17 @@ void Domain::Weno(int start, int stop) {
 
       // if (var == PRES) {
       //   double PresTest =
-      //       (Cons[Tidx(Pres, xdir)] - FluxDir[Left][qp][Pres][idx(xdir)]) *
-      //       (FluxDir[Right][qp][Pres][idx(xdir)] - Cons[Tidx(Pres, xdir)]);
+      //       (Cons[Tidx(PRES, xdir)] - FluxWalls_Cons[LEFT][Tidx(PRES, xdir)])
+      //       * (FluxWalls_Cons[RIGHT][Tidx(PRES, xdir)] - Cons[Tidx(PRES,
+      //       xdir)]);
 
       //   double DensTest =
-      //       (Cons[Tidx(Dens, xdir)] - FluxDir[Left][qp][Dens][idx(xdir)]) *
-      //       (FluxDir[Right][qp][Dens][idx(xdir)] - Cons[Tidx(Dens, xdir)]);
+      //       (Cons[Tidx(DENS, xdir)] - FluxWalls_Cons[LEFT][Tidx(DENS, xdir)])
+      //       * (FluxWalls_Cons[RIGHT][Tidx(DENS, xdir)] - Cons[Tidx(DENS,
+      //       xdir)]);
 
-      //   if (PresTepst < 0.0 || DensTest < 0.0) {
-      //     for (int var = Dens; var <= Ener; ++var) {
+      //   if (PresTest < 0.0 || DensTest < 0.0) {
+      //     for (int vars = DENS; vars <= ENER; ++var) {
       //       FluxDir[Left][qp][var][idx(xdir)] = Cons[Tidx(var, xdir)];
       //       FluxDir[Right][qp][var][idx(xdir)] = Cons[Tidx(var, xdir)];
       //     }
