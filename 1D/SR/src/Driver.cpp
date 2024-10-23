@@ -29,4 +29,6 @@ int main() {
 
   Solver.writeResults();
   return 0;
+
+  // Create Merge Conflict: Diogenes Version 1.0
 }
