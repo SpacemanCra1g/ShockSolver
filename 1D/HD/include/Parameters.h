@@ -3,14 +3,14 @@
 #define NDIMS 1
 #define NGC 3
 
-/***************
+/****************
  * X Parameters *
  ****************/
 #define NX 500
 #define X0 0.0
 #define XN 1.0
 
-/***************nn
+/****************
  * Y Parameters *
  ****************/
 #define NY 1
@@ -18,21 +18,21 @@
 #define YN 1.0
 #define NumVar 3
 
-/***************
+/****************
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN .25
+#define TN .2
 
-/****************
+/*****************
  *Run Parameters *
  *****************/
 #define SpaceMethod Mood53
 
 #define GAMMA 1.4
 #define CFL 0.8
-#define TestProblem ShuOsher
-#define BC ShuOsher
+#define TestProblem Sod
+#define BoundaryCon Shu
 
 #define RK_Method 3
 #define ell 6.0
@@ -41,7 +41,7 @@
 
 #define nqp 1
 
-/***************
+/****************
  *NN Parameters *
  ****************/
 #define Use_NN False
@@ -69,7 +69,7 @@
 
 #define Dens 0
 #define VelX 1
-#define Ener 2
+#define Pres 2
 
 #define Left 0
 #define Right 1

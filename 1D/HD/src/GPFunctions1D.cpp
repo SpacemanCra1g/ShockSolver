@@ -91,6 +91,13 @@ void GP_Kernel::calculate_Preds1D(const int R) {
   // }
 
   if (R == 1) {
+    // R1Left[0] = (double)TLeft[1];
+    // R1Left[1] = (double)TLeft[0];
+    // R1Left[2] = (double)TLeft[2];
+
+    // R1Right[0] = (double)TRight[1];
+    // R1Right[1] = (double)TRight[0];
+    // R1Right[2] = (double)TRight[2];
     for (int i = 0; i < 3; ++i) {
       R1Left[i] = (double)TLeft[i];
       R1Right[i] = (double)TRight[i];

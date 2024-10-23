@@ -1,12 +1,23 @@
 #include "../include/DomainClass.hpp"
 
 void Domain::ForwardEuler() {
-  Flux.SpaceRecon();
+
+  (*this.*SpaceRecon)(XStart - 1, XEnd + 1);
+
+  // for (int var = 0; var < NumVar; ++var) {
+  //   for (int x = 0; x < xDim; ++x) {
+  //     std::cout << FluxWalls_Cons[LEFT][Tidx(var, x)] << std::endl;
+  //     ;
+  //   }
+  //   std::cout << "\n \n" << std::endl;
+  // }
+  // exit(0);
+
   MoodFinished = false;
 
-  Flux.HLL();
+  Hll(XStart - 1, XEnd);
 
-  Flux.Recon();
+  Recon(XStart, XEnd);
 
 #if SpaceMethod == Mood53
   while (!MoodFinished) {
@@ -14,7 +25,7 @@ void Domain::ForwardEuler() {
   }
 #endif
 
-  (*this.*BC)("Cons");
+  (*this.*BC)();
 }
 
 void Domain::RK3() {

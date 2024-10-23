@@ -9,6 +9,7 @@ void FluxClass::GPR1(int qp, int var, int xdir) {
   }
 
   // These are flipped from where they should be. Need to figure out
+
   FluxDir[Left][qp][var][xdir] = valueRight;
   FluxDir[Right][qp][var][xdir] = valueLeft;
 }

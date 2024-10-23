@@ -1,45 +1,99 @@
 #include "../include/DomainClass.hpp"
-#include "../include/SRVarConvert.hpp"
+#include "../include/Parameters.h"
 
-void Domain::Prims2Cons() {
+// Most of the structure of this code is taken from the PLUTO solver
+// So lots of credit to those authors
 
-  double P[NumVar], C[NumVar];
+#define ENERGY_SOLVE 1
+#define PRESURE_FIX_SOLVE 2
+#define MIN_DENSITY 1.e-5
 
-  for (int i = 0; i < xDim; ++i) {
-    for (int var = 0; var < NumVar; ++var) {
-      P[var] = Prims[Tidx(var, i)];
-    }
+void Domain::Prims2Cons(double *Uin, double *Uout, int start, int stop) {
+  double v2, Lor, h, alpha;
+  for (int i = start; i < stop; ++i) {
 
-    PrimConvert(P, C);
+    v2 = std::pow(Uin[Tidx(VELX, i)], 2) + std::pow(Uin[Tidx(VELY, i)], 2) +
+         std::pow(Uin[Tidx(VELZ, i)], 2);
 
-    for (int var = 0; var < NumVar; ++var) {
-      Cons[Tidx(var, i)] = C[var];
-    }
+    Lor = 1.0 / (std::sqrt(1.0 - v2));
+
+#if EOS == IDEAL
+    h = 1.0 +
+        (GAMMA / (GAMMA - 1.0)) * Uin[Tidx(PRES, i)] / Uin[Tidx(DENSP, i)];
+#endif
+
+    alpha = Uin[Tidx(DENSP, i)] * h * Lor * Lor;
+
+    Uout[Tidx(DENS, i)] = Uin[Tidx(DENSP, i)] * Lor;
+    Uout[Tidx(MOMX, i)] = Uin[Tidx(VELX, i)] * alpha;
+    Uout[Tidx(MOMY, i)] = Uin[Tidx(VELY, i)] * alpha;
+    Uout[Tidx(MOMZ, i)] = Uin[Tidx(VELZ, i)] * alpha;
+    Uout[Tidx(ENER, i)] = alpha - Uin[Tidx(PRES, i)];
   }
 }
 
-void Domain::Cons2Prim() {
+int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
+  int SolMethod;
+  int err = 0;
 
-  double P[NumVar], C[NumVar];
-  for (int i = 0; i < xDim; ++i) {
-    for (int var = 0; var < NumVar; ++var) {
-      C[var] = Cons[Tidx(var, i)];
+  for (int i = start; i < stop; ++i) {
+
+    if (Uin[Tidx(DENS, i)] < 0.0) {
+      std::cout << "WARNING!\n Density is Negative at Cell " << i << std::endl;
+      std::cout << "Time is " << T << std::endl;
+      Uin[Tidx(DENS, i)] = MIN_DENSITY;
     }
 
-    ConConvert(C, P);
+    SolMethod = ENERGY_SOLVE;
 
-    for (int var = 0; var < NumVar; ++var) {
-      Prims[Tidx(var, i)] = P[var];
+    if (SolMethod == ENERGY_SOLVE) {
+      err = EnergyInverter(Uin, Uout, i);
+      // err = NaiveNewton(Uin, Uout, i);
+      if (err) {
+        if (err == 1) {
+          std::cout << "The equation does not admit a solution" << std::endl;
+          std::cout << "Cell Number: " << i << std::endl;
+          std::cout << "We shall try the pressure Fix" << std::endl;
+          // double x = std::sqrt(-2.0);
+          // return i;
+        } else if (err == 2) {
+          std::cout << "Negative Pressure" << std::endl;
+        } else if (err == 4) {
+          std::cout << "Pressure is NaN" << std::endl;
+        } else if (err == 3) {
+          std::cout << "Other Problem" << std::endl;
+        }
+
+        std::cout << "Failure at Time: " << T << std::endl;
+        std::cout << "The Cons were :" << std::endl;
+        for (int var = 0; var < NumVar; ++var) {
+          std::cout << Uin[Tidx(var, i)] << std::endl;
+        }
+        // writeResults();
+        // exit(0);
+        SolMethod = PRESURE_FIX_SOLVE;
+      }
+    }
+
+    if (SolMethod == PRESURE_FIX_SOLVE) {
+      err = PressureFix(Uin, Uout, i);
+      if (err) {
+        std::cout << "CRASH REPORT" << std::endl;
+        std::cout << "Failure in Pressure fix" << std::endl;
+        std::sqrt(-2.0);
+        return i;
+      }
     }
   }
+  return err;
 }
 
 void Domain::Press(int x) {
   double C[NumVar];
-  for (int i = 0; i < NumVar; ++i) {
-    C[i] = Cons[Tidx(i, x)];
+  for (int var = 0; var < NumVar; ++var) {
+    C[var] = Cons[Tidx(var, x)];
   }
-  PRES[x] = Pressure(C);
+  // PRES[x] = Pressure(C);
 }
 
 void Domain::SolvePressure() {
@@ -47,3 +101,7 @@ void Domain::SolvePressure() {
     Press(i);
   }
 }
+
+#undef ENERGY_SOLVE
+#undef ENTROPY_SOLVE
+#undef PRESURE_FIX_SOLVE

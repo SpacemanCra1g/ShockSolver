@@ -1,179 +1,115 @@
 #include "../include/FluxClass.hpp"
+#include "../include/VarConvert.hpp"
+#include <variant>
 
 void FluxClass::HLL() {
 
-  int i, iPlus1;
-
-  double VelL, VelR, PresL, PresR, CsL, CsR, SL, SR, LF1, LF2, LF3, RF1, RF2,
-      RF3;
+  double CsL, CsR, SL, SR, LamLR, LamLL, LamRL, LamRR;
+  double PrimL[NumVar], PrimR[NumVar], ConL[NumVar], ConR[NumVar];
+  double FL[NumVar], FR[NumVar];
 
   for (int Dim = 0; Dim < NDIMS * 2; Dim += 2) {
-    for (int quadpoint = 0; quadpoint < nqp; ++quadpoint) {
-      for (int xdir = 1; xdir < xDim - 1; ++xdir) {
+    int quadpoint = 0;
+    for (int i = 1; i < xDim - 1; ++i) {
 
-        i = xdir;
-        iPlus1 = i + 1;
+      for (int var = 0; var < NumVar; ++var) {
+        ConL[var] = FluxDir[Right][quadpoint][var][i];
+        ConR[var] = FluxDir[Left][quadpoint][var][i + 1];
+      }
 
-        VelL = FluxDir[Dim + 1][quadpoint][Dim + 1][i] /
-               FluxDir[Dim + 1][quadpoint][Dens][i];
+      ConConvert(ConL, PrimL);
+      ConConvert(ConR, PrimR);
 
-        VelR = FluxDir[Dim][quadpoint][Dim + 1][iPlus1] /
-               FluxDir[Dim][quadpoint][Dens][iPlus1];
+      CsL = HD_CS(PrimL);
+      CsR = HD_CS(PrimR);
 
-        // This Pressure assumes 1D, make sure to change later
-        PresL =
-            (GAMMA - 1.0) * (FluxDir[Dim + 1][quadpoint][Ener][i] -
-                             VelL * FluxDir[Dim + 1][quadpoint][MomX][i] / 2.0);
+      SignalSpeed(PrimL, CsL, LamLL, LamLR);
+      SignalSpeed(PrimR, CsR, LamRL, LamRR);
 
-        PresR = (GAMMA - 1.0) *
-                (FluxDir[Dim][quadpoint][Ener][iPlus1] -
-                 VelR * FluxDir[Dim][quadpoint][MomX][iPlus1] / 2.0);
+      SL = std::fmin(LamLL, LamRL);
+      SR = std::fmax(LamLR, LamRR);
 
-        CsL = std::sqrt(GAMMA * PresL / FluxDir[Dim + 1][quadpoint][Dens][i]);
-        CsR = std::sqrt(GAMMA * PresR / FluxDir[Dim][quadpoint][Dens][iPlus1]);
+      if (0.0 <= SL) {
+        FillFlux(PrimL, FL);
 
-        SL = std::fmin(VelL - CsL, VelR - CsR);
-        SR = std::fmax(VelL + CsL, VelR + CsR);
+        for (int var = 0; var < NumVar; ++var) {
+          Flux[quadpoint][var][i] = FL[var];
+        }
 
-        if (0.0 <= SL) {
-          Flux[quadpoint][Dens][i] = FluxDir[Dim + 1][quadpoint][MomX][i];
+      } else if (0.0 <= SR) {
 
-          Flux[quadpoint][MomX][i] =
-              FluxDir[Dim + 1][quadpoint][MomX][i] * VelL + PresL;
+        FillFlux(PrimL, FL);
+        FillFlux(PrimR, FR);
 
-          Flux[quadpoint][Ener][i] =
-              VelL * (FluxDir[Dim + 1][quadpoint][Ener][i] + PresL);
+        for (int var = 0; var < NumVar; ++var) {
+          Flux[quadpoint][var][i] = (SR * FL[var] - SL * FR[var] +
+                                     SL * SR * (ConR[var] - ConL[var])) /
+                                    (SR - SL);
+        }
 
-        } else if (0.0 <= SR) {
+      } else {
 
-          LF1 = FluxDir[Dim + 1][quadpoint][MomX][i];
+        FillFlux(PrimR, FR);
 
-          LF2 = FluxDir[Dim + 1][quadpoint][MomX][i] * VelL + PresL;
-
-          LF3 = VelL * (FluxDir[Dim + 1][quadpoint][Ener][i] + PresL);
-
-          RF1 = FluxDir[Dim][quadpoint][MomX][iPlus1];
-
-          RF2 = FluxDir[Dim][quadpoint][MomX][iPlus1] * VelL + PresL;
-
-          RF3 = VelL * (FluxDir[Dim][quadpoint][Ener][iPlus1] + PresL);
-
-          Flux[quadpoint][Dens][i] =
-              (SR * LF1 - SL * RF1 +
-               SL * SR *
-                   (FluxDir[Dim][quadpoint][Dens][iPlus1] -
-                    FluxDir[Dim + 1][quadpoint][Dens][i])) /
-              (SR - SL);
-
-          Flux[quadpoint][MomX][i] =
-              (SR * LF2 - SL * RF2 +
-               SL * SR *
-                   (FluxDir[Dim][quadpoint][MomX][iPlus1] -
-                    FluxDir[Dim + 1][quadpoint][MomX][i])) /
-              (SR - SL);
-
-          Flux[quadpoint][Ener][i] =
-              (SR * LF3 - SL * RF3 +
-               SL * SR *
-                   (FluxDir[Dim][quadpoint][Ener][iPlus1] -
-                    FluxDir[Dim + 1][quadpoint][Ener][i])) /
-              (SR - SL);
-
-        } else {
-
-          Flux[quadpoint][Dens][i] = FluxDir[Dim][quadpoint][MomX][iPlus1];
-
-          Flux[quadpoint][MomX][i] =
-              FluxDir[Dim][quadpoint][MomX][iPlus1] * VelR + PresR;
-
-          Flux[quadpoint][Ener][i] =
-              VelR * (FluxDir[Dim][quadpoint][Ener][iPlus1] + PresR);
+        for (int var = 0; var < NumVar; ++var) {
+          Flux[quadpoint][var][i] = FR[var];
         }
       }
     }
   }
 };
 
-void FluxClass::HLLSide(int xdir) {
+void FluxClass::HLLSide(int i) {
 
-  int i, iPlus1, Dim, quadpoint;
+  double CsL, CsR, SL, SR, LamLR, LamLL, LamRL, LamRR;
+  double PrimL[NumVar], PrimR[NumVar], ConL[NumVar], ConR[NumVar];
+  double FL[NumVar], FR[NumVar];
 
-  double VelL, VelR, PresL, PresR, CsL, CsR, SL, SR, LF1, LF2, LF3, RF1, RF2,
-      RF3;
+  for (int Dim = 0; Dim < NDIMS * 2; Dim += 2) {
+    int quadpoint = 0;
 
-  i = xdir;
-  iPlus1 = i + 1;
-  Dim = 0;
-  quadpoint = 0;
+    for (int var = 0; var < NumVar; ++var) {
+      ConL[var] = FluxDir[Right][quadpoint][var][i];
+      ConR[var] = FluxDir[Left][quadpoint][var][i + 1];
+    }
 
-  VelL = FluxDir[Dim + 1][quadpoint][Dim + 1][i] /
-         FluxDir[Dim + 1][quadpoint][Dens][i];
+    ConConvert(ConL, PrimL);
+    ConConvert(ConR, PrimR);
 
-  VelR = FluxDir[Dim][quadpoint][Dim + 1][iPlus1] /
-         FluxDir[Dim][quadpoint][Dens][iPlus1];
+    CsL = HD_CS(PrimL);
+    CsR = HD_CS(PrimR);
 
-  // This Pressure assumes 1D, make sure to change later
-  PresL = (GAMMA - 1.0) * (FluxDir[Dim + 1][quadpoint][Ener][i] -
-                           VelL * FluxDir[Dim + 1][quadpoint][MomX][i] / 2.0);
+    SignalSpeed(PrimL, CsL, LamLL, LamLR);
+    SignalSpeed(PrimR, CsR, LamRL, LamRR);
 
-  PresR = (GAMMA - 1.0) * (FluxDir[Dim][quadpoint][Ener][iPlus1] -
-                           VelR * FluxDir[Dim][quadpoint][MomX][iPlus1] / 2.0);
+    SL = std::fmin(LamLL, LamRL);
+    SR = std::fmax(LamLR, LamRR);
 
-  CsL = std::sqrt(GAMMA * PresL / FluxDir[Dim + 1][quadpoint][Dens][i]);
-  CsR = std::sqrt(GAMMA * PresR / FluxDir[Dim][quadpoint][Dens][iPlus1]);
+    if (0.0 <= SL) {
+      FillFlux(PrimL, FL);
 
-  SL = std::fmin(VelL - CsL, VelR - CsR);
-  SR = std::fmax(VelL + CsL, VelR + CsR);
+      for (int var = 0; var < NumVar; ++var) {
+        Flux[quadpoint][var][i] = FL[var];
+      }
 
-  if (0.0 <= SL) {
-    Flux[quadpoint][Dens][i] = FluxDir[Dim + 1][quadpoint][MomX][i];
+    } else if (0.0 <= SR) {
 
-    Flux[quadpoint][MomX][i] =
-        FluxDir[Dim + 1][quadpoint][MomX][i] * VelL + PresL;
+      FillFlux(PrimL, FL);
+      FillFlux(PrimR, FR);
 
-    Flux[quadpoint][Ener][i] =
-        VelL * (FluxDir[Dim + 1][quadpoint][Ener][i] + PresL);
+      for (int var = 0; var < NumVar; ++var) {
+        Flux[quadpoint][var][i] =
+            (SR * FL[var] - SL * FR[var] + SL * SR * (ConR[var] - ConL[var])) /
+            (SR - SL);
+      }
 
-  } else if (0.0 <= SR) {
+    } else {
 
-    LF1 = FluxDir[Dim + 1][quadpoint][MomX][i];
+      FillFlux(PrimR, FR);
 
-    LF2 = FluxDir[Dim + 1][quadpoint][MomX][i] * VelL + PresL;
-
-    LF3 = VelL * (FluxDir[Dim + 1][quadpoint][Ener][i] + PresL);
-
-    RF1 = FluxDir[Dim][quadpoint][MomX][iPlus1];
-
-    RF2 = FluxDir[Dim][quadpoint][MomX][iPlus1] * VelL + PresL;
-
-    RF3 = VelL * (FluxDir[Dim][quadpoint][Ener][iPlus1] + PresL);
-
-    Flux[quadpoint][Dens][i] = (SR * LF1 - SL * RF1 +
-                                SL * SR *
-                                    (FluxDir[Dim][quadpoint][Dens][iPlus1] -
-                                     FluxDir[Dim + 1][quadpoint][Dens][i])) /
-                               (SR - SL);
-
-    Flux[quadpoint][MomX][i] = (SR * LF2 - SL * RF2 +
-                                SL * SR *
-                                    (FluxDir[Dim][quadpoint][MomX][iPlus1] -
-                                     FluxDir[Dim + 1][quadpoint][MomX][i])) /
-                               (SR - SL);
-
-    Flux[quadpoint][Ener][i] = (SR * LF3 - SL * RF3 +
-                                SL * SR *
-                                    (FluxDir[Dim][quadpoint][Ener][iPlus1] -
-                                     FluxDir[Dim + 1][quadpoint][Ener][i])) /
-                               (SR - SL);
-
-  } else {
-
-    Flux[quadpoint][Dens][i] = FluxDir[Dim][quadpoint][MomX][iPlus1];
-
-    Flux[quadpoint][MomX][i] =
-        FluxDir[Dim][quadpoint][MomX][iPlus1] * VelR + PresR;
-
-    Flux[quadpoint][Ener][i] =
-        VelR * (FluxDir[Dim][quadpoint][Ener][iPlus1] + PresR);
+      for (int var = 0; var < NumVar; ++var) {
+        Flux[quadpoint][var][i] = FR[var];
+      }
+    }
   }
 };
