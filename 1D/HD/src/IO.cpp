@@ -8,9 +8,9 @@ void Domain::writeResults() {
 
     for (int i = XStart; i < XEnd; i++) {
 
-      fprintf(File1, "%.9g ", DENS[i]);
-      fprintf(File2, "%.9g ", XVEL[i]);
-      fprintf(File3, "%.9g ", PRES[i]);
+      fprintf(File1, "%.9g ", DensP[i]);
+      fprintf(File2, "%.9g ", Xvel[i]);
+      fprintf(File3, "%.9g ", Pres[i]);
     }
     fprintf(File1, "\n");
     fprintf(File2, "\n");

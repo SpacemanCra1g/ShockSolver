@@ -65,7 +65,8 @@ void Domain::Find_dt() {
 
     SignalSpeed(Prims, Cs, i, CsL, CsR);
 
-    Buffer[i] = std::fmax(dx / std::fabs(CsL), dx / std::fabs(CsR));
+    double temp = std::fmax(std::fabs(CsL), std::fabs(CsR));
+    Buffer[i] = dx / temp;
   }
 
   dt = FindMinimum(Buffer, XEnd + 1);

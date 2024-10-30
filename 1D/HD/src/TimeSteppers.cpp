@@ -1,34 +1,14 @@
 #include "../include/DomainClass.hpp"
-#include "../include/FluxClass.hpp"
-
-void FluxClass::SpaceRecon() {
-  int quad = 0;
-
-  for (int var = 0; var < NumVar; ++var) {
-    for (int x = 1; x < REdgeX - 1; ++x) {
-
-#if SpaceMethod == Weno
-      WENO(quad, var, x);
-#elif SpaceMethod == Fog
-      FOG(quad, var, x);
-#elif SpaceMethod == Gp1
-      GPR1(quad, var, x);
-#elif SpaceMethod == Gp2
-      GPR2(quad, var, x);
-#elif SpaceMethod == Mood53
-      Mood(quad, var, x);
-#endif
-    }
-  }
-}
 
 void Domain::ForwardEuler() {
-  Flux.SpaceRecon();
+
+  (*this.*SpaceRecon)(XStart - 1, XEnd + 2);
+
   MoodFinished = false;
 
-  Flux.HLL();
+  Hll(XStart - 1, XEnd + 1);
 
-  Flux.Recon();
+  Recon(XStart, XEnd);
 
 #if SpaceMethod == Mood53
   while (!MoodFinished) {
@@ -36,7 +16,7 @@ void Domain::ForwardEuler() {
   }
 #endif
 
-  (*this.*BC)("Cons");
+  (*this.*BC)();
 }
 
 void Domain::RK3() {

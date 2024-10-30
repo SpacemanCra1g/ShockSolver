@@ -1,5 +1,4 @@
 #include "../include/CholeskySolver.hpp"
-
 #include <iostream>
 
 void Cholesky_Decomposition(long double A[], int n) {

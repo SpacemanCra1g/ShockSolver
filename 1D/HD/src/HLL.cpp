@@ -1,115 +1,36 @@
-#include "../include/FluxClass.hpp"
-#include "../include/VarConvert.hpp"
-#include <variant>
+#include "../include/DomainClass.hpp"
 
-void FluxClass::HLL() {
+void Domain::Hll(int Start, int Stop) {
 
-  double CsL, CsR, SL, SR, LamLR, LamLL, LamRL, LamRR;
-  double PrimL[NumVar], PrimR[NumVar], ConL[NumVar], ConR[NumVar];
-  double FL[NumVar], FR[NumVar];
+  double SL, SR;
+  double Eig_CL, Eig_CR;
+  double Eig_RL, Eig_RR;
 
-  for (int Dim = 0; Dim < NDIMS * 2; Dim += 2) {
-    int quadpoint = 0;
-    for (int i = 1; i < xDim - 1; ++i) {
+  Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], Start, Stop);
+  Cons2Prim(FluxWalls_Cons[RIGHT], FluxWalls_Prims[RIGHT], Start, Stop);
 
-      for (int var = 0; var < NumVar; ++var) {
-        ConL[var] = FluxDir[Right][quadpoint][var][i];
-        ConR[var] = FluxDir[Left][quadpoint][var][i + 1];
-      }
+  Find_Cs(FluxWalls_Prims[LEFT], RS_CsR, Start, Stop);
+  Find_Cs(FluxWalls_Prims[RIGHT], RS_CsL, Start, Stop);
 
-      ConConvert(ConL, PrimL);
-      ConConvert(ConR, PrimR);
+  for (int i = Start; i < Stop; ++i) {
 
-      CsL = HD_CS(PrimL);
-      CsR = HD_CS(PrimR);
+    SignalSpeed(FluxWalls_Prims[LEFT], RS_CsR, i + 1, Eig_RL, Eig_RR);
+    SignalSpeed(FluxWalls_Prims[RIGHT], RS_CsL, i, Eig_CL, Eig_CR);
 
-      SignalSpeed(PrimL, CsL, LamLL, LamLR);
-      SignalSpeed(PrimR, CsR, LamRL, LamRR);
-
-      SL = std::fmin(LamLL, LamRL);
-      SR = std::fmax(LamLR, LamRR);
-
-      if (0.0 <= SL) {
-        FillFlux(PrimL, FL);
-
-        for (int var = 0; var < NumVar; ++var) {
-          Flux[quadpoint][var][i] = FL[var];
-        }
-
-      } else if (0.0 <= SR) {
-
-        FillFlux(PrimL, FL);
-        FillFlux(PrimR, FR);
-
-        for (int var = 0; var < NumVar; ++var) {
-          Flux[quadpoint][var][i] = (SR * FL[var] - SL * FR[var] +
-                                     SL * SR * (ConR[var] - ConL[var])) /
-                                    (SR - SL);
-        }
-
-      } else {
-
-        FillFlux(PrimR, FR);
-
-        for (int var = 0; var < NumVar; ++var) {
-          Flux[quadpoint][var][i] = FR[var];
-        }
-      }
-    }
-  }
-};
-
-void FluxClass::HLLSide(int i) {
-
-  double CsL, CsR, SL, SR, LamLR, LamLL, LamRL, LamRR;
-  double PrimL[NumVar], PrimR[NumVar], ConL[NumVar], ConR[NumVar];
-  double FL[NumVar], FR[NumVar];
-
-  for (int Dim = 0; Dim < NDIMS * 2; Dim += 2) {
-    int quadpoint = 0;
-
-    for (int var = 0; var < NumVar; ++var) {
-      ConL[var] = FluxDir[Right][quadpoint][var][i];
-      ConR[var] = FluxDir[Left][quadpoint][var][i + 1];
-    }
-
-    ConConvert(ConL, PrimL);
-    ConConvert(ConR, PrimR);
-
-    CsL = HD_CS(PrimL);
-    CsR = HD_CS(PrimR);
-
-    SignalSpeed(PrimL, CsL, LamLL, LamLR);
-    SignalSpeed(PrimR, CsR, LamRL, LamRR);
-
-    SL = std::fmin(LamLL, LamRL);
-    SR = std::fmax(LamLR, LamRR);
+    SL = std::fmin(Eig_RL, Eig_CL);
+    SR = std::fmax(Eig_RR, Eig_CR);
 
     if (0.0 <= SL) {
-      FillFlux(PrimL, FL);
+      HD_Flux(CellFlux, FluxWalls_Prims[RIGHT], FluxWalls_Cons[RIGHT], i, i);
+    }
 
-      for (int var = 0; var < NumVar; ++var) {
-        Flux[quadpoint][var][i] = FL[var];
-      }
+    else if (0.0 <= SR) {
+      HD_HLL_Flux(CellFlux, FluxWalls_Prims[RIGHT], FluxWalls_Cons[RIGHT],
+                  FluxWalls_Prims[LEFT], FluxWalls_Cons[LEFT], SL, SR, i);
+    }
 
-    } else if (0.0 <= SR) {
-
-      FillFlux(PrimL, FL);
-      FillFlux(PrimR, FR);
-
-      for (int var = 0; var < NumVar; ++var) {
-        Flux[quadpoint][var][i] =
-            (SR * FL[var] - SL * FR[var] + SL * SR * (ConR[var] - ConL[var])) /
-            (SR - SL);
-      }
-
-    } else {
-
-      FillFlux(PrimR, FR);
-
-      for (int var = 0; var < NumVar; ++var) {
-        Flux[quadpoint][var][i] = FR[var];
-      }
+    else {
+      HD_Flux(CellFlux, FluxWalls_Prims[LEFT], FluxWalls_Cons[LEFT], i + 1, i);
     }
   }
 };

@@ -1,31 +1,36 @@
 #include "../include/DomainClass.hpp"
 #include "../include/Parameters.h"
-// #include <cfenv>
+#include <cfenv>
+#include <iomanip>
 #include <iostream>
 
 int main() {
-  // feenableexcept(FE_INVALID);
+  feenableexcept(FE_INVALID);
+  std::cout << std::setprecision(15);
 
   Domain Solver;
 
-  Solver.SolutionKer.calculate_Preds1D(2);
-
   (Solver.*(Solver.IC))();
 
-  (Solver.*(Solver.BC))("Cons");
+  (Solver.*(Solver.BC))();
 
+  Solver.count = 0;
   do {
+
     Solver.Find_dt();
 
     Solver.T += Solver.dt;
 
     (Solver.*(Solver.RK_TimeStepper))();
+    Solver.count++;
 
-    std::cout << "The time is: " << Solver.T;
-    std::cout << " dt = :" << Solver.dt << std::endl;
+    Solver.PrintProgress();
+  }
 
-  } while (Solver.T < TN);
+  while (Solver.T < TN);
 
   Solver.writeResults();
   return 0;
+
+  // Create Merge Conflict: Diogenes Version 1.0
 }
