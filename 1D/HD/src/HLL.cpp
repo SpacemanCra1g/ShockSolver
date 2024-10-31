@@ -16,6 +16,10 @@ void FluxClass::HLL() {
         ConL[var] = FluxDir[Right][quadpoint][var][i];
         ConR[var] = FluxDir[Left][quadpoint][var][i + 1];
       }
+      // for (int var = 0; var < NumVar; ++var) {
+      //   std::cout << ConR[var] << " ";
+      // }
+      // std::cout << "Cell Number " << i << std::endl;
 
       ConConvert(ConL, PrimL);
       ConConvert(ConR, PrimR);
@@ -23,15 +27,21 @@ void FluxClass::HLL() {
       CsL = HD_CS(PrimL);
       CsR = HD_CS(PrimR);
 
+      // for (int var = 0; var < NumVar; ++var) {
+
       SignalSpeed(PrimL, CsL, LamLL, LamLR);
       SignalSpeed(PrimR, CsR, LamRL, LamRR);
 
       SL = std::fmin(LamLL, LamRL);
       SR = std::fmax(LamLR, LamRR);
 
+      // std::cout << SL << " " << SR << " ";
+      // // }
+      // std::cout << "Cell Number " << i << std::endl;
+
       if (0.0 <= SL) {
         FillFlux(PrimL, FL);
-
+        // std::cout << "LEFT" << std::endl;
         for (int var = 0; var < NumVar; ++var) {
           Flux[quadpoint][var][i] = FL[var];
         }

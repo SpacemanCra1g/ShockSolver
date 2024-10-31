@@ -22,18 +22,33 @@ void Domain::NeumannBC(std::string Vars) {
 }
 void Domain::ShuOsherBC(std::string Vars) {
 
-  if (Vars == "Cons") {
-    for (int i = 0; i < NGC; ++i) {
+  double d = 3.857143;
+  double vx = 2.629369;
+  double p = 10.333333333;
+  double e = p / ((GAMMA - 1.0) * d);
 
-      for (int var = 0; var < NDIMS; ++var) {
-        // Left edge of X direction
-        std::fill(&Cons[Tidx(var, 1)], &Cons[Tidx(var, NGC)],
-                  Cons[Tidx(var, 0)]);
+  for (int i = 0; i < NGC; ++i) {
+    Cons[Tidx(Dens, i)] = d;
+    Cons[Tidx(MomX, i)] = d * vx;
+    Cons[Tidx(Ener, i)] = vx * vx * d * 0.5 + e * d;
 
-        // Right edge of X direction
-        std::fill(&Cons[Tidx(var, XEnd)], &Cons[Tidx(var, REdgeX)],
-                  Cons[Tidx(var, REdgeX - 1)]);
-      }
+    for (int var = 0; var < NumVar; ++var) {
+      Cons[Tidx(var, XEnd + i)] = Cons[Tidx(var, XEnd - 1)];
     }
   }
+
+  // if (Vars == "Cons") {
+  //   for (int i = 0; i < NGC; ++i) {
+
+  //     for (int var = 0; var < NDIMS; ++var) {
+  //       // Left edge of X direction
+  //       std::fill(&Cons[Tidx(var, 1)], &Cons[Tidx(var, NGC)],
+  //                 Cons[Tidx(var, 0)]);
+
+  //       // Right edge of X direction
+  //       std::fill(&Cons[Tidx(var, XEnd)], &Cons[Tidx(var, REdgeX)],
+  //                 Cons[Tidx(var, REdgeX - 1)]);
+  //     }
+  //   }
+  // }
 }

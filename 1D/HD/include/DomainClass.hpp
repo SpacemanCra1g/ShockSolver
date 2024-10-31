@@ -25,6 +25,7 @@ public:
   double T, dt, dt_sim;
   double *CopyBuffer;
   double *ConsCopy;
+  int count;
   bool MoodFinished = true;
 
   double *Cons;
@@ -71,6 +72,10 @@ public:
   /***********************************************/
   Domain() {
 
+    // Prims[Dens] = DENS;
+    // Prims[VelX] = XVEL;
+    // Prims[Pres] = PRES;
+
 #if SpaceMethod == Gp1
     SolutionKer.calculate_Preds1D(1);
     Flux.Kern = &SolutionKer;
@@ -100,7 +105,7 @@ public:
     PRES = new double[xDim];
     XVEL = new double[xDim];
 
-    MOMX = &Cons[xDim];
+    MOMX = &Cons[MomX * xDim];
     ENERGY = &Cons[Ener * (xDim)];
 
     CopyBuffer = new double[xDim * NumVar];

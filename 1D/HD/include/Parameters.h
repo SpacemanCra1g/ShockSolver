@@ -6,9 +6,9 @@
 /****************
  * X Parameters *
  ****************/
-#define NX 200
+#define NX 1000
 #define X0 0.0
-#define XN 9.0
+#define XN 1.0
 
 /****************
  * Y Parameters *
@@ -22,7 +22,7 @@
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN 1.8
+#define TN .25
 
 /*****************
  *Run Parameters *
@@ -31,13 +31,13 @@
 
 #define GAMMA 1.4
 #define CFL 0.8
-#define TestProblem ShuOsher
-#define BoundaryCon Shu
+#define TestProblem Sod
+#define BoundaryCon Neumann
 
 #define RK_Method 3
 #define ell 6.0
 #define MoodOrder 5
-#define SlowStart True
+#define SlowStart false
 
 #define nqp 1
 

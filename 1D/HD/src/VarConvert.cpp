@@ -11,7 +11,7 @@ void Domain::Prims2Cons() {
 void Domain::Cons2Prim() {
 
   for (int i = 0; i < xDim; ++i) {
-    XVEL[i] = XVEL[i] / DENS[i];
+    XVEL[i] = MOMX[i] / DENS[i];
     PRES[i] = (GAMMA - 1.0) * (ENERGY[i] - XVEL[i] * XVEL[i] * DENS[i] / 2.0);
   }
 }
@@ -48,7 +48,9 @@ void SignalSpeed(double *P, double CS, double &CSL, double &CSR) {
 void FillFlux(double P[], double F[]) {
   F[Dens] = P[Dens] * P[VelX];
   F[MomX] = P[Dens] * P[VelX] * P[VelX] + P[Pres];
-  F[Ener] =
-      (P[Pres] / (GAMMA - 1) + .5 * P[VelX] * P[VelX] * P[Dens] + P[Pres]) *
-      P[VelX];
+  F[Ener] = P[VelX] * ((std::pow(P[VelX], 2) * P[Dens] / 2.0) +
+                       P[Pres] / (GAMMA - 1.0) + P[Pres]);
+
+  // (P[Pres] / (GAMMA - 1) + .5 * P[VelX] * P[VelX] * P[Dens] + P[Pres]) *
+  //     P[VelX];
 }

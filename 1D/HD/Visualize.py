@@ -27,9 +27,12 @@ if len(np.shape(p)) == 1:
 
 
     plt.plot(x,plotVar,'r-', markerfacecolor='none')
+    # plt.plot(x,u,'g', markerfacecolor='none')
+    # plt.plot(x,p,'b--', markerfacecolor='none')
     plt.title("GP-R1 RK3, nx = 256 NN")
+    # plt.legend(["Dens","Vx","PresX"])
     plt.grid()
-
+    plt.savefig("Bad.png")
     plt.show()
 
 elif len(np.shape(rho)) == 2:

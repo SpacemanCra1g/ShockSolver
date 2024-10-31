@@ -22,8 +22,16 @@ void Domain::Find_dt() {
   Find_Cs();
 
   for (int i = 0; i < xDim; ++i) {
+    if (count == 1) {
+      // std::cout << Cs[i] << " Cell Number: " << i << std::endl;
+    }
     Buffer[i] = dx / (std::fabs(XVEL[i]) + Cs[i]);
   }
+
+  // if (count == 1) {
+  //   exit(0);
+  // }
+
   dt = FindMinimum(Buffer, xDim);
   dt *= CFL;
 
@@ -31,7 +39,7 @@ void Domain::Find_dt() {
     dt = TN - T;
   }
 
-#if SlowStart == True
+#if SlowStart
   if (dt > dt_sim) {
     dt = dt_sim;
     dt_sim *= 2.0;
