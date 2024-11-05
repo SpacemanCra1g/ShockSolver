@@ -1,19 +1,20 @@
 #include "../include/DomainClass.hpp"
 // #include "../include/SRVarConvert.hpp"
 
-double FindMinimum(double *Array, const int size) {
-  double Min = 1.e10;
+double FindMaximum(double *Array, const int size) {
+  double Max = 1.e-10;
   for (int i = XStart - 1; i < size; ++i) {
-    if (Min > Array[i]) {
-      Min = Array[i];
+    if (Max < Array[i]) {
+      Max = Array[i];
     }
   }
-  return Min;
+  return Max;
 }
 
 void Domain::SignalSpeed(double *Uin, double *CS, int i, double &CSL,
                          double &CSR) {
-  double vx, vy, vz, cs2, v2, sroot; // Delt2, Nu2, lor;
+  double vx, vy, vz, cs2, v2, sroot; // Delt2, Nu2,
+  double lor;
 
   vx = Uin[Tidx(VELX, i)];
   vy = Uin[Tidx(VELY, i)];
@@ -21,23 +22,18 @@ void Domain::SignalSpeed(double *Uin, double *CS, int i, double &CSL,
   cs2 = CS[i];
 
   v2 = vx * vx + vy * vy + vz * vz;
+  lor = 1.0 / std::sqrt(1.0 - v2);
 
-  sroot =
-      std::sqrt(cs2 * (1.0 - vx * vx - (vy + vy + vz * vz) * cs2 * (1.0 - v2)));
+  sroot = cs2 / (lor * lor * (1 - cs2));
+  CSR = (vx + std::sqrt(sroot * (1.0 - vx * vx + sroot))) / (1 + sroot);
+  CSL = (vx - std::sqrt(sroot * (1.0 - vx * vx + sroot))) / (1 + sroot);
 
-  // lor = 1.0 / (std::sqrt(1.0 - v2));
-
-  // Delt2 = 1.0 - v2 * cs2;
-  // Nu2 = 1.0 - vx * vx - cs2 * (vy * vy + vz * vz);
-
-  // sroot = std::sqrt(cs2 * Nu2);
-
-  CSR = (vx * (1.0 - cs2) + sroot) / (1.0 - v2 * cs2);
-  CSL = (vx * (1.0 - cs2) - sroot) / (1.0 - v2 * cs2);
-  // double Norm = 0.0;
-  // for (int var = VELX; var <= VELZ; ++var){
-  //     Norm += Uin[Tidx(var,i)] * Uin[Tidx(var,i)];
-  // }
+  // The other attept
+  // sroot =
+  //     std::sqrt(cs2 * (1.0 - vx * vx - (vy + vy + vz * vz) * cs2 * (1.0 -
+  //     v2)));
+  // CSR = (vx * (1.0 - cs2) + sroot) / (1.0 - v2 * cs2);
+  // CSL = (vx * (1.0 - cs2) - sroot) / (1.0 - v2 * cs2);
 }
 
 void Domain::Find_Cs(double *Uin, double *CS, int start, int end) {
@@ -65,11 +61,12 @@ void Domain::Find_dt() {
 
     SignalSpeed(Prims, Cs, i, CsL, CsR);
 
-    Buffer[i] = std::fmax(dx / std::fabs(CsL), dx / std::fabs(CsR));
+    Buffer[i] = std::fmax(std::fabs(CsL), std::fabs(CsR));
+    Buffer[i] = std::fmax(Buffer[i], std::fabs(Prims[Tidx(VELX, i)]));
   }
 
-  dt = FindMinimum(Buffer, XEnd + 1);
-  dt *= CFL;
+  dt = dx / FindMaximum(Buffer, XEnd + 1);
+  dt *= CFL * .8;
 
   if (T + dt > TN) {
     dt = TN - T;

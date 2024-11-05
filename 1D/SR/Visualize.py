@@ -28,10 +28,12 @@ if len(np.shape(p)) == 1:
 
 
     plt.plot(x,u,'b')
-    plt.plot(x,rho/35,'k-')
+    plt.plot(x,rho/25,'k-')
     plt.plot(x,p/1000,'r')
-    # plt.scatter(x,u,color='b')
-    plt.title("GP-R1 RK3, nx = 256 NN")
+    # plt.scatter(x,u,color='b',s=5, marker='.')
+    # plt.scatter(x,rho/25,color='k',s=5,marker='.')
+    # plt.scatter(x,p/1000,color='r',s=5,marker='.')
+    plt.title("V_yL = 0.9, V_yR = 0.9, Nx = 800, HLL")
     plt.grid()
     plt.legend(["Vx","Rho","Pres"])
 

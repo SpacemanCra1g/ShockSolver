@@ -11,8 +11,8 @@ void Domain::Weno(int start, int stop) {
 
       Center = &Cons[Tidx(var, xdir)];
 
-      p1L = (-1.0 / 6.0) * (Center[-2]) + (5.0 / 6.0) * (Center[-1]) +
-            (1.0 / 3.0) * (Center[0]);
+      n p1L = (-1.0 / 6.0) * (Center[-2]) + (5.0 / 6.0) * (Center[-1]) +
+              (1.0 / 3.0) * (Center[0]);
 
       p1R = (1.0 / 3.0) * (Center[-2]) + (-7.0 / 6.0) * (Center[-1]) +
             (11.0 / 6.0) * (Center[0]);
@@ -72,24 +72,22 @@ void Domain::Weno(int start, int stop) {
       FluxWalls_Cons[RIGHT][Tidx(var, xdir)] =
           w1R * p1R + w2R * p2R + w3R * p3R;
 
-      // if (var == PRES) {
-      //   double PresTest =
-      //       (Cons[Tidx(PRES, xdir)] - FluxWalls_Cons[LEFT][Tidx(PRES, xdir)])
-      //       * (FluxWalls_Cons[RIGHT][Tidx(PRES, xdir)] - Cons[Tidx(PRES,
-      //       xdir)]);
+      if (var == PRES) {
+        double PresTest =
+            (Cons[Tidx(PRES, xdir)] - FluxWalls_Cons[LEFT][Tidx(PRES, xdir)]) *
+            (FluxWalls_Cons[RIGHT][Tidx(PRES, xdir)] - Cons[Tidx(PRES, xdir)]);
 
-      //   double DensTest =
-      //       (Cons[Tidx(DENS, xdir)] - FluxWalls_Cons[LEFT][Tidx(DENS, xdir)])
-      //       * (FluxWalls_Cons[RIGHT][Tidx(DENS, xdir)] - Cons[Tidx(DENS,
-      //       xdir)]);
+        double DensTest =
+            (Cons[Tidx(DENS, xdir)] - FluxWalls_Cons[LEFT][Tidx(DENS, xdir)]) *
+            (FluxWalls_Cons[RIGHT][Tidx(DENS, xdir)] - Cons[Tidx(DENS, xdir)]);
 
-      //   if (PresTest < 0.0 || DensTest < 0.0) {
-      //     for (int vars = DENS; vars <= ENER; ++var) {
-      //       FluxDir[Left][qp][var][idx(xdir)] = Cons[Tidx(var, xdir)];
-      //       FluxDir[Right][qp][var][idx(xdir)] = Cons[Tidx(var, xdir)];
-      //     }
-      //   }
-      // }
+        if (PresTest < 0.0 || DensTest < 0.0) {
+          for (int var = DENS; var <= ENER; ++var) {
+            FluxWalls_Cons[LEFT][Tidx(var, xdir)] = Cons[Tidx(var, xdir)];
+            FluxWalls_Cons[RIGHT][Tidx(var, xdir)] = Cons[Tidx(var, xdir)];
+          }
+        }
+      }
     }
   }
 }

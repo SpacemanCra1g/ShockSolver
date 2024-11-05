@@ -8,45 +8,47 @@ void Domain::Hll(int Start, int Stop) {
   double *LeftState_Cons, *RightState_Cons;
   double *LeftState_Prims, *RightState_Prims;
   int LeftIdx, RightIdx;
-  int err1, err2;
 
-  err1 = Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], Start, Stop);
-  err2 = Cons2Prim(FluxWalls_Cons[RIGHT], FluxWalls_Prims[RIGHT], Start, Stop);
+  Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], Start, Stop);
+  Cons2Prim(FluxWalls_Cons[RIGHT], FluxWalls_Prims[RIGHT], Start, Stop);
 
-  while (err1) {
-    for (int var = 0; var < NumVar; ++var) {
-      FluxWalls_Cons[LEFT][Tidx(var, err1)] = Cons[Tidx(var, err1)];
-    }
-    err1 = Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], err1, Stop);
-  }
+  // while (err1) {
+  //   for (int var = 0; var < NumVar; ++var) {
+  //     FluxWalls_Cons[LEFT][Tidx(var, err1)] = Cons[Tidx(var, err1)];
+  //   }
+  //   err1 = Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], err1,
+  //   Stop);
+  // }
 
-  while (err2) {
-    for (int var = 0; var < NumVar; ++var) {
-      FluxWalls_Cons[RIGHT][Tidx(var, err1)] = Cons[Tidx(var, err1)];
-    }
-    err2 = Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], err2, Stop);
-  }
+  // while (err2) {
+  //   for (int var = 0; var < NumVar; ++var) {
+  //     FluxWalls_Cons[RIGHT][Tidx(var, err1)] = Cons[Tidx(var, err1)];
+  //   }
+  //   err2 = Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], err2,
+  //   Stop);
+  // }
 
-#if SpaceMethod == WENO
-  bool Failure;
-  for (int i = Start; i < Stop; ++i) {
-    Failure = false;
-    for (int var = 0; var < NumVar; ++var) {
-      err1 = (FluxWalls_Cons[RIGHT][Tidx(var, i)] - Cons[Tidx(var, i)]) *
-             (Cons[Tidx(var, i)] - FluxWalls_Cons[LEFT][Tidx(var, i)]);
-      if (err1 < 0.0) {
-        Failure = true;
-      }
-    }
-    if (Failure) {
-      for (int var = 0; var < NumVar; ++var) {
-        FluxWalls_Cons[LEFT][Tidx(var, i)] = Cons[Tidx(var, i)];
-      }
-      err1 = Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], i, i + 1);
-      err2 = Cons2Prim(FluxWalls_Cons[RIGHT], FluxWalls_Prims[RIGHT], i, i + 1);
-    }
-  }
-#endif
+  // #if SpaceMethod == WENO
+  //   bool Failure;
+  //   for (int i = Start; i < Stop; ++i) {
+  //     Failure = false;
+  //     for (int var = 0; var < NumVar; ++var) {
+  //       err1 = (FluxWalls_Cons[RIGHT][Tidx(var, i)] - Cons[Tidx(var, i)]) *
+  //              (Cons[Tidx(var, i)] - FluxWalls_Cons[LEFT][Tidx(var, i)]);
+  //       if (err1 < 0.0) {
+  //         Failure = true;
+  //       }
+  //     }
+  //     if (Failure) {
+  //       for (int var = 0; var < NumVar; ++var) {
+  //         FluxWalls_Cons[LEFT][Tidx(var, i)] = Cons[Tidx(var, i)];
+  //       }
+  //       err1 = Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], i, i +
+  //       1); err2 = Cons2Prim(FluxWalls_Cons[RIGHT], FluxWalls_Prims[RIGHT],
+  //       i, i + 1);
+  //     }
+  //   }
+  // #endif
 
   Find_Cs(FluxWalls_Prims[LEFT], RS_CsL, Start, Stop);
   Find_Cs(FluxWalls_Prims[RIGHT], RS_CsR, Start, Stop);

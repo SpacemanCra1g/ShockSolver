@@ -22,6 +22,7 @@ public:
   double T, dt, dt_sim;
   double *CopyBuffer;
   double *ConsCopy;
+  double *U1, *U2, *U3, *U4, *Fl, *FU3, *FU4;
   double *Cons, *Prims;
   bool MoodFinished = true;
   int *MoodOrd;
@@ -29,6 +30,7 @@ public:
 
   void (Domain::*BC)();
   void (Domain::*IC)();
+  void (Domain::*RiemannSolver)(int, int);
   void (Domain::*RK_TimeStepper)();
   void (Domain::*SpaceRecon)(int, int);
 
@@ -55,6 +57,17 @@ public:
 
     CellFlux = new double[NumVar * xDim];
     CopyBuffer = new double[NumVar * xDim];
+
+#if RK_Method > 3
+    U1 = new double[NumVar * xDim];
+    U2 = new double[NumVar * xDim];
+    U3 = new double[NumVar * xDim];
+    U4 = new double[NumVar * xDim];
+    FU3 = new double[NumVar * xDim];
+    FU4 = new double[NumVar * xDim];
+    Fl = new double[NumVar * xDim];
+#endif
+
     Buffer = new double[xDim];
     Cs = new double[xDim];
     RS_CsL = new double[xDim];
@@ -120,6 +133,14 @@ public:
     RK_TimeStepper = &Domain::ForwardEuler;
 #elif RK_Method == 3
     RK_TimeStepper = &Domain::RK3;
+#elif RK_Method == 4
+    RK_TimeStepper = &Domain::RK4;
+#endif
+
+#if RIEMANN == HLL
+    RiemannSolver = &Domain::Hll;
+#elif RIEMANN == HLLC
+    RiemannSolver = &Domain::Hllc;
 #endif
   }
 
@@ -149,6 +170,7 @@ public:
   // Defined in the TimeSteppers.cpp file
   void RK3();
   void ForwardEuler();
+  void RK4();
 
   // Defined in the IC.cpp file
   void ShuOsherIC();
@@ -181,6 +203,9 @@ public:
   void Hll(int, int);
   void HllSide(int);
 
+  // Defined in the src/HLLC.cpp file
+  void Hllc(int Start, int Stop);
+
   // Defined in the src/UpdateSolution.cpp file
   void Recon(int start, int stop);
 
@@ -198,11 +223,13 @@ public:
   void SR_HLL_Flux(double *Dest, double *PrL, double *CL, double *PrR,
                    double *CR, double SL, double SR, int i);
 
-  void DomainCopy() { std::copy(Cons, Cons + xDim * NumVar, CopyBuffer); }
+  void DomainCopy(double *Uin, double *Ufill) {
+    std::copy(Uin, Uin + xDim * NumVar, Ufill);
+  }
 
-  void DomainAdd(double a, double b) {
-    cblas_dscal(NumVar * xDim, b, Cons, 1);
-    cblas_daxpy(NumVar * xDim, a, CopyBuffer, 1, Cons, 1);
+  void DomainAdd(double a, double b, double *Uin, double *Uresult) {
+    cblas_dscal(NumVar * xDim, b, Uresult, 1);
+    cblas_daxpy(NumVar * xDim, a, Uin, 1, Uresult, 1);
   }
 };
 
