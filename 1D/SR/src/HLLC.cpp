@@ -8,8 +8,10 @@ void Domain::Hllc(int Start, int Stop) {
   double FL[5], FR[5], UL[5], UR[5], UStar[5];
   double p, div, dif;
 
-  Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], Start, Stop);
-  Cons2Prim(FluxWalls_Cons[RIGHT], FluxWalls_Prims[RIGHT], Start, Stop);
+  // Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], Start, Stop);
+  // Cons2Prim(FluxWalls_Cons[RIGHT], FluxWalls_Prims[RIGHT], Start, Stop);
+  Prims2Cons(FluxWalls_Prims[LEFT], FluxWalls_Cons[LEFT], Start, Stop);
+  Prims2Cons(FluxWalls_Prims[RIGHT], FluxWalls_Cons[RIGHT], Start, Stop);
 
   Find_Cs(FluxWalls_Prims[LEFT], RS_CsL, Start, Stop);
   Find_Cs(FluxWalls_Prims[RIGHT], RS_CsR, Start, Stop);

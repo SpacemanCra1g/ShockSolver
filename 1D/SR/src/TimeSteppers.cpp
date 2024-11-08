@@ -2,6 +2,8 @@
 
 void Domain::ForwardEuler() {
 
+  Cons2Prim(Cons, Prims, 0, REdgeX);
+
   (*this.*SpaceRecon)(XStart - 1, XEnd + 1);
 
   // for (int var = 0; var < NumVar; ++var) {
@@ -15,8 +17,8 @@ void Domain::ForwardEuler() {
 
   MoodFinished = false;
 
-  (*this.*RiemannSolver)(XStart - 1, XEnd);
-
+  // (*this.*RiemannSolver)(XStart - 1, XEnd);
+  (this->*RiemannSolver)(XStart - 1, XEnd);
   Recon(XStart, XEnd);
 
 #if SpaceMethod == Mood53
@@ -71,13 +73,13 @@ void Domain::RK4() {
 
   ForwardEuler();
 
-  DomainAdd(1.0, c1, CopyBuffer, Cons);
+  DomainAdd(c1, 1.0, CopyBuffer, Cons);
 
   DomainCopy(Cons, U1);
 
   ForwardEuler();
 
-  DomainAdd(a20, c2, CopyBuffer, Cons);
+  // DomainAdd(c2, a20, c2, CopyBuffer, Cons);
   DomainAdd(a21, 1.0, U1, Cons);
 
   DomainCopy(Cons, U2);

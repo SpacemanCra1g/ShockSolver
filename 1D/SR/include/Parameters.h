@@ -17,11 +17,11 @@
 #define PR 0.01
 
 #define XVELL 0.0
-#define YVELL 0.9
+#define YVELL 0.99
 #define ZVELL 0.0
 
 #define XVELR 0.0
-#define YVELR 0.9
+#define YVELR 0.0
 #define ZVELR 0.0
 
 /****************

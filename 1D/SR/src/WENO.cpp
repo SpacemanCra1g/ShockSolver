@@ -6,13 +6,15 @@ void Domain::Weno(int start, int stop) {
 
   // Probably slow to do this pointer aliasing, but certainly makes
   // the code much easier to write
+  //
+  // Cons2Prim(Cons, Prims, start, stop);
   for (int xdir = start; xdir < stop; ++xdir) {
     for (int var = 0; var < NumVar; ++var) {
 
-      Center = &Cons[Tidx(var, xdir)];
+      Center = &Prims[Tidx(var, xdir)];
 
-      n p1L = (-1.0 / 6.0) * (Center[-2]) + (5.0 / 6.0) * (Center[-1]) +
-              (1.0 / 3.0) * (Center[0]);
+      p1L = (-1.0 / 6.0) * (Center[-2]) + (5.0 / 6.0) * (Center[-1]) +
+            (1.0 / 3.0) * (Center[0]);
 
       p1R = (1.0 / 3.0) * (Center[-2]) + (-7.0 / 6.0) * (Center[-1]) +
             (11.0 / 6.0) * (Center[0]);
@@ -68,23 +70,26 @@ void Domain::Weno(int start, int stop) {
 
       // Populate the Fluxes, of each variable
 
-      FluxWalls_Cons[LEFT][Tidx(var, xdir)] = w1L * p1L + w2L * p2L + w3L * p3L;
-      FluxWalls_Cons[RIGHT][Tidx(var, xdir)] =
+      FluxWalls_Prims[LEFT][Tidx(var, xdir)] =
+          w1L * p1L + w2L * p2L + w3L * p3L;
+      FluxWalls_Prims[RIGHT][Tidx(var, xdir)] =
           w1R * p1R + w2R * p2R + w3R * p3R;
 
       if (var == PRES) {
-        double PresTest =
-            (Cons[Tidx(PRES, xdir)] - FluxWalls_Cons[LEFT][Tidx(PRES, xdir)]) *
-            (FluxWalls_Cons[RIGHT][Tidx(PRES, xdir)] - Cons[Tidx(PRES, xdir)]);
+        double PresTest = (Prims[Tidx(PRES, xdir)] -
+                           FluxWalls_Prims[LEFT][Tidx(PRES, xdir)]) *
+                          (FluxWalls_Prims[RIGHT][Tidx(PRES, xdir)] -
+                           Prims[Tidx(PRES, xdir)]);
 
-        double DensTest =
-            (Cons[Tidx(DENS, xdir)] - FluxWalls_Cons[LEFT][Tidx(DENS, xdir)]) *
-            (FluxWalls_Cons[RIGHT][Tidx(DENS, xdir)] - Cons[Tidx(DENS, xdir)]);
+        double DensTest = (Prims[Tidx(DENS, xdir)] -
+                           FluxWalls_Prims[LEFT][Tidx(DENS, xdir)]) *
+                          (FluxWalls_Prims[RIGHT][Tidx(DENS, xdir)] -
+                           Prims[Tidx(DENS, xdir)]);
 
         if (PresTest < 0.0 || DensTest < 0.0) {
           for (int var = DENS; var <= ENER; ++var) {
-            FluxWalls_Cons[LEFT][Tidx(var, xdir)] = Cons[Tidx(var, xdir)];
-            FluxWalls_Cons[RIGHT][Tidx(var, xdir)] = Cons[Tidx(var, xdir)];
+            FluxWalls_Prims[LEFT][Tidx(var, xdir)] = Prims[Tidx(var, xdir)];
+            FluxWalls_Prims[RIGHT][Tidx(var, xdir)] = Prims[Tidx(var, xdir)];
           }
         }
       }

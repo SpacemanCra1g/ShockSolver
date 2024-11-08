@@ -17,6 +17,12 @@ if len(np.shape(p)) == 1:
     N = int(param[5][11:])
     xstart = float(param[6][11])
     xend = float(param[7][11])
+    VL = str(param[19][14:-1])
+    VR = str(param[23][14:-1])
+    RS = str(param[38][16:-1])
+
+
+
 
 
     deltaX = (xend-xstart)/N
@@ -33,7 +39,8 @@ if len(np.shape(p)) == 1:
     # plt.scatter(x,u,color='b',s=5, marker='.')
     # plt.scatter(x,rho/25,color='k',s=5,marker='.')
     # plt.scatter(x,p/1000,color='r',s=5,marker='.')
-    plt.title("V_yL = 0.9, V_yR = 0.9, Nx = 800, HLL")
+    title = "V_yL = " + VL + ", V_yR = " + VR + ", Nx = " + str(N) + ", " + RS
+    plt.title(title)
     plt.grid()
     plt.legend(["Vx","Rho","Pres"])
 
