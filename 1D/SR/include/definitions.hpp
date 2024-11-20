@@ -9,6 +9,7 @@
 #define GPR1 3
 #define GPR2 4
 #define MOOD531 5
+#define PLM 6
 
 /***********************************/
 /******* Equations of State ********/
@@ -32,6 +33,13 @@
 /*********************************/
 #define HLL 1
 #define HLLC 2
+
+/*******************************/
+/******* Slope Limiters ********/
+/*******************************/
+#define VANLEER 1
+#define MC 2
+#define MINMOD 3
 
 /********************************/
 /******* Indexing Macros ********/

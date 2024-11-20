@@ -2,16 +2,54 @@
 
 void Domain::Weno(int start, int stop) {
   double *Center, p1L, p1R, p2L, p2R, p3L, p3R, Beta1, Beta2, Beta3, eps, w1L,
-      w2L, w3L, w1R, w2R, w3R, wLSum, wRSum;
+      w2L, w3L, w1R, w2R, w3R, wLSum, wRSum, PresTest, DensTest;
+  double **Stencil;
+  double LeftState[5], RightState[5];
+
+  Stencil = new double *[5];
+  for (int i = 0; i < 5; ++i) {
+    Stencil[i] = new double[5];
+  }
 
   // Probably slow to do this pointer aliasing, but certainly makes
   // the code much easier to write
-  //
-  // Cons2Prim(Cons, Prims, start, stop);
+
+  Cons2Prim(Cons, Prims, start, stop);
+#if EvolveChars
+  Find_Cs(Prims, Cs, 0, REdgeX);
+  Chars.EigenVectors(Prims, Cs, 0, REdgeX);
+#endif
+
   for (int xdir = start; xdir < stop; ++xdir) {
+
+    for (int var = 0; var < NumVar; ++var) {
+      for (int stencil = 0; stencil < 5; ++stencil) {
+        Stencil[var][stencil] = Prims[Tidx(var, xdir + stencil - 2)];
+      }
+    }
+
+#if EvolveChars
+    Chars.Char_Stencil(Stencil, xdir, 2);
+#endif
+
+    // for (int j = 2; j < 3; ++j) {
+    //   for (int i = 0; i < 5; ++i) {
+    //     std::cout << Stencil[i][j] << " ";
+    //     LeftState[i] = Stencil[i][j];
+    //   }
+    //   std::cout << std::endl;
+    // }
+
+    // Chars.Char_Recover_Prims(LeftState, FluxWalls_Prims[LEFT], xdir);
+    // for (int i = 0; i < 5; ++i) {
+    //   std::cout << FluxWalls_Prims[LEFT][Tidx(i, xdir)] << " ";
+    // }
+
+    // exit(0);
+
     for (int var = 0; var < NumVar; ++var) {
 
-      Center = &Prims[Tidx(var, xdir)];
+      Center = &Stencil[var][2];
 
       p1L = (-1.0 / 6.0) * (Center[-2]) + (5.0 / 6.0) * (Center[-1]) +
             (1.0 / 3.0) * (Center[0]);
@@ -70,29 +108,87 @@ void Domain::Weno(int start, int stop) {
 
       // Populate the Fluxes, of each variable
 
-      FluxWalls_Prims[LEFT][Tidx(var, xdir)] =
-          w1L * p1L + w2L * p2L + w3L * p3L;
-      FluxWalls_Prims[RIGHT][Tidx(var, xdir)] =
-          w1R * p1R + w2R * p2R + w3R * p3R;
+      LeftState[var] = w1L * p1L + w2L * p2L + w3L * p3L;
+      RightState[var] = w1R * p1R + w2R * p2R + w3R * p3R;
+    }
+#if EvolveChars
+    // for (int var = 0; var < NumVar; ++var) {
+    //   PresTest = (Stencil[var][2] - LeftState[var]) *
+    //              (RightState[var] - Stencil[var][2]);
+    //   if (PresTest < 0.0) {
+    //     for (int varr = 0; varr < NumVar; ++varr) {
+    //       LeftState[var] = Prims[Tidx(var, xdir)];
+    //       RightState[var] = Prims[Tidx(var, xdir)];
+    //     }
+    //     std::cout << "Weno order drop called" << std::endl;
+    //     goto EndLoop;
+    //   }
+    // }
 
-      if (var == PRES) {
-        double PresTest = (Prims[Tidx(PRES, xdir)] -
-                           FluxWalls_Prims[LEFT][Tidx(PRES, xdir)]) *
-                          (FluxWalls_Prims[RIGHT][Tidx(PRES, xdir)] -
-                           Prims[Tidx(PRES, xdir)]);
+    Chars.Char_Recover_Prims(LeftState, FluxWalls_Prims[LEFT], xdir);
+    Chars.Char_Recover_Prims(RightState, FluxWalls_Prims[RIGHT], xdir);
 
-        double DensTest = (Prims[Tidx(DENS, xdir)] -
-                           FluxWalls_Prims[LEFT][Tidx(DENS, xdir)]) *
-                          (FluxWalls_Prims[RIGHT][Tidx(DENS, xdir)] -
-                           Prims[Tidx(DENS, xdir)]);
+#endif
+    PresTest = (Prims[Tidx(PRES, xdir)] - LeftState[PRES]) *
+               (RightState[PRES] - Prims[Tidx(PRES, xdir)]);
 
-        if (PresTest < 0.0 || DensTest < 0.0) {
-          for (int var = DENS; var <= ENER; ++var) {
-            FluxWalls_Prims[LEFT][Tidx(var, xdir)] = Prims[Tidx(var, xdir)];
-            FluxWalls_Prims[RIGHT][Tidx(var, xdir)] = Prims[Tidx(var, xdir)];
-          }
-        }
+    DensTest = (Prims[Tidx(DENS, xdir)] - LeftState[DENS]) *
+               (RightState[DENS] - Prims[Tidx(DENS, xdir)]);
+
+    if (PresTest < 0.0 || DensTest < 0.0) {
+      for (int var = 0; var < NumVar; ++var) {
+        FluxWalls_Prims[LEFT][Tidx(var, xdir)] = Prims[Tidx(var, xdir)];
+        FluxWalls_Prims[RIGHT][Tidx(var, xdir)] = Prims[Tidx(var, xdir)];
+      }
+    } else {
+
+      for (int var = 0; var < NumVar; ++var) {
+        FluxWalls_Prims[LEFT][Tidx(var, xdir)] = LeftState[var];
+        FluxWalls_Prims[RIGHT][Tidx(var, xdir)] = RightState[var];
       }
     }
+    // #endif
   }
 }
+
+// #if EvolveChars
+//     if (var == PRES) {
+//       PresTest = (Chars.w[Tidx(PRES, xdir)] -
+//                   FluxWalls_Prims[LEFT][Tidx(PRES, xdir)]) *
+//                  (FluxWalls_Prims[RIGHT][Tidx(PRES, xdir)] -
+//                   Chars.w[Tidx(PRES, xdir)]);
+
+//       DensTest = (Chars.w[Tidx(DENS, xdir)] -
+//                   FluxWalls_Prims[LEFT][Tidx(DENS, xdir)]) *
+//                  (FluxWalls_Prims[RIGHT][Tidx(DENS, xdir)] -
+//                   Chars.w[Tidx(DENS, xdir)]);
+
+//       if (PresTest < 0.0 || DensTest < 0.0) {
+//         for (int var = DENS; var <= ENER; ++var) {
+//           FluxWalls_Prims[LEFT][Tidx(var, xdir)] = Chars.w[Tidx(var,
+//           xdir)]; FluxWalls_Prims[RIGHT][Tidx(var, xdir)] =
+//           Chars.w[Tidx(var, xdir)];
+//         }
+//       }
+//     }
+// #else
+//     if (var == PRES) {
+//       PresTest =
+//           (Prims[Tidx(PRES, xdir)] - FluxWalls_Prims[LEFT][Tidx(PRES,
+//           xdir)]) * (FluxWalls_Prims[RIGHT][Tidx(PRES, xdir)] -
+//           Prims[Tidx(PRES, xdir)]);
+
+//       DensTest =
+//           (Prims[Tidx(DENS, xdir)] - FluxWalls_Prims[LEFT][Tidx(DENS,
+//           xdir)]) * (FluxWalls_Prims[RIGHT][Tidx(DENS, xdir)] -
+//           Prims[Tidx(DENS, xdir)]);
+
+//       if (PresTest < 0.0 || DensTest < 0.0) {
+//         for (int var = DENS; var <= ENER; ++var) {
+//           FluxWalls_Prims[LEFT][Tidx(var, xdir)] = Prims[Tidx(var,
+//           xdir)]; FluxWalls_Prims[RIGHT][Tidx(var, xdir)] =
+//           Prims[Tidx(var, xdir)];
+//         }
+//       }
+//     }
+// #endif
