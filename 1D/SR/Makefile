@@ -1,5 +1,5 @@
 CC=clang++
-FLAGS= -O3 -Wall -Wextra -pedantic -Qunused-arguments -march=native
+FLAGS= -O3 -Wall -Wextra -pedantic -Qunused-arguments -march=native -v
 SRC=src
 OBJ=build
 OUTDIR=OutputData
@@ -15,14 +15,13 @@ INC_DIR = -I./include
 
 all:$(TARGET)
 
-.PHONY: clean run new every
+.PHONY: clean run new every print
 
 $(TARGET): $(OBJS)
 	$(CC) $(FLAGS) $(INC_DIR) $(OBJS) -o $@ $(LINKERS)
 
 $(OBJ)/%.o: $(SRC)/%.cpp $(OBJ) $(OUTDIR)
 	$(CC) $(FLAGS) $(INC_DIR) -c $< -o $@ $(LINKERS)
-
 
 $(OBJ):
 	mkdir $(OBJ)
@@ -36,3 +35,6 @@ new:
 	make clean && make
 run:
 	make new && ./$(TARGET)
+
+print:
+	$(info   VAR is $(OBJS))

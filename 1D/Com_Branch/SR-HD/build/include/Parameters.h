@@ -1,10 +1,12 @@
+#ifndef PARAM_H_
+#define PARAM_H_
+
 #include "definitions.hpp"
-#include <cmath>
 
 /****************
  * X Parameters *
  ****************/
-#define NX 1000
+#define NX 400
 #define X0 0.0
 #define XN 1.0
 
@@ -14,15 +16,15 @@
 #define RHOL 1.0
 #define RHOR 1.0
 
-#define PL 1000
+#define PL 1000.0
 #define PR 0.01
 
 #define XVELL 0.0
-#define YVELL 0.99
+#define YVELL 0.0
 #define ZVELL 0.0
 
 #define XVELR 0.0
-#define YVELR 0.99
+#define YVELR 0.0
 #define ZVELR 0.0
 
 /****************
@@ -35,7 +37,7 @@
  *Run Parameters *
  *****************/
 #define EvolveChars false
-#define SpaceMethod PLM
+#define SpaceMethod WENO
 #define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
 #define RIEMANN HLL
@@ -55,18 +57,4 @@
 #define NegativeSlope 0.01
 #define NN_Thresh .99
 
-/******************************
- * Compiler defined constants *
- * Don't touch                *
- ******************************/
-#define xDim (2 * NGC + NX)
-#define XStart NGC
-#define REdgeX xDim
-#define XEnd (REdgeX - NGC)
-#define dx ((XN - X0) / NX)
-
-#define sigdel (ell * 1.4142135623730950488016887240L)
-
-/*******Macros*********/
-#define idx(x) x
-#define Tidx(var, x) (xDim * var + x)
+#endif
