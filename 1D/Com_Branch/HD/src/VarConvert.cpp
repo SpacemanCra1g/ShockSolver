@@ -29,6 +29,7 @@ int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
     vx = mx / d;
     Uout[Tidx(VELX, i)] = vx;
     Uout[Tidx(PRES, i)] = (E / d - vx * vx * 0.5) * (GAMMA - 1.0) * d;
+    ConversionFailed[i] = false;
   }
   return 0;
 }

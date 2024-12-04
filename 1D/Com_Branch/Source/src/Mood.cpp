@@ -16,9 +16,9 @@ void Domain::Mood(int start, int stop) {
       for (int var = 0; var < NumVar; ++var) {
         value = 0.0;
         for (int j = 0; j < 3; ++j) {
-          value += Prims[Tidx(var, i - 1 + j)] * Ker.R1Right[j];
+          value += Cons[Tidx(var, i - 1 + j)] * Ker.R1Right[j];
         }
-        FluxWalls_Prims[LEFT][Tidx(var, i)] = value;
+        FluxWalls_Cons[LEFT][Tidx(var, i)] = value;
       }
       break;
 
@@ -26,15 +26,15 @@ void Domain::Mood(int start, int stop) {
       for (int var = 0; var < NumVar; ++var) {
         value = 0.0;
         for (int j = 0; j < 5; ++j) {
-          value += Prims[Tidx(var, i - 2 + j)] * Ker.R2Right[j];
+          value += Cons[Tidx(var, i - 2 + j)] * Ker.R2Right[j];
         }
-        FluxWalls_Prims[LEFT][Tidx(var, i)] = value;
+        FluxWalls_Cons[LEFT][Tidx(var, i)] = value;
       }
       break;
 
     default:
       for (int var = 0; var < NumVar; ++var) {
-        FluxWalls_Prims[LEFT][Tidx(var, i)] = Prims[Tidx(var, i)];
+        FluxWalls_Cons[LEFT][Tidx(var, i)] = Cons[Tidx(var, i)];
       }
       break;
     }
@@ -45,9 +45,9 @@ void Domain::Mood(int start, int stop) {
       for (int var = 0; var < NumVar; ++var) {
         value = 0.0;
         for (int j = 0; j < 3; ++j) {
-          value += Prims[Tidx(var, i - 1 + j)] * Ker.R1Left[j];
+          value += Cons[Tidx(var, i - 1 + j)] * Ker.R1Left[j];
         }
-        FluxWalls_Prims[RIGHT][Tidx(var, i)] = value;
+        FluxWalls_Cons[RIGHT][Tidx(var, i)] = value;
       }
       break;
 
@@ -55,17 +55,20 @@ void Domain::Mood(int start, int stop) {
       for (int var = 0; var < NumVar; ++var) {
         value = 0.0;
         for (int j = 0; j < 5; ++j) {
-          value += Prims[Tidx(var, i - 2 + j)] * Ker.R2Left[j];
+          value += Cons[Tidx(var, i - 2 + j)] * Ker.R2Left[j];
         }
-        FluxWalls_Prims[RIGHT][Tidx(var, i)] = value;
+        FluxWalls_Cons[RIGHT][Tidx(var, i)] = value;
       }
       break;
 
     default:
       for (int var = 0; var < NumVar; ++var) {
-        FluxWalls_Prims[RIGHT][Tidx(var, i)] = Prims[Tidx(var, i)];
+        FluxWalls_Cons[RIGHT][Tidx(var, i)] = Cons[Tidx(var, i)];
       }
       break;
     }
   }
+
+  Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], start, stop);
+  Cons2Prim(FluxWalls_Cons[RIGHT], FluxWalls_Prims[RIGHT], start, stop);
 }

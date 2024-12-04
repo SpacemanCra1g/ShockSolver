@@ -4,8 +4,8 @@
 // Most of the structure of this code is taken from the PLUTO solver
 // So lots of credit to those authors
 
-#define ENERGY_SOLVE 1
-#define PRESURE_FIX_SOLVE 2
+#define ENERGY_SOLVE 0
+#define PRESURE_FIX_SOLVE 1
 #define MIN_DENSITY 1.e-5
 
 void Domain::Prims2Cons(double *Uin, double *Uout, int start, int stop) {
@@ -36,6 +36,8 @@ int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
   int SolMethod;
   int err = 0;
 
+  std::fill(ConversionFailed + start, ConversionFailed + stop, false);
+
   for (int i = start; i < stop; ++i) {
 
     if (Uin[Tidx(DENS, i)] < 0.0) {
@@ -50,6 +52,7 @@ int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
       err = EnergyInverter(Uin, Uout, i);
       // err = NaiveNewton(Uin, Uout, i);
       if (err) {
+        ConversionFailed[i] = true;
         if (err == 1) {
           std::cout << "The equation does not admit a solution" << std::endl;
           std::cout << "Cell Number: " << i << std::endl;
@@ -72,9 +75,6 @@ int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
         // writeResults();
         // exit(0);
         SolMethod = PRESURE_FIX_SOLVE;
-#if SpaceMethod == MOOD
-        ConversionFailed[i] = true;
-#endif
       }
     }
 
@@ -85,6 +85,8 @@ int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
         std::cout << "Failure in Pressure fix" << std::endl;
         std::sqrt(-2.0);
         return i;
+      } else {
+        err = PRESURE_FIX_SOLVE;
       }
     }
   }

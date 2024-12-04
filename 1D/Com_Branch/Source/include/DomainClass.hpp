@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cblas.h>
+#include <vector>
 
 class Domain {
 public:
@@ -26,8 +27,13 @@ public:
   double *Cons, *Prims;
   bool MoodFinished = true;
   int *MoodOrd;
+  double *DMP_MaxRho, *DMP_MinRho;
+  double *U2_MaxC, *U2_MinC;
   bool *Troubled;
   bool *ConversionFailed;
+  int *TroubledIdx;
+  int IdxStop;
+
   Characteristics Chars;
 
   void (Domain::*BC)();
@@ -66,6 +72,8 @@ public:
     Cs = new double[xDim];
     RS_CsL = new double[xDim];
     RS_CsR = new double[xDim];
+
+    ConversionFailed = new bool[xDim];
 
     /*********************************************/
     /*************** Assign Pointers *************/
@@ -114,9 +122,13 @@ public:
 
     MoodOrd = new int[xDim];
     Troubled = new bool[xDim];
-    ConversionFailed = new bool[xDim];
+    TroubledIdx = new int[xDim];
 
     PrimsCopy = new double[NumVar * xDim];
+    DMP_MaxRho = new double[xDim];
+    DMP_MinRho = new double[xDim];
+    U2_MaxC = new double[xDim];
+    U2_MinC = new double[xDim];
 #define GP_METHOD
 
 #elif SpaceMethod == FOG
@@ -247,6 +259,11 @@ public:
 
   // Defined in the src/Detection.cpp file
   bool Detection();
+  void ListofCellsToDetect(int start, int stop);
+  bool FirstShockDetector(int x);
+  bool PlateauDetection(int x);
+  bool DMPCheck(int x);
+  bool U2Check(int x);
 
   // Defined in the SR src/NewtonPressureFinder.cpp file
   int NaiveNewton(double *Uin, double *Uout, int i);

@@ -15,6 +15,7 @@ if len(np.shape(p)) == 1:
     xend = 0
     RS = 0
     i = 0
+    Method = 0
     while not N or not xstart or not xend or not RS:
         if "#define NX " in param[i]:
             N = i
@@ -24,6 +25,8 @@ if len(np.shape(p)) == 1:
             xend = i
         if "#define RIEMANN " in param[i]:
             RS = i
+        if "#define SpaceMethod " in param[i]:
+            Method = i
         i += 1
         if i == len(param):
             print("Coefficient not found in file\n Exiting")
@@ -33,6 +36,8 @@ if len(np.shape(p)) == 1:
     xstart = float(param[xstart][11:-1])
     xend = float(param[xend][11:-1])
     RS = str(param[RS][16:-1])
+    Method = str(param[Method][20:-1])
+
 
     deltaX = (xend-xstart)/N
     xstart += deltaX/2 #adjust the interval one half deltax away from the start
@@ -49,10 +54,10 @@ if len(np.shape(p)) == 1:
     # plt.scatter(x,u,color='b',s=5, marker='.')
     # plt.scatter(x,rho/25,color='k',s=5,marker='.')
     # plt.scatter(x,p/1000,color='r',s=5,marker='.')
-    title =  "Nx = " + str(N) + ", " + RS
+    title =  "SpaceMethod = " + Method +", Nx = " + str(N) + ", " + RS
     plt.title(title)
     plt.grid()
-    plt.legend(["Vx","Rho","Pres"])
+    # plt.legend(["Vx","Rho","Pres"])
 
     plt.show()
 

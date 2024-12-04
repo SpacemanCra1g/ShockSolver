@@ -1,13 +1,14 @@
 #include "../include/DomainClass.hpp"
 #include "../include/SourceParameters.h"
 #include <cfenv>
+#include <iomanip>
 #include <iostream>
 
 int main() {
 #ifndef GP_METHOD
   feenableexcept(FE_INVALID);
 #endif
-
+  std::cout << std::setprecision(15);
   Domain Solver;
 
   (Solver.*(Solver.IC))();

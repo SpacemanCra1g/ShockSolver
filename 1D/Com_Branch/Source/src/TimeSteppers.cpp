@@ -1,6 +1,8 @@
 #include "../include/DomainClass.hpp"
+// #define PStuff
 
 void Domain::ForwardEuler() {
+  double *PrintVar;
 
   Cons2Prim(Cons, Prims, 0, REdgeX);
 
@@ -9,30 +11,135 @@ void Domain::ForwardEuler() {
   std::fill(Troubled, Troubled + xDim, true);
 #endif
 
+#ifdef PStuff
+
+  PrintVar = Prims;
+  std::cout << "Prims" << std::endl;
+  for (int i = 0; i < xDim; ++i) {
+    for (int var = 0; var < NumVar; ++var) {
+      std::cout << PrintVar[Tidx(var, i)] << " ";
+    }
+    std::cout << "   Cell Number " << i << std::endl;
+  }
+
+  std::cout << std::endl;
+  std::cout << "Prims copy" << std::endl;
+  PrintVar = PrimsCopy;
+  for (int i = 0; i < xDim; ++i) {
+    for (int var = 0; var < NumVar; ++var) {
+      std::cout << PrintVar[Tidx(var, i)] << " ";
+    }
+    std::cout << "   Cell Number " << i << std::endl;
+  }
+
+  std::cout << std::endl;
+  std::cout << "Troubled" << std::endl;
+
+  for (int i = 0; i < xDim; ++i) {
+
+    std::cout << Troubled[i] << " ";
+
+    std::cout << "   Cell Number " << i << std::endl;
+  }
+#endif
+
   (*this.*SpaceRecon)(XStart - 1, XEnd + 1);
 
-  for (int i = 0; i < REdgeX; ++i) {
-    std::cout << Prims[Tidx(DENS, i)] << std::endl;
+#ifdef PStuff
+  std::cout << std::endl;
+  std::cout << "Left States" << std::endl;
+  PrintVar = FluxWalls_Prims[LEFT];
+  for (int i = 0; i < xDim; ++i) {
+    for (int var = 0; var < NumVar; ++var) {
+      std::cout << PrintVar[Tidx(var, i)] << " ";
+    }
+    std::cout << "   Cell Number " << i << std::endl;
   }
-  exit(0);
+
+  std::cout << std::endl;
+  std::cout << "Right States" << std::endl;
+  PrintVar = FluxWalls_Prims[RIGHT];
+  for (int i = 0; i < xDim; ++i) {
+    for (int var = 0; var < NumVar; ++var) {
+      std::cout << PrintVar[Tidx(var, i)] << " ";
+    }
+    std::cout << "   Cell Number " << i << std::endl;
+  }
+  // exit(0);
+#endif
 
   MoodFinished = false;
 
   (this->*RiemannSolver)(XStart - 1, XEnd);
+
+#ifdef PStuff
+
+  std::cout << std::endl;
+  std::cout << "Post Riemann Cell Flux" << std::endl;
+  PrintVar = CellFlux;
+  for (int i = 0; i < xDim; ++i) {
+    for (int var = 0; var < NumVar; ++var) {
+      std::cout << PrintVar[Tidx(var, i)] << "    ";
+    }
+    std::cout << "   Cell Number " << i << std::endl;
+  }
+  // exit(0);
+#endif
   Recon(XStart, XEnd);
+
+#ifdef PStuff
+  Cons2Prim(Cons, Prims, 0, xDim);
+
+  std::cout << std::endl;
+  std::cout << "Final State after updating" << std::endl;
+  PrintVar = Cons;
+  for (int i = 0; i < xDim; ++i) {
+    for (int var = 0; var < NumVar; ++var) {
+      std::cout << PrintVar[Tidx(var, i)] << "         ";
+    }
+    std::cout << "   Cell Number " << i << std::endl;
+  }
+
+#endif
+
+  // for (int i = 0; i < REdgeX; ++i) {
+  //   for (int var = 0; var < NumVar; ++var) {
+  //     std::cout << Cons[Tidx(var, i)] << " ";
+  //   }
+  //   std::cout << std::endl;
+  // }
+  // exit(0);
 
 #if SpaceMethod == MOOD
   while (!MoodFinished) {
+    IdxStop = 0;
     MoodFinished = Detection();
   }
+
+#ifdef PStuff
+  std::cout << std::endl;
+  std::cout << "Troubled" << std::endl;
+
+  for (int i = 0; i < xDim; ++i) {
+
+    std::cout << Troubled[i] << " ";
+
+    std::cout << "   Cell Number " << i << std::endl;
+  }
+#endif
 #endif
 
+  // exit(0);
   (*this.*BC)();
 }
 
 void Domain::RK3() {
 #if SpaceMethod == MOOD
-  std::fill(MoodOrd, MoodOrd + xDim, 5);
+  std::fill(MoodOrd, MoodOrd + xDim, MoodOrder);
+  std::fill(DMP_MaxRho, DMP_MaxRho + xDim, -1.0e14);
+  std::fill(DMP_MinRho, DMP_MinRho + xDim, 1.0e14);
+  std::fill(U2_MaxC, U2_MaxC + xDim, -1.0e14);
+  std::fill(U2_MinC, U2_MinC + xDim, 1.0e14);
 #endif
 
   DomainCopy(Cons, CopyBuffer);
