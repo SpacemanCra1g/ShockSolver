@@ -7,12 +7,25 @@ bool Domain::U2Check(int x) {
   double *Center = &PrimsCopy[Tidx(DENS, x)];
   double ddx;
 
-  for (int i = -1; i < 2; ++i) {
-    Center = Center + i;
-    ddx = *(Center - 1) + *(Center + 1) - 2 * (*Center);
-    ddx /= dx * dx;
-    U2_MaxC[x] = std::fmax(U2_MaxC[x], (ddx));
-    U2_MinC[x] = std::fmin(U2_MinC[x], (ddx));
+  // U2_MaxC[x] = -1.e14;
+  // U2_MinC[x] = 1.e14;
+
+  if (MoodOrd[x] == 5 || false) {
+    for (int i = -2; i < 3; ++i) {
+      Center = Center + i;
+      ddx = *(Center - 1) + *(Center + 1) - 2 * (*Center);
+      ddx /= dx * dx;
+      U2_MaxC[x] = std::fmax(U2_MaxC[x], (ddx));
+      U2_MinC[x] = std::fmin(U2_MinC[x], (ddx));
+    }
+  } else {
+    for (int i = -1; i < 2; ++i) {
+      Center = Center + i;
+      ddx = *(Center - 1) + *(Center + 1) - 2 * (*Center);
+      ddx /= dx * dx;
+      U2_MaxC[x] = std::fmax(U2_MaxC[x], (ddx));
+      U2_MinC[x] = std::fmin(U2_MinC[x], (ddx));
+    }
   }
   return (U2_MaxC[x] * U2_MinC[x] > -dx &&
           std::fabs(U2_MinC[x] / U2_MaxC[x]) >= 0.5);
@@ -35,33 +48,37 @@ bool Domain::DMPCheck(int x) {
 }
 
 bool Domain::PlateauDetection(int x) {
-  double MaxRho, MinRho;
+  double MaxRho = -1.e14, MinRho = 1.e14;
   double *Center = &PrimsCopy[Tidx(DENS, x)];
   switch (MoodOrd[x]) {
   case 5:
-    MaxRho = std::fmax(*(Center - 2), *(Center - 1));
-    MaxRho = std::fmax(MaxRho, *(Center));
-    MaxRho = std::fmax(MaxRho, *(Center + 1));
-    MaxRho = std::fmax(MaxRho, *(Center + 2));
+    // MaxRho = std::fmax(*(Center - 2), *(Center - 1));
+    // MaxRho = std::fmax(MaxRho, *(Center));
+    // MaxRho = std::fmax(MaxRho, *(Center + 1));
+    // MaxRho = std::fmax(MaxRho, *(Center + 2));
 
-    MinRho = std::fmin(*(Center - 2), *(Center - 1));
-    MinRho = std::fmin(MinRho, *(Center));
-    MinRho = std::fmin(MinRho, *(Center + 1));
-    MinRho = std::fmin(MinRho, *(Center + 2));
-
-    // if (x > 12) {
-    //   std::cout << "Max Rho = " << MaxRho << " Min Rho = " << MinRho
-    //             << " Cell # " << x << std::endl;
-    // }
+    // MinRho = std::fmin(*(Center - 2), *(Center - 1));
+    // MinRho = std::fmin(MinRho, *(Center));
+    // MinRho = std::fmin(MinRho, *(Center + 1));
+    // MinRho = std::fmin(MinRho, *(Center + 2));
+    for (int i = -2; i < 3; ++i) {
+      MaxRho = std::fmax(*(Center + i), MaxRho);
+      MinRho = std::fmin(*(Center + i), MinRho);
+    }
 
     return (MaxRho - MinRho < dx * dx * dx);
 
   case 3:
-    MaxRho = std::fmax(*(Center), *(Center - 1));
-    MaxRho = std::fmax(MaxRho, *(Center + 1));
+    // MaxRho = std::fmax(*(Center), *(Center - 1));
+    // MaxRho = std::fmax(MaxRho, *(Center + 1));
 
-    MinRho = std::fmin(*(Center), *(Center - 1));
-    MinRho = std::fmin(MinRho, *(Center + 1));
+    // MinRho = std::fmin(*(Center), *(Center - 1));
+    // MinRho = std::fmin(MinRho, *(Center + 1));
+
+    for (int i = -1; i < 2; ++i) {
+      MaxRho = std::fmax(*(Center + i), MaxRho);
+      MinRho = std::fmin(*(Center + i), MinRho);
+    }
 
     return (MaxRho - MinRho < dx * dx * dx);
 
@@ -203,7 +220,7 @@ bool Domain::Detection() {
     // Run DMP Check
     if (DMPCheck(x)) {
       // Run U2 Check, if fails then we know we have a truely troubled cell
-      if (!U2Check(x)) {
+      if (!U2Check(x) || true) {
         continue;
       }
     }
@@ -253,31 +270,37 @@ bool Domain::Detection() {
     ROrd = std::fmin(MoodOrd[(idx(x + 1))], MoodOrd[x]);
 
     if (LOrd == 3) {
+      Prims2Cons(PrimsCopy, Cons, x - 1, x + 2);
       for (int var = 0; var < NumVar; ++var) {
         value = 0.0;
         for (int j = 0; j < 3; ++j) {
-          value += PrimsCopy[Tidx(var, x - 1 + j)] * Ker.R1Right[j];
+          value += Cons[Tidx(var, x - 1 + j)] * Ker.R1Right[j];
         }
-        FluxWalls_Prims[LEFT][Tidx(var, x)] = value;
+        FluxWalls_Cons[LEFT][Tidx(var, x)] = value;
       }
     } else if (LOrd == 1) {
+      Prims2Cons(PrimsCopy, Cons, x, x + 1);
       for (int var = 0; var < NumVar; ++var) {
-        FluxWalls_Prims[LEFT][Tidx(var, x)] = PrimsCopy[Tidx(var, x)];
+        FluxWalls_Cons[LEFT][Tidx(var, x)] = Cons[Tidx(var, x)];
       }
     }
     if (ROrd == 3) {
+      Prims2Cons(PrimsCopy, Cons, x - 1, x + 2);
       for (int var = 0; var < NumVar; ++var) {
         value = 0.0;
         for (int j = 0; j < 3; ++j) {
-          value += PrimsCopy[Tidx(var, x - 1 + j)] * Ker.R1Left[j];
+          value += Cons[Tidx(var, x - 1 + j)] * Ker.R1Left[j];
         }
-        FluxWalls_Prims[RIGHT][Tidx(var, x)] = value;
+        FluxWalls_Cons[RIGHT][Tidx(var, x)] = value;
       }
     } else if (ROrd == 1) {
       for (int var = 0; var < NumVar; ++var) {
-        FluxWalls_Prims[RIGHT][Tidx(var, x)] = PrimsCopy[Tidx(var, x)];
+        FluxWalls_Cons[RIGHT][Tidx(var, x)] = Cons[Tidx(var, x)];
       }
     }
+
+    Cons2Prim(FluxWalls_Cons[RIGHT], FluxWalls_Prims[RIGHT], x - 1, x + 2);
+    Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], x - 1, x + 2);
 
     (this->*RiemannSolver)(x - 1, x + 2);
     // Troubled[x - 1] = true;

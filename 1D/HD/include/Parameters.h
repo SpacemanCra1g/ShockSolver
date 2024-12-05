@@ -6,9 +6,9 @@
 /****************
  * X Parameters *
  ****************/
-#define NX 500
+#define NX 256
 #define X0 0.0
-#define XN 1.0
+#define XN 9.0
 
 /****************
  * Y Parameters *
@@ -22,16 +22,16 @@
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN .2
+#define TN 1.8
 
 /*****************
  *Run Parameters *
  *****************/
-#define SpaceMethod Mood53
+#define SpaceMethod Weno
 
 #define GAMMA 1.4
 #define CFL 0.8
-#define TestProblem Sod
+#define TestProblem ShuOsher
 #define BoundaryCon Shu
 
 #define RK_Method 3

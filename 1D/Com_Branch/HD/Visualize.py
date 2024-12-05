@@ -54,7 +54,8 @@ if len(np.shape(p)) == 1:
     # plt.scatter(x,u,color='b',s=5, marker='.')
     # plt.scatter(x,rho/25,color='k',s=5,marker='.')
     # plt.scatter(x,p/1000,color='r',s=5,marker='.')
-    title =  "SpaceMethod = " + Method +", Nx = " + str(N) + ", " + RS
+    # title =  "SpaceMethod = " + Method +", Nx = " + str(N) + ", " + RS
+    title = "U2 Turned off, ShuOsher"
     plt.title(title)
     plt.grid()
     # plt.legend(["Vx","Rho","Pres"])

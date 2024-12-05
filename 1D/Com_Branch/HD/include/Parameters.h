@@ -8,20 +8,20 @@
  ****************/
 #define NX 256
 #define X0 0.0
-#define XN 9.0
+#define XN 1.0
 
 /****************
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN 1.8
+#define TN .25
 
 /*****************
  *Run Parameters *
  *****************/
 #define EvolveChars false
 #define SpaceMethod MOOD
-#define TestProblem SHUOSHER
+#define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
 #define RIEMANN HLL
 #define CFL 0.8
