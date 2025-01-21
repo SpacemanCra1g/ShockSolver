@@ -108,31 +108,26 @@ void Domain::Autsm(int Start, int Stop) {
     ML = uL / A;
     MR = uR / A;
 
-    if (ML <= -1.0) {
-      Mp = 0.0;
-      Pp = 0.0;
-    } else if (ML < 1.0) {
+    if (std::fabs(ML) >= 1.0) {
+      Mp = 0.5 * (ML + std::fabs(ML));
+      Pp = .5 * (1.0 + ML / std::fabs(ML));
+    } else {
       Mp = 0.5 * (ML + 1.0) * (ML + 1.0) +
            beta * (ML * ML - 1.0) * (ML * ML - 1.0);
-      Pp = pL * (.25 * (ML + 1.0) * (ML + 1.0) * (2.0 - ML) +
-                 alpha * ML * (ML * ML - 1.0) * (ML * ML - 1.0));
-    } else {
-      Mp = ML;
-      Pp = pL;
+      Pp = .25 * (ML + 1.0) * (ML + 1.0) * (2.0 - ML) +
+           alpha * ML * (ML * ML - 1.0) * (ML * ML - 1.0);
     }
 
-    if (MR <= -1.0) {
-      Mm = MR;
-      Pm = pR;
-    } else if (MR < 1.0) {
+    if (std::fabs(MR) >= 1.0) {
+      Mm = .5 *
+           (MR - std::fabs(MR)); // Code calls this a +, contrary to the paper
+      Pm = .5 * (1.0 - MR / std::fabs(MR));
+    } else {
       Mm = -0.5 * (MR - 1.0) * (MR - 1.0) -
            beta * (MR * MR - 1.0) * (MR * MR - 1.0);
-      Pm = pR * (.25 * (MR - 1.0) * (MR - 1.0) * (2.0 + MR) -
-                 alpha * MR * (MR * MR - 1.0) * (MR * MR - 1.0));
+      Pm = .25 * (MR - 1.0) * (MR - 1.0) * (2.0 + MR) -
+           alpha * MR * (MR * MR - 1.0) * (MR * MR - 1.0);
       // Pm = (1.0 - MR) * pR * 0.5;
-    } else {
-      Mm = 0.0;
-      Pm = 0.0;
     }
 
     PosF = .5 * (Mp + Mm + std::fabs(Mp + Mm)) * A;
@@ -143,12 +138,12 @@ void Domain::Autsm(int Start, int Stop) {
     // }
 
     Fp[0] = PosF * rL;
-    Fp[1] = PosF * rL * uL + Pp;
-    Fp[2] = PosF * rL * HL;
+    Fp[1] = PosF * rL * uL + Pp * pL;
+    Fp[2] = PosF * HL * rL; // Code doesnt include the rho?
 
     Fm[0] = NegF * rR;
-    Fm[1] = NegF * rR * uR + Pm;
-    Fm[2] = NegF * rR * HR;
+    Fm[1] = NegF * rR * uR + Pm * pR;
+    Fm[2] = NegF * rR * HR; // Code doesnt include the rho?
 
     for (int var = 0; var < NumVar; ++var) {
       CellFlux[Tidx(var, i)] = Fp[var] + Fm[var];

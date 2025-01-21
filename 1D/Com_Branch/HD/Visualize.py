@@ -67,7 +67,7 @@ if len(np.shape(p)) == 1:
     maxu = max(u);
     maxp = max(p);
 
-    plt.plot(x,rho,'b.')
+    plt.plot(x,rho,'b-')
     # plt.plot(x,u,'r-')
     # plt.plot(x,p,'k-')
 
