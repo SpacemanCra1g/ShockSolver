@@ -5,6 +5,15 @@ p = np.loadtxt("./OutputData/Pressure.dat")
 rho = np.loadtxt("./OutputData/Density.dat")
 u = np.loadtxt("./OutputData/VelocityX.dat")
 
+OverlayExact = False
+PathToExact = "./ExactSolutions/SlowShockTORO/"
+
+
+if OverlayExact:
+    pE = np.loadtxt(PathToExact + "Pressure.dat")
+    rhoE = np.loadtxt(PathToExact + "Density.dat")
+    uE = np.loadtxt(PathToExact + "VelocityX.dat")
+
 plotVar = rho
 
 if len(np.shape(p)) == 1:
@@ -16,7 +25,8 @@ if len(np.shape(p)) == 1:
     RS = 0
     i = 0
     Method = 0
-    while not N or not xstart or not xend or not RS:
+    Problem = 0
+    while not N or not xstart or not xend or not RS or not Problem:
         if "#define NX " in param[i]:
             N = i
         if "#define X0 " in param[i]:
@@ -27,6 +37,8 @@ if len(np.shape(p)) == 1:
             RS = i
         if "#define SpaceMethod " in param[i]:
             Method = i
+        if "#define TestProblem " in param[i]:
+            Problem = i
         i += 1
         if i == len(param):
             print("Coefficient not found in file\n Exiting")
@@ -36,26 +48,34 @@ if len(np.shape(p)) == 1:
     xstart = float(param[xstart][11:-1])
     xend = float(param[xend][11:-1])
     RS = str(param[RS][16:-1])
+    if RS == "AUSMPLUS":
+        RS = "AUSM+"
     Method = str(param[Method][20:-1])
+    Problem = str(param[Problem][20:-1])
+
 
 
     deltaX = (xend-xstart)/N
     xstart += deltaX/2 #adjust the interval one half deltax away from the start
 
     x = np.arange(xstart,xend,deltaX)
+
+    if OverlayExact:
+        xE = np.linspace(xstart,xend,num=len(rhoE),endpoint=True)
     # print(x)
 
     maxu = max(u);
     maxp = max(p);
-    # plt.plot(x,u/maxu,'b')
-    plt.plot(x,rho,'k-')
-    # plt.plot(x,p/maxp,'r')
-    # plt.plot(x,(w*w + u*u + v*v),'g')
-    # plt.scatter(x,u,color='b',s=5, marker='.')
-    # plt.scatter(x,rho/25,color='k',s=5,marker='.')
-    # plt.scatter(x,p/1000,color='r',s=5,marker='.')
-    # title =  "SpaceMethod = " + Method +", Nx = " + str(N) + ", " + RS
-    title = "U2 Turned off, ShuOsher"
+
+    plt.plot(x,rho,'b.')
+    # plt.plot(x,u,'r-')
+    # plt.plot(x,p,'k-')
+
+    if OverlayExact:
+        plt.plot(xE,rhoE,'b--')
+
+    title =  "TestProblem = " +Problem + ", SpaceMethod = " + Method +", Nx = " + str(N) + ", " + RS
+    # title = "U2 Turned off, ShuOsher"
     plt.title(title)
     plt.grid()
     # plt.legend(["Vx","Rho","Pres"])

@@ -1,5 +1,5 @@
 CC=g++
-FLAGS= -g -Wall -Wextra -pedantic # -Qunused-arguments -march=native
+FLAGS= -g -Wall -Wextra -pedantic -march=native # -Qunused-arguments
 SRC=src
 OBJ=build
 OUTDIR=OutputData
