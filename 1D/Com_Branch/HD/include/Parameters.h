@@ -6,24 +6,24 @@
 /****************
  * X Parameters *
  ****************/
-#define NX 40000
-#define X0 -15.0
-#define XN 5.0
+#define NX 400
+#define X0 0.0
+#define XN 1.0
 
 /****************
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN 1
+#define TN .25
 
 /*****************
  *Run Parameters *
  *****************/
 #define EvolveChars false
 #define SpaceMethod FOG
-#define TestProblem SLOWSHOCK
+#define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
-#define RIEMANN HLL
+#define RIEMANN AUSMPLUS
 #define CFL 0.8
 #define EOS IDEAL
 #define RK_Method 3 /*set to -1 for CharTracing, sets automatically for PLM*/

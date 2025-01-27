@@ -67,9 +67,9 @@ if len(np.shape(p)) == 1:
     maxu = max(u);
     maxp = max(p);
 
-    plt.plot(x,rho,'b-')
+    # plt.plot(x,rho,'b-')
     # plt.plot(x,u,'r-')
-    # plt.plot(x,p,'k-')
+    plt.plot(x,p,'k-')
 
     if OverlayExact:
         plt.plot(xE,rhoE,'b--')
@@ -78,7 +78,7 @@ if len(np.shape(p)) == 1:
     # title = "U2 Turned off, ShuOsher"
     plt.title(title)
     plt.grid()
-    # plt.legend(["Vx","Rho","Pres"])
+    # plt.legend(["Rho","Vx","Pres"])
 
     plt.show()
 
