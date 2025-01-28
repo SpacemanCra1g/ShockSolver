@@ -23,7 +23,7 @@
 #define SpaceMethod FOG
 #define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
-#define RIEMANN AUSMPLUS
+#define RIEMANN AUSMPLUSUP
 #define CFL 0.8
 #define EOS IDEAL
 #define RK_Method 3 /*set to -1 for CharTracing, sets automatically for PLM*/

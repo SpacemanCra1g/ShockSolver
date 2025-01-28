@@ -36,6 +36,7 @@
 #define HLLC 2
 #define AUSM 3
 #define AUSMPLUS 4
+#define AUSMPLUSUP 5
 
 /*******************************/
 /******* Slope Limiters ********/

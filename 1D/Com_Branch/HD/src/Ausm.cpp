@@ -1,5 +1,4 @@
 #include "../include/DomainClass.hpp"
-
 void Domain::Ausm(int Start, int Stop) {
 
   double rL, uL, pL, aL, ML, HL;
@@ -147,11 +146,11 @@ double sign(double M) {
 
 void Domain::Autsm(int Start, int Stop) {
 
-  int i, nv;
+  int i;
 
   double aL, ML, MpL, PpL, asL2, asL, atL;
   double aR, MR, MmR, PmR, asR2, asR, atR;
-  double a, m, p, mp, mm, pnew;
+  double a, m, mp, mm;
   double rhoL, pL, uL, rhoR, pR, uR;
   double HL, HR, Fp[3], Fm[3];
   double alpha = 3.0 / 16.0, beta = 0.125;
@@ -248,28 +247,121 @@ void Domain::Autsm(int Start, int Stop) {
   }
 };
 
-void Domain::AutsmPlus(int Start, int Stop) {
+void Domain::Autsmup(int Start, int Stop) {
   // This is now the Ausm+up solver
 
   double alpha = 3.0 / 16.0, beta = 0.125, Ku = 0.75, Kp = 0.25, sigma = 1.0;
+  double rhoL, uL, pL, momL, EnL;
+  double rhoR, uR, pR, momR, EnR;
+  double PhiL[3], PhiR[3];
+  double aL, aR, asL2, asR2, asL, asR, atL, atR, a;
+  double Mm2, Mo2, Mo, fa;
+  double mm2, mo2, ML, MR, Mp1L, Mm1R, Mp2L, Mm2L, Mp2R, Mm2R, Mp4L, Pp5L, Mm4R;
+  double Pm5R, scrh, M, m;
 
   // First we do the Prims to Cons conversion of the Flux walls
   Prims2Cons(FluxWalls_Prims[LEFT], FluxWalls_Cons[LEFT], Start, Stop + 1);
   Prims2Cons(FluxWalls_Prims[RIGHT], FluxWalls_Cons[RIGHT], Start, Stop);
 
   for (int i = Start; i < Stop; ++i) {
+
+    // Load Data for the Riemann problem
     rhoL = FluxWalls_Prims[LEFT][Tidx(DENS, i)];
     uL = FluxWalls_Prims[LEFT][Tidx(VELX, i)];
     pL = FluxWalls_Prims[LEFT][Tidx(PRES, i)];
+    pL = (pL > 0.0) ? pL : 0.1;
 
     rhoR = FluxWalls_Prims[RIGHT][Tidx(DENS, i + 1)];
     uR = FluxWalls_Prims[RIGHT][Tidx(VELX, i + 1)];
     pR = FluxWalls_Prims[RIGHT][Tidx(PRES, i + 1)];
+    pR = (pR > 0.0) ? pR : 0.1;
 
     momL = FluxWalls_Cons[LEFT][Tidx(MOMX, i)];
     EnL = FluxWalls_Cons[LEFT][Tidx(ENER, i)];
 
     momR = FluxWalls_Cons[RIGHT][Tidx(MOMX, i + 1)];
     EnR = FluxWalls_Cons[RIGHT][Tidx(ENER, i + 1)];
+
+    // Convective flux vectors Phi
+    PhiL[DENS] = 1.0;
+    PhiL[MOMX] = uL;
+    PhiL[ENER] = (EnL - pL) / rhoL;
+
+    PhiR[DENS] = 1.0;
+    PhiR[MOMX] = uR;
+    PhiR[ENER] = (EnR - pR) / rhoR;
+
+    // Calculate numerical sound speed
+    aL = std::sqrt(GAMMA * pL / rhoL);
+    aR = std::sqrt(GAMMA * pR / rhoR);
+
+    asL2 = aL * aL / (GAMMA - 1.0) + 0.5 * uL * uL;
+    asL2 *= 2.0 * (GAMMA - 1.0) / (GAMMA + 1.0);
+
+    asR2 = aR * aR / (GAMMA - 1.0) + 0.5 * uR * uR;
+    asR2 *= 2.0 * (GAMMA - 1.0) / (GAMMA + 1.0);
+
+    asL = std::sqrt(asL2);
+    asR = std::sqrt(asR2);
+
+    atL = asL2 / std::fmax(asL, std::fabs(uL));
+    atR = asR2 / std::fmax(asR, std::fabs(uR));
+
+    a = std::fmin(atL, atR);
+
+    // alpha & beta coefficients
+    Mm2 = .5 * (uL * uL + uR * uR) / a /
+          a; // This is highly questionable, it might be valid but its odd
+    Mo2 = std::fmax(mm2, .4);
+    Mo2 = std::fmin(1.0, Mo2);
+    Mo = std::sqrt(mo2);
+    fa = Mo * (2.0 - Mo);
+
+    alpha = (3.0 / 16.0) * (-4.0 + 5.0 * fa * fa);
+    beta = 1.0 / 8.0;
+
+    // Split Mach Number, Split Pressure
+    ML = uL / a;
+    MR = uR / a;
+
+    Mp1L = .5 * (ML + std::fabs(ML));
+    Mm1R = .5 * (MR - std::fabs(MR));
+
+    Mp2L = .25 * (ML + 1.0) * (ML + 1.0);
+    Mm2L = -.25 * (ML - 1.0) * (ML - 1.0);
+
+    Mp2R = .25 * (MR + 1.0) * (MR + 1.0);
+    Mm2R = -.25 * (MR - 1.0) * (MR - 1.0);
+
+    if (std::fabs(ML) >= 1.0) {
+      Mp4L = Mp1L;
+      Pp5L = Mp1L / ML;
+    } else {
+      Mp4L = Mp2L * (1.0 - 16.0 * beta * Mm2L);
+      Pp5L = Mp2L * ((2.0 - ML) - 16.0 * alpha * ML * Mm2L);
+    }
+
+    if (std::fabs(MR) >= 1.0) {
+      Mm4R = Mm1R;
+      Pm5R = Mm1R / MR;
+    } else {
+      Mm4R = Mm2R * (1.0 + 16.0 * beta * Mp2R);
+      Pm5R = Mm2R * ((-2.0 - MR) + 16.0 * alpha * MR * Mp2R);
+    }
+
+    scrh = std::fmax(1.0 - sigma * Mm2, 0.0);
+    M = Mp4L + Mm4R -
+        Kp / fa * scrh * (pR - pL) / (rhoL + rhoR) / a / a *
+            2.0; // also suspect
+    m = a * M;
+    m *= (M > 0.0) ? rhoL : rhoR;
+
+    // Flux Calculation
+    for (int var = 0; var < NumVar; ++var) {
+      CellFlux[Tidx(var, i)] = (m > 0.0) ? m * PhiL[var] : m * PhiR[var];
+    }
+    CellFlux[Tidx(MOMX, i)] +=
+        Pp5L * pL + Pm5R * pR -
+        Ku * Pp5L * Pm5R * (rhoL + rhoR) * fa * a * (uR - uL);
   }
 };
