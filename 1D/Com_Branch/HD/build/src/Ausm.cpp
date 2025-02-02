@@ -150,7 +150,7 @@ void Domain::Autsm(int Start, int Stop) {
 
   double aL, ML, MpL, PpL, asL2, asL, atL;
   double aR, MR, MmR, PmR, asR2, asR, atR;
-  double a, m, mp, mm;
+  double a, m, mp, mm, p;
   double rhoL, pL, uL, rhoR, pR, uR;
   double HL, HR, Fp[3], Fm[3];
   double alpha = 3.0 / 16.0, beta = 0.125;
@@ -250,55 +250,39 @@ void Domain::Autsm(int Start, int Stop) {
 void Domain::Autsmup(int Start, int Stop) {
   // This is now the Ausm+up solver
 
-  double alpha = 3.0 / 16.0, beta = 0.125, Ku = 0.75, Kp = 0.25, sigma = 1.0;
-  double rhoL, uL, pL, momL, EnL;
-  double rhoR, uR, pR, momR, EnR;
-  double PhiL[3], PhiR[3];
-  double aL, aR, asL2, asR2, asL, asR, atL, atR, a;
-  double Mm2, Mo2, Mo, fa;
-  double mm2, mo2, ML, MR, Mp1L, Mm1R, Mp2L, Mm2L, Mp2R, Mm2R, Mp4L, Pp5L, Mm4R;
-  double Pm5R, scrh, M, m;
+  int i;
 
-  // First we do the Prims to Cons conversion of the Flux walls
-  Prims2Cons(FluxWalls_Prims[LEFT], FluxWalls_Cons[LEFT], Start, Stop + 1);
-  Prims2Cons(FluxWalls_Prims[RIGHT], FluxWalls_Cons[RIGHT], Start, Stop);
+  double aL, ML, MpL, PpL, asL2, asL, atL;
+  double aR, MR, MmR, PmR, asR2, asR, atR;
+  double a, m, mp, mm, p;
+  double rhoL, pL, uL, rhoR, pR, uR;
+  double HL, HR, Fp[3], Fm[3];
+  double alpha = 3.0 / 16.0, beta = 0.125;
+  double M2Bar, Mo2, fa;
+  double Kp = .25, Ku = .75, sigma = 1.0, M2inf = .3;
+  // double alpha = 0.0, beta = 0.0;
 
-  for (int i = Start; i < Stop; ++i) {
+  for (i = Start; i < Stop; i++) {
 
-    // Load Data for the Riemann problem
-    rhoL = FluxWalls_Prims[LEFT][Tidx(DENS, i)];
-    uL = FluxWalls_Prims[LEFT][Tidx(VELX, i)];
-    pL = FluxWalls_Prims[LEFT][Tidx(PRES, i)];
-    pL = (pL > 0.0) ? pL : 0.1;
+    rhoL = FluxWalls_Prims[RIGHT][Tidx(DENS, i)];
+    uL = FluxWalls_Prims[RIGHT][Tidx(VELX, i)];
+    pL = FluxWalls_Prims[RIGHT][Tidx(PRES, i)];
+    pL = (pL < 0.0) ? 0.001 : pL;
 
-    rhoR = FluxWalls_Prims[RIGHT][Tidx(DENS, i + 1)];
-    uR = FluxWalls_Prims[RIGHT][Tidx(VELX, i + 1)];
-    pR = FluxWalls_Prims[RIGHT][Tidx(PRES, i + 1)];
-    pR = (pR > 0.0) ? pR : 0.1;
+    rhoR = FluxWalls_Prims[LEFT][Tidx(DENS, i + 1)];
+    uR = FluxWalls_Prims[LEFT][Tidx(VELX, i + 1)];
+    pR = FluxWalls_Prims[LEFT][Tidx(PRES, i + 1)];
+    pR = (pR < 0.0) ? 0.001 : pR;
 
-    momL = FluxWalls_Cons[LEFT][Tidx(MOMX, i)];
-    EnL = FluxWalls_Cons[LEFT][Tidx(ENER, i)];
-
-    momR = FluxWalls_Cons[RIGHT][Tidx(MOMX, i + 1)];
-    EnR = FluxWalls_Cons[RIGHT][Tidx(ENER, i + 1)];
-
-    // Convective flux vectors Phi
-    PhiL[DENS] = 1.0;
-    PhiL[MOMX] = uL;
-    PhiL[ENER] = (EnL - pL) / rhoL;
-
-    PhiR[DENS] = 1.0;
-    PhiR[MOMX] = uR;
-    PhiR[ENER] = (EnR - pR) / rhoR;
-
-    // Calculate numerical sound speed
     aL = std::sqrt(GAMMA * pL / rhoL);
     aR = std::sqrt(GAMMA * pR / rhoR);
 
-    asL2 = aL * aL / (GAMMA - 1.0) + 0.5 * uL * uL;
+    asL2 = uL * uL;
+    asL2 = aL * aL / (GAMMA - 1.0) + 0.5 * asL2;
     asL2 *= 2.0 * (GAMMA - 1.0) / (GAMMA + 1.0);
 
-    asR2 = aR * aR / (GAMMA - 1.0) + 0.5 * uR * uR;
+    asR2 = uR * uR;
+    asR2 = aR * aR / (GAMMA - 1.0) + 0.5 * asR2;
     asR2 *= 2.0 * (GAMMA - 1.0) / (GAMMA + 1.0);
 
     asL = std::sqrt(asL2);
@@ -308,60 +292,77 @@ void Domain::Autsmup(int Start, int Stop) {
     atR = asR2 / std::fmax(asR, std::fabs(uR));
 
     a = std::fmin(atL, atR);
+    /*
+        a = 0.5*(aL + aR);
+    */
+    /* --------------------------------------------
+            define split Mach numbers
+            define pressure terms
+       -------------------------------------------- */
 
-    // alpha & beta coefficients
-    Mm2 = .5 * (uL * uL + uR * uR) / a /
-          a; // This is highly questionable, it might be valid but its odd
-    Mo2 = std::fmax(mm2, .4);
-    Mo2 = std::fmin(1.0, Mo2);
-    Mo = std::sqrt(mo2);
-    fa = Mo * (2.0 - Mo);
-
-    alpha = (3.0 / 16.0) * (-4.0 + 5.0 * fa * fa);
-    beta = 1.0 / 8.0;
-
-    // Split Mach Number, Split Pressure
     ML = uL / a;
     MR = uR / a;
 
-    Mp1L = .5 * (ML + std::fabs(ML));
-    Mm1R = .5 * (MR - std::fabs(MR));
+    M2Bar = .5 * (uL * uL + uR * uR) / (a * a);
+    Mo2 = std::fmin(1.0, std::fmax(M2Bar, M2inf));
+    fa = std::sqrt(Mo2) * (2.0 - std::sqrt(Mo2));
+    // fa = 1.0;
 
-    Mp2L = .25 * (ML + 1.0) * (ML + 1.0);
-    Mm2L = -.25 * (ML - 1.0) * (ML - 1.0);
-
-    Mp2R = .25 * (MR + 1.0) * (MR + 1.0);
-    Mm2R = -.25 * (MR - 1.0) * (MR - 1.0);
+    // Define alpha
+    alpha = (3.0 / 16.0) * (-4.0 + 5.0 * fa * fa);
 
     if (std::fabs(ML) >= 1.0) {
-      Mp4L = Mp1L;
-      Pp5L = Mp1L / ML;
+      MpL = 0.5 * (ML + std::fabs(ML));
+      PpL = ML > 0.0 ? 1.0 : 0.0;
     } else {
-      Mp4L = Mp2L * (1.0 - 16.0 * beta * Mm2L);
-      Pp5L = Mp2L * ((2.0 - ML) - 16.0 * alpha * ML * Mm2L);
+      MpL = 0.25 * (ML + 1.0) * (ML + 1.0) +
+            beta * (ML * ML - 1.0) * (ML * ML - 1.0);
+      PpL = 0.25 * (ML + 1.0) * (ML + 1.0) * (2.0 - ML) +
+            alpha * ML * (ML * ML - 1.0) * (ML * ML - 1.0);
     }
 
     if (std::fabs(MR) >= 1.0) {
-      Mm4R = Mm1R;
-      Pm5R = Mm1R / MR;
+      MmR = 0.5 * (MR - std::fabs(MR));
+      PmR = MR > 0.0 ? 0.0 : 1.0;
     } else {
-      Mm4R = Mm2R * (1.0 + 16.0 * beta * Mp2R);
-      Pm5R = Mm2R * ((-2.0 - MR) + 16.0 * alpha * MR * Mp2R);
+      MmR = -0.25 * (MR - 1.0) * (MR - 1.0) -
+            beta * (MR * MR - 1.0) * (MR * MR - 1.0);
+      PmR = 0.25 * (MR - 1.0) * (MR - 1.0) * (2.0 + MR) -
+            alpha * MR * (MR * MR - 1.0) * (MR * MR - 1.0);
     }
 
-    scrh = std::fmax(1.0 - sigma * Mm2, 0.0);
-    M = Mp4L + Mm4R -
-        Kp / fa * scrh * (pR - pL) / (rhoL + rhoR) / a / a *
-            2.0; // also suspect
-    m = a * M;
-    m *= (M > 0.0) ? rhoL : rhoR;
+    m = MpL + MmR -
+        (Kp / fa) * std::fmax(1.0 - sigma * M2Bar, 0.0) * (pR - pL) /
+            (a * a * (rhoL + rhoR) * .5);
 
-    // Flux Calculation
+    mp = a * 0.5 * (m + std::fabs(m));
+    mm = a * 0.5 * (m - std::fabs(m));
+
+    /* -------------------------------------------------------------
+                       Compute fluxes
+       ------------------------------------------------------------- */
+
+    // PosF = A * .5 * (mp + mm + std::fabs(mp + mm));
+    // NegF = A * .5 * (mp + mm - std::fabs(mp + mm));
+
+    // Redefining this as energy
+    HR = rhoR * (0.5 * uR * uR + pR / ((GAMMA - 1.0) * rhoR));
+    HL = rhoL * (0.5 * uL * uL + pL / ((GAMMA - 1.0) * rhoL));
+
+    Fp[0] = mp * rhoL;
+    Fp[1] = mp * rhoL * uL;
+    Fp[2] = mp * (HL + pL);
+
+    Fm[0] = mm * rhoR;
+    Fm[1] = mm * rhoR * uR;
+    Fm[2] = mm * (HR + pR);
+
+    p = PpL * pL + PmR * pR -
+        Ku * PpL * PmR * (rhoL + rhoR) * (fa * a) * (uR - uL);
+
     for (int var = 0; var < NumVar; ++var) {
-      CellFlux[Tidx(var, i)] = (m > 0.0) ? m * PhiL[var] : m * PhiR[var];
+      CellFlux[Tidx(var, i)] = Fp[var] + Fm[var];
     }
-    CellFlux[Tidx(MOMX, i)] +=
-        Pp5L * pL + Pm5R * pR -
-        Ku * Pp5L * Pm5R * (rhoL + rhoR) * fa * a * (uR - uL);
+    CellFlux[Tidx(MOMX, i)] += p;
   }
 };

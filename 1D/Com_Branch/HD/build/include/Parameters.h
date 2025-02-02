@@ -7,21 +7,21 @@
  * X Parameters *
  ****************/
 #define NX 400
-#define X0 0.0
-#define XN 1.0
+#define X0 -15.0
+#define XN 5.0
 
 /****************
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN .25
+#define TN 1.0
 
 /*****************
  *Run Parameters *
  *****************/
 #define EvolveChars false
-#define SpaceMethod FOG
-#define TestProblem SHOCKTUBE
+#define SpaceMethod WENO
+#define TestProblem SLOWSHOCK
 #define BCS SHOCKTUBEBC
 #define RIEMANN AUSMPLUSUP
 #define CFL 0.8

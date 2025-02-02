@@ -50,6 +50,8 @@ if len(np.shape(p)) == 1:
     RS = str(param[RS][16:-1])
     if RS == "AUSMPLUS":
         RS = "AUSM+"
+    if RS == "AUSMPLUSUP":
+        RS = "AUSM+up"
     Method = str(param[Method][20:-1])
     Problem = str(param[Problem][20:-1])
 
@@ -67,9 +69,9 @@ if len(np.shape(p)) == 1:
     maxu = max(u);
     maxp = max(p);
 
-    # plt.plot(x,rho,'b-')
+    plt.plot(x,rho,'b-')
     # plt.plot(x,u,'r-')
-    plt.plot(x,p,'k-')
+    # plt.plot(x,p,'k-')
 
     if OverlayExact:
         plt.plot(xE,rhoE,'b--')
