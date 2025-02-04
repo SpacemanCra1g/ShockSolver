@@ -53,7 +53,7 @@ void Domain::ForwardEuler() {
   //   }
   // #endif
 
-  (*this.*SpaceRecon)(XStart - 1, XEnd + 1);
+  (*this.*SpaceRecon)(XStart - 1, XEnd + 2);
 
   // #ifdef PStuff
   //   std::cout << std::endl;

@@ -8,12 +8,17 @@ void Domain::Ausm(int Start, int Stop) {
   double Fp[3], Fm[3];
   double PosF, NegF;
 
+  Find_Cs(FluxWalls_Prims[RIGHT], RS_CsL, Start, Stop);
+  Find_Cs(FluxWalls_Prims[LEFT], RS_CsR, Start, Stop + 1);
+
   for (int i = Start; i < Stop; ++i) {
     rL = FluxWalls_Prims[RIGHT][Tidx(DENSP, i)];
     uL = FluxWalls_Prims[RIGHT][Tidx(VELX, i)];
     pL = FluxWalls_Prims[RIGHT][Tidx(PRES, i)];
     pL = (pL < 0.0) ? 0.001 : pL;
-    aL = std::sqrt(GAMMA * pL / rL);
+    // aL = std::sqrt(GAMMA * pL / rL);
+    aL = RS_CsL[i];
+    aL = (aL < 0.0) ? std::sqrt(GAMMA * pL / rL) : std::sqrt(aL);
     ML = uL / aL;
     HL = aL * aL / (GAMMA - 1.0) + 0.5 * uL * uL;
 
@@ -21,7 +26,9 @@ void Domain::Ausm(int Start, int Stop) {
     uR = FluxWalls_Prims[LEFT][Tidx(VELX, i + 1)];
     pR = FluxWalls_Prims[LEFT][Tidx(PRES, i + 1)];
     pR = (pR < 0.0) ? 0.001 : pR;
-    aR = std::sqrt(GAMMA * pR / rR);
+    // aR = std::sqrt(GAMMA * pR / rR);
+    aR = RS_CsR[i + 1];
+    aR = (aR < 0.0) ? std::sqrt(GAMMA * pR / rR) : std::sqrt(aR);
     MR = uR / aR;
     HR = aR * aR / (GAMMA - 1.0) + 0.5 * uR * uR;
 
@@ -290,6 +297,9 @@ void Domain::Autsmup(int Start, int Stop) {
 
     atL = asL2 / std::fmax(asL, std::fabs(uL));
     atR = asR2 / std::fmax(asR, std::fabs(uR));
+
+    // atL = asL2 / std::fmax(asL, uL);
+    // atR = asR2 / std::fmax(asR, -uR);
 
     a = std::fmin(atL, atR);
     /*

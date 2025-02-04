@@ -7,6 +7,15 @@ u = np.loadtxt("./OutputData/VelocityX.dat")
 v = np.loadtxt("./OutputData/VelocityY.dat")
 w = np.loadtxt("./OutputData/VelocityZ.dat")
 
+Hp = np.loadtxt("./HLLC_Comp/Pressure.dat")
+Hrho = np.loadtxt("./HLLC_Comp/Density.dat")
+Hu = np.loadtxt("./HLLC_Comp/VelocityX.dat")
+
+Ep = np.loadtxt("./ExactSolution/Pressure.dat")
+Erho = np.loadtxt("./ExactSolution/Density.dat")
+Eu = np.loadtxt("./ExactSolution/VelocityX.dat")
+
+
 
 plotVar = rho
 
@@ -19,6 +28,7 @@ if len(np.shape(p)) == 1:
     VL = 0
     VR = 0
     RS = 0
+    Method = 0
 
     i = 0
     while not N or not xstart or not xend or not VL or not VR or not RS:
@@ -34,6 +44,8 @@ if len(np.shape(p)) == 1:
             VR = i
         if "#define RIEMANN " in param[i]:
             RS = i
+        if "#define SpaceMethod " in param[i]:
+            Method = i
         i += 1
         if i == len(param):
             print("Coefficient not found in file\n Exiting")
@@ -46,6 +58,7 @@ if len(np.shape(p)) == 1:
     VL = str(param[VL][14:-1])
     VR = str(param[VR][14:-1])
     RS = str(param[RS][16:-1])
+    Method = str(param[Method][20:-1])
 
 
 
@@ -55,22 +68,37 @@ if len(np.shape(p)) == 1:
     xstart += deltaX/2 #adjust the interval one half deltax away from the start
 
     x = np.arange(xstart,xend,deltaX)
+
+    deltaX = (xend-xstart)/len(Erho)
+    Ex = np.arange(xstart,xend,deltaX)
+
+    deltaX = (xend-xstart)/len(Hrho)
+    Hx = np.arange(xstart,xend,deltaX)
+
     # print(x)
 
 
 
 
-    plt.plot(x,u,'b')
+    plt.plot(x,u,'b-')
     plt.plot(x,rho/25,'k-')
-    plt.plot(x,p/1000,'r')
+    plt.plot(x,p/1000,'r-')
+
+    plt.plot(Hx,Hu,'b.')
+    plt.plot(Hx,Hrho/25,'k.')
+    plt.plot(Hx,Hp/1000,'r.')
+
+    plt.plot(Ex,Eu,'b--')
+    plt.plot(Ex,Erho/25,'k--')
+    plt.plot(Ex,Ep/1000,'r--')
     # plt.plot(x,(w*w + u*u + v*v),'g')
     # plt.scatter(x,u,color='b',s=5, marker='.')
     # plt.scatter(x,rho/25,color='k',s=5,marker='.')
     # plt.scatter(x,p/1000,color='r',s=5,marker='.')
-    title = "V_yL = " + VL + ", V_yR = " + VR + ", Nx = " + str(N) + ", " + RS
+    title = "AUSM at t = 0.4, " +Method +", V_yL = " + VL + ", V_yR = " + VR + ", Nx = " + str(N) + ", " + RS
     plt.title(title)
     plt.grid()
-    plt.legend(["Vx","Rho","Pres"])
+    plt.legend(["AUSM Vx","AUSM Rho","AUSM Pres", "HLLC Vx","HLLC Rho","HLLC Pres","Exact Vx","Exact Rho","Exact Pres",])
 
     plt.show()
 

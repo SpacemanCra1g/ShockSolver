@@ -20,7 +20,7 @@
 #define PR 0.01
 
 #define XVELL 0.0
-#define YVELL 0.99
+#define YVELL 0.9
 #define ZVELL 0.0
 
 #define XVELR 0.0
@@ -37,10 +37,10 @@
  *Run Parameters *
  *****************/
 #define EvolveChars false
-#define SpaceMethod WENO
+#define SpaceMethod PLM
 #define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
-#define RIEMANN HLLC
+#define RIEMANN AUSM
 #define CFL 0.8
 #define EOS IDEAL
 #define RK_Method 3 /*set to -1 for CharTracing, sets automatically for PLM*/

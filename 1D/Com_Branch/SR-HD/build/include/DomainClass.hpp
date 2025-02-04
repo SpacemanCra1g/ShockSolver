@@ -185,6 +185,10 @@ public:
     RiemannSolver = &Domain::Hllc;
 #elif RIEMANN == AUSM
     RiemannSolver = &Domain::Ausm;
+#elif RIEMANN == AUSMPLUS
+    RiemannSolver = &Domain::Autsm;
+#elif RIEMANN == AUSMPLUSUP
+    RiemannSolver = &Domain::Autsmup;
 #endif
 
 #if LIMITSLOPE == MINMOD
@@ -259,6 +263,8 @@ public:
 
   // Defined the src/AUSM.cpp file
   void Ausm(int, int);
+  void Autsm(int, int);
+  void Autsmup(int, int);
 
   // Defined in the src/HLLC.cpp file
   void Hllc(int Start, int Stop);
