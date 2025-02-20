@@ -14,14 +14,14 @@
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN .25
+#define TN .15
 
 /*****************
  *Run Parameters *
  *****************/
 #define EvolveChars false
-#define SpaceMethod WENO
-#define TestProblem SHOCKTUBE
+#define SpaceMethod PLM
+#define TestProblem RAREFACTION
 #define BCS SHOCKTUBEBC
 #define RIEMANN AUSM
 #define CFL 0.8

@@ -55,3 +55,18 @@ void Domain::SlowShockIC() {
   }
   Prims2Cons(Prims, Cons, 0, REdgeX);
 }
+
+void Domain::RarefactionIC() {
+  for (int i = 0; i < REdgeX; ++i) {
+    if ((i - NGC) * dx + dx * 0.5 < 0.5) {
+      DensP[i] = 1.0;
+      Pres[i] = .4;
+      Xvel[i] = -2.0;
+    } else {
+      DensP[i] = 1.0;
+      Pres[i] = .4;
+      Xvel[i] = 2.0;
+    }
+  }
+  Prims2Cons(Prims, Cons, 0, REdgeX);
+}

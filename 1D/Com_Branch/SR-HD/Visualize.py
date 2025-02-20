@@ -60,6 +60,12 @@ if len(np.shape(p)) == 1:
     RS = str(param[RS][16:-1])
     Method = str(param[Method][20:-1])
 
+    if RS == "AUSMPLUS":
+        RS = "AUSM+"
+    elif RS == "AUSMPLUSUP":
+        RS = "AUSM+up"
+
+
 
 
 
@@ -84,21 +90,21 @@ if len(np.shape(p)) == 1:
     plt.plot(x,rho/25,'k-')
     plt.plot(x,p/1000,'r-')
 
-    plt.plot(Hx,Hu,'b.')
-    plt.plot(Hx,Hrho/25,'k.')
-    plt.plot(Hx,Hp/1000,'r.')
+    # plt.plot(Hx,Hu,'b.')
+    # plt.plot(Hx,Hrho/25,'k.')
+    # plt.plot(Hx,Hp/1000,'r.')
 
-    plt.plot(Ex,Eu,'b--')
-    plt.plot(Ex,Erho/25,'k--')
-    plt.plot(Ex,Ep/1000,'r--')
+    # plt.plot(Ex,Eu,'b--')
+    # plt.plot(Ex,Erho/25,'k--')
+    # plt.plot(Ex,Ep/1000,'r--')
     # plt.plot(x,(w*w + u*u + v*v),'g')
     # plt.scatter(x,u,color='b',s=5, marker='.')
     # plt.scatter(x,rho/25,color='k',s=5,marker='.')
     # plt.scatter(x,p/1000,color='r',s=5,marker='.')
-    title = "AUSM at t = 0.4, " +Method +", V_yL = " + VL + ", V_yR = " + VR + ", Nx = " + str(N) + ", " + RS
+    title = "t = 0.4, " +Method +", V_yL = " + VL + ", V_yR = " + VR + ", Nx = " + str(N) + ", " + RS
     plt.title(title)
     plt.grid()
-    plt.legend(["AUSM Vx","AUSM Rho","AUSM Pres", "HLLC Vx","HLLC Rho","HLLC Pres","Exact Vx","Exact Rho","Exact Pres",])
+    plt.legend([RS +" Vx",RS +" Rho",RS+" Pres", "HLLC Vx","HLLC Rho","HLLC Pres","Exact Vx","Exact Rho","Exact Pres",])
 
     plt.show()
 

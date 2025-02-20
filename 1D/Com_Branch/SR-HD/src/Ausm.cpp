@@ -21,7 +21,7 @@ void Domain::Ausm(int Start, int Stop) {
     // rL = (rL < 0.0) ? 0.001 : rL;
 
     HL = 1.0 + (GAMMA / (GAMMA - 1.0)) * pL / rL;
-    aL = GAMMA * pL / (HL * rL);
+    aL = std::sqrt(GAMMA * pL / (HL * rL));
     ML = uL / aL;
 
     rR = FluxWalls_Prims[LEFT][Tidx(DENSP, i + 1)];
@@ -33,7 +33,7 @@ void Domain::Ausm(int Start, int Stop) {
     // rR = (rR < 0.0) ? 0.001 : rR;
 
     HR = 1.0 + (GAMMA / (GAMMA - 1.0)) * pR / rR;
-    aR = GAMMA * pR / (HR * rR);
+    aR = std::sqrt(GAMMA * pR / (HR * rR));
     MR = uR / aR;
 
     lorL = std::pow(1.0 - (uL * uL + vL * vL + wL * wL), -0.5);
@@ -82,86 +82,6 @@ void Domain::Ausm(int Start, int Stop) {
   }
 };
 
-double sign(double M) {
-  if (std::fabs(M) < 1.e-13) {
-    return 0;
-  } else {
-    return M / std::fabs(M);
-  }
-}
-
-// void Domain::Autsm(int Start, int Stop) {
-
-//   double rL, uL, pL, aL, ML, HL, aStrL;
-//   double rR, uR, pR, aR, MR, HR, aStrR;
-//   double Mp, Pp;
-//   double Mm, Pm;
-//   double Fp[3], Fm[3];
-//   double PosF, NegF;
-//   double A;
-//   double alpha = 3.0 / 16.0;
-//   double beta = 1.0 / 8.0;
-
-//   for (int i = Start; i < Stop; ++i) {
-//     rL = FluxWalls_Prims[RIGHT][Tidx(DENSP, i)];
-//     uL = FluxWalls_Prims[RIGHT][Tidx(VELX, i)];
-//     pL = FluxWalls_Prims[RIGHT][Tidx(PRES, i)];
-//     pL = (pL < 0.0) ? 0.001 : pL;
-//     aL = std::sqrt(GAMMA * pL / rL);
-//     HL = aL * aL / (GAMMA - 1.0) + 0.5 * uL * uL;
-//     aStrL = std::sqrt(2.0 * (GAMMA - 1.0) * HL / (GAMMA + 1.0));
-
-//     rR = FluxWalls_Prims[LEFT][Tidx(DENSP, i + 1)];
-//     uR = FluxWalls_Prims[LEFT][Tidx(VELX, i + 1)];
-//     pR = FluxWalls_Prims[LEFT][Tidx(PRES, i + 1)];
-//     pR = (pR < 0.0) ? 0.001 : pR;
-//     aR = std::sqrt(GAMMA * pR / rR);
-//     HR = aR * aR / (GAMMA - 1.0) + 0.5 * uR * uR;
-//     aStrR = std::sqrt(2.0 * (GAMMA - 1.0) * HR / (GAMMA + 1.0));
-
-//     A = std::fmin(aStrL * aStrL / std::fmax(aStrL, std::fabs(uL)),
-//                   aStrR * aStrR / std::fmax(aStrR, std::fabs(uR)));
-
-//     ML = uL / A;
-//     MR = uR / A;
-
-//     if (std::fabs(ML) >= 1.0) {
-//       Mp = 0.5 * (ML + std::fabs(ML));
-//       Pp = .5 * (1.0 + sign(ML));
-//     } else {
-//       Mp = 0.25 * (ML + 1.0) * (ML + 1.0) +
-//            beta * (ML * ML - 1.0) * (ML * ML - 1.0); // Paper calls this 1/2
-//       Pp = .25 * (ML + 1.0) * (ML + 1.0) * (2.0 - ML) +
-//            alpha * ML * (ML * ML - 1.0) * (ML * ML - 1.0);
-//     }
-
-//     if (std::fabs(MR) >= 1.0) {
-//       Mm = .5 * (MR - std::fabs(MR));
-//       Pm = .5 * (1.0 - sign(MR));
-//     } else {
-//       Mm = -0.25 * (MR - 1.0) * (MR - 1.0) -
-//            beta * (MR * MR - 1.0) * (MR * MR - 1.0); // Paper calls this 1/2
-//       Pm = .25 * (MR - 1.0) * (MR - 1.0) * (2.0 + MR) -
-//            alpha * MR * (MR * MR - 1.0) * (MR * MR - 1.0);
-//     }
-
-//     PosF = A * .5 * (Mp + Mm + std::fabs(Mp + Mm));
-//     NegF = A * .5 * (Mp + Mm - std::fabs(Mp + Mm));
-
-//     Fp[0] = PosF * rL;
-//     Fp[1] = PosF * rL * uL + Pp * pL;
-//     Fp[2] = PosF * HL * rL;
-
-//     Fm[0] = NegF * rR;
-//     Fm[1] = NegF * rR * uR + Pm * pR;
-//     Fm[2] = NegF * HR * rR;
-
-//     for (int var = 0; var < NumVar; ++var) {
-//       CellFlux[Tidx(var, i)] = Fp[var] + Fm[var];
-//     }
-//   }
-// };
-
 void Domain::Autsm(int Start, int Stop) {
 
   int i;
@@ -170,30 +90,43 @@ void Domain::Autsm(int Start, int Stop) {
   double aR, MR, MmR, PmR, asR2, asR, atR;
   double a, m, mp, mm, p;
   double rhoL, pL, uL, rhoR, pR, uR;
-  double HL, HR, Fp[3], Fm[3];
+  double HL, HR, Fp[NumVar], Fm[NumVar];
   double alpha = 3.0 / 16.0, beta = 0.125;
+  double lorL, lorR, vL, wL, vR, wR;
   // double alpha = 0.0, beta = 0.0;
 
   for (i = Start; i < Stop; i++) {
 
     rhoL = FluxWalls_Prims[RIGHT][Tidx(DENS, i)];
     uL = FluxWalls_Prims[RIGHT][Tidx(VELX, i)];
+    vL = FluxWalls_Prims[RIGHT][Tidx(VELY, i)];
+    wL = FluxWalls_Prims[RIGHT][Tidx(VELZ, i)];
     pL = FluxWalls_Prims[RIGHT][Tidx(PRES, i)];
     pL = (pL < 0.0) ? 0.001 : pL;
 
     rhoR = FluxWalls_Prims[LEFT][Tidx(DENS, i + 1)];
     uR = FluxWalls_Prims[LEFT][Tidx(VELX, i + 1)];
+    vR = FluxWalls_Prims[LEFT][Tidx(VELY, i + 1)];
+    wR = FluxWalls_Prims[LEFT][Tidx(VELZ, i + 1)];
     pR = FluxWalls_Prims[LEFT][Tidx(PRES, i + 1)];
     pR = (pR < 0.0) ? 0.001 : pR;
 
-    aL = std::sqrt(GAMMA * pL / rhoL);
-    aR = std::sqrt(GAMMA * pR / rhoR);
+    lorL = std::pow(1.0 - (uL * uL + vL * vL + wL * wL), -0.5);
+    lorR = std::pow(1.0 - (uR * uR + vR * vR + wR * wR), -0.5);
 
-    asL2 = uL * uL;
+    HL = 1.0 + (GAMMA / (GAMMA - 1.0)) * pL / rhoL;
+    HR = 1.0 + (GAMMA / (GAMMA - 1.0)) * pR / rhoR;
+
+    aL = std::sqrt(GAMMA * pL / (HL * rhoL));
+    aR = std::sqrt(GAMMA * pR / (HR * rhoR));
+
+    asL2 = uL * uL; // Works ok
+    // asL2 = uL * uL + vL * vL + wL * wL;
     asL2 = aL * aL / (GAMMA - 1.0) + 0.5 * asL2;
     asL2 *= 2.0 * (GAMMA - 1.0) / (GAMMA + 1.0);
 
     asR2 = uR * uR;
+    // asR2 = uR * uR + vR * vR + wR * wR;
     asR2 = aR * aR / (GAMMA - 1.0) + 0.5 * asR2;
     asR2 *= 2.0 * (GAMMA - 1.0) / (GAMMA + 1.0);
 
@@ -204,6 +137,7 @@ void Domain::Autsm(int Start, int Stop) {
     atR = asR2 / std::fmax(asR, std::fabs(uR));
 
     a = std::fmin(atL, atR);
+    a = std::sqrt(aL * aR);
     /*
         a = 0.5*(aL + aR);
     */
@@ -247,21 +181,24 @@ void Domain::Autsm(int Start, int Stop) {
     // NegF = A * .5 * (mp + mm - std::fabs(mp + mm));
 
     // Redefining this as energy
-    HR = rhoR * (0.5 * uR * uR + pR / ((GAMMA - 1.0) * rhoR));
-    HL = rhoL * (0.5 * uL * uL + pL / ((GAMMA - 1.0) * rhoL));
+    // HR = rhoR * (0.5 * uR * uR + pR / ((GAMMA - 1.0) * rhoR));
+    // HL = rhoL * (0.5 * uL * uL + pL / ((GAMMA - 1.0) * rhoL));
 
-    Fp[0] = mp * rhoL;
-    Fp[1] = mp * rhoL * uL;
-    Fp[2] = mp * (HL + pL);
+    Fp[0] = mp * lorL * rhoL;
+    Fp[1] = mp * rhoL * lorL * lorL * HL * uL + PpL * pL;
+    Fp[2] = mp * rhoL * lorL * lorL * HL * vL;
+    Fp[3] = mp * rhoL * lorL * lorL * HL * wL;
+    Fp[4] = mp * rhoL * lorL * lorL * HL;
 
-    Fm[0] = mm * rhoR;
-    Fm[1] = mm * rhoR * uR;
-    Fm[2] = mm * (HR + pR);
+    Fm[0] = mm * lorR * rhoR;
+    Fm[1] = mm * rhoR * lorR * lorR * HR * uR + PmR * pR;
+    Fm[2] = mm * rhoR * lorR * lorR * HR * vR;
+    Fm[3] = mm * rhoR * lorR * lorR * HR * wR;
+    Fm[4] = mm * rhoR * lorR * lorR * HR;
 
     for (int var = 0; var < NumVar; ++var) {
       CellFlux[Tidx(var, i)] = Fp[var] + Fm[var];
     }
-    CellFlux[Tidx(MOMX, i)] += PpL * pL + PmR * pR;
   }
 };
 

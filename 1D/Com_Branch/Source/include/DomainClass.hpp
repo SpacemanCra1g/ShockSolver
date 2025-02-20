@@ -163,6 +163,9 @@ public:
 #elif TestProblem == SLOWSHOCK
     IC = &Domain::SlowShockIC;
     BC = &Domain::NeumannBC;
+#elif TestProblem == RAREFACTION
+    IC = &Domain::RarefactionIC;
+    BC = &Domain::NeumannBC;
 #endif
 
 #if RK_Method == 1
@@ -233,6 +236,7 @@ public:
   void ShuOsherIC();
   void ShockTubeIC();
   void SlowShockIC();
+  void RarefactionIC();
 
   // Defined in the SR dependent EnergyInverter.cpp file
   int EnergyInverter(double *Uin, double *Uout, int i);

@@ -28,6 +28,7 @@
 #define SHUOSHER 1
 #define SRSHOCKTUBE 2
 #define SLOWSHOCK 3
+#define RAREFACTION 4
 
 /*********************************/
 /******* Riemann Solvers ********/
