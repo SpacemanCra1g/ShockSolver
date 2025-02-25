@@ -5,6 +5,7 @@ void Domain::Ausm(int Start, int Stop) {
   double rR, uR, pR, aR, MR, HR, vR, wR;
   double Mp, Pp;
   double Mm, Pm;
+  double Lcor, Rcor;
   double Fp[NumVar], Fm[NumVar];
   double PosF, NegF, lorR, lorL;
 
@@ -23,6 +24,17 @@ void Domain::Ausm(int Start, int Stop) {
     HL = 1.0 + (GAMMA / (GAMMA - 1.0)) * pL / rL;
     aL = std::sqrt(GAMMA * pL / (HL * rL));
     ML = uL / aL;
+    Lcor = 1.0;
+    Lcor = std::sqrt((1.0 - aL * aL) / (1.0 - uL * uL));
+    // Lcor = std::sqrt(1.0 - (uL * uL + vL * vL + wL * wL));
+    // Lcor = 10;
+    ML *= Lcor;
+
+    // ML = (uL / aL) *
+    // std::sqrt((1.0 - aL * aL) / (1.0 - uL * uL - vL * vL - wL * wL));
+
+    // ML = (std::sqrt(uL * uL + vL * vL + wL * wL) / aL) *
+    // std::sqrt((1.0 - aL * aL) / (1.0 - uL * uL - vL * vL - wL * wL));
 
     rR = FluxWalls_Prims[LEFT][Tidx(DENSP, i + 1)];
     uR = FluxWalls_Prims[LEFT][Tidx(VELX, i + 1)];
@@ -35,6 +47,16 @@ void Domain::Ausm(int Start, int Stop) {
     HR = 1.0 + (GAMMA / (GAMMA - 1.0)) * pR / rR;
     aR = std::sqrt(GAMMA * pR / (HR * rR));
     MR = uR / aR;
+    Rcor = 1.0;
+    Rcor = std::sqrt((1.0 - aR * aR) / (1.0 - uR * uR));
+    // Rcor = std::sqrt(1.0 - (uR * uR + vR * vR + wR * wR));
+    // Rcor = 10;
+    MR *= Rcor;
+
+    // MR = (uR / aR) * std::sqrt((1.0 - aR * aR) / (1.0 - uR * uR));
+    // MR = (uR / aR) * std::sqrt((1.0 - aR * aR) / (1.0 - uR * uR));
+    // MR = (std::sqrt(uR * uR + vR * vR + wR * wR) / aR) *
+    //      std::sqrt((1.0 - aR * aR) / (1.0 - uR * uR - vR * vR - wR * wR));
 
     lorL = std::pow(1.0 - (uL * uL + vL * vL + wL * wL), -0.5);
     lorR = std::pow(1.0 - (uR * uR + vR * vR + wR * wR), -0.5);
@@ -61,8 +83,8 @@ void Domain::Ausm(int Start, int Stop) {
       Pm = 0.0;
     }
 
-    PosF = std::fmax(0.0, Mp + Mm) * aL;
-    NegF = std::fmin(0.0, Mp + Mm) * aR;
+    PosF = std::fmax(0.0, Mp + Mm) * aL / Lcor;
+    NegF = std::fmin(0.0, Mp + Mm) * aR / Rcor;
 
     Fp[0] = PosF * lorL * rL;
     Fp[1] = PosF * rL * lorL * lorL * HL * uL + Pp;

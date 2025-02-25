@@ -1,11 +1,11 @@
 #include "../include/DomainClass.hpp"
 
 void Domain::writeResults() {
-  FILE *File1 = fopen("OutputData/Density.dat", "w");
-  FILE *File2 = fopen("OutputData/VelocityX.dat", "w");
-  FILE *File3 = fopen("OutputData/VelocityY.dat", "w");
-  FILE *File4 = fopen("OutputData/VelocityZ.dat", "w");
-  FILE *File5 = fopen("OutputData/Pressure.dat", "w");
+  FILE *File1 = fopen("OutputData/Density.dat", "a");
+  FILE *File2 = fopen("OutputData/VelocityX.dat", "a");
+  FILE *File3 = fopen("OutputData/VelocityY.dat", "a");
+  FILE *File4 = fopen("OutputData/VelocityZ.dat", "a");
+  FILE *File5 = fopen("OutputData/Pressure.dat", "a");
   if (File1 && File2 && File3 && File4 && File5) {
 
     for (int i = XStart; i < XEnd; i++) {
