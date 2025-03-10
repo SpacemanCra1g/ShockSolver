@@ -6,7 +6,7 @@
 /****************
  * X Parameters *
  ****************/
-#define NX 8000
+#define NX 400
 #define X0 0.0
 #define XN 1.0
 
@@ -24,7 +24,7 @@
 #define ZVELL 0.0
 
 #define XVELR 0.0
-#define YVELR 0.0
+#define YVELR 0.9
 #define ZVELR 0.0
 
 /****************
@@ -37,10 +37,10 @@
  *Run Parameters *
  *****************/
 #define EvolveChars false
-#define SpaceMethod PLM
+#define SpaceMethod WENO
 #define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
-#define RIEMANN HLLC
+#define RIEMANN AUSM
 #define CFL 0.8
 #define EOS IDEAL
 #define RK_Method 3 /*set to -1 for CharTracing, sets automatically for PLM*/

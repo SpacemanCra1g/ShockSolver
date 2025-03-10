@@ -7,13 +7,13 @@ u = np.loadtxt("./OutputData/VelocityX.dat")
 v = np.loadtxt("./OutputData/VelocityY.dat")
 w = np.loadtxt("./OutputData/VelocityZ.dat")
 
-Hp = np.loadtxt("./HLLC_Comp/Pressure.dat")
-Hrho = np.loadtxt("./HLLC_Comp/Density.dat")
-Hu = np.loadtxt("./HLLC_Comp/VelocityX.dat")
+# Hp = np.loadtxt("./HLLC_Comp/Pressure.dat")
+# Hrho = np.loadtxt("./HLLC_Comp/Density.dat")
+# Hu = np.loadtxt("./HLLC_Comp/VelocityX.dat")
 
-Ep = np.loadtxt("./ExactSolution/Pressure.dat")
-Erho = np.loadtxt("./ExactSolution/Density.dat")
-Eu = np.loadtxt("./ExactSolution/VelocityX.dat")
+# Ep = np.loadtxt("./ExactSolution/Pressure.dat")
+# Erho = np.loadtxt("./ExactSolution/Density.dat")
+# Eu = np.loadtxt("./ExactSolution/VelocityX.dat")
 
 
 
@@ -75,11 +75,11 @@ if len(np.shape(p)) == 1:
 
     x = np.arange(xstart,xend,deltaX)
 
-    deltaX = (xend-xstart)/len(Erho)
-    Ex = np.arange(xstart,xend,deltaX)
+    # deltaX = (xend-xstart)/len(Erho)
+    # Ex = np.arange(xstart,xend,deltaX)
 
-    deltaX = (xend-xstart)/len(Hrho)
-    Hx = np.arange(xstart,xend,deltaX)
+    # deltaX = (xend-xstart)/len(Hrho)
+    # Hx = np.arange(xstart,xend,deltaX)
 
     # print(x)
 
@@ -104,7 +104,8 @@ if len(np.shape(p)) == 1:
     title = "t = 0.4, " +Method +", V_yL = " + VL + ", V_yR = " + VR + ", Nx = " + str(N) + ", " + RS
     plt.title(title)
     plt.grid()
-    plt.legend([RS +" Vx",RS +" Rho",RS+" Pres", "HLLC Vx","HLLC Rho","HLLC Pres","Exact Vx","Exact Rho","Exact Pres",])
+    # plt.legend([RS +" Vx",RS +" Rho",RS+" Pres", "HLLC Vx","HLLC Rho","HLLC Pres","Exact Vx","Exact Rho","Exact Pres",])
+    plt.legend(["Vx"," Rho","Pres"])
 
     plt.show()
 

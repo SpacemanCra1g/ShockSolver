@@ -6,7 +6,7 @@
 /****************
  * X Parameters *
  ****************/
-#define NX 400
+#define NX 4000
 #define X0 0.0
 #define XN 1.0
 
@@ -14,16 +14,16 @@
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN .15
+#define TN .35
 
 /*****************
  *Run Parameters *
  *****************/
 #define EvolveChars false
-#define SpaceMethod PLM
-#define TestProblem RAREFACTION
+#define SpaceMethod WENO
+#define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
-#define RIEMANN AUSM
+#define RIEMANN HLL
 #define CFL 0.8
 #define EOS IDEAL
 #define RK_Method 3 /*set to -1 for CharTracing, sets automatically for PLM*/

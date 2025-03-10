@@ -9,6 +9,8 @@
 #include <cblas.h>
 #include <vector>
 
+#define Min_p (1.e-2)
+
 class Domain {
 public:
   /***********************************************/
@@ -288,7 +290,7 @@ public:
   int NaiveNewton(double *Uin, double *Uout, int i);
 
   // Defined in the SR src/PressureFix.cpp file
-  int PressureFix(double *Uin, double *Uout, int i);
+  int PressureFix(double *Uin, double *Uout, int i, const double = Min_p);
 
   // Defined in SR the src/SR_Flux.cpp file
   void Flux(double *Dest, double *P, int i, int DestinationIdx);

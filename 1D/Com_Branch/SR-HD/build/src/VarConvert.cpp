@@ -35,6 +35,7 @@ void Domain::Prims2Cons(double *Uin, double *Uout, int start, int stop) {
 int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
   int SolMethod;
   int err = 0;
+  double Lavg, Ravg;
 
   std::fill(ConversionFailed + start, ConversionFailed + stop, false);
 
@@ -67,8 +68,8 @@ int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
           std::cout << "Other Problem" << std::endl;
         }
 
-        std::cout << "Failure at Time: " << T << std::endl;
-        std::cout << "The Cons were :" << std::endl;
+        // std::cout << "Failure at Time: " << T << std::endl;
+        // std::cout << "The Cons were :" << std::endl;
         for (int var = 0; var < NumVar; ++var) {
           std::cout << Uin[Tidx(var, i)] << std::endl;
         }
@@ -90,6 +91,38 @@ int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
       }
     }
   }
+
+  // for (int i = start; i < stop; ++i) {
+  //   if (ConversionFailed[i]) {
+  //     for (int j = i - 1; j > i - 4; j--) {
+  //       if (!ConversionFailed[j]) {
+  //         Lavg = Prims[Tidx(PRES, j)];
+  //         break;
+  //       }
+  //       if (j == i - 3) {
+  //         std::cout << "Pressure avg failed" << std::endl;
+  //         std::cout << "CRASH REPORT" << std::endl;
+  //         std::sqrt(-2.0);
+  //       }
+  //     }
+
+  //     for (int j = i + 1; j < i + 4; j++) {
+  //       if (!ConversionFailed[j]) {
+  //         Ravg = Prims[Tidx(PRES, j)];
+  //         break;
+  //       }
+  //       if (j == i + 3) {
+  //         std::cout << "Pressure avg failed" << std::endl;
+  //         std::cout << "CRASH REPORT" << std::endl;
+  //         std::sqrt(-2.0);
+  //       }
+  //     }
+
+  //     std::cout << "PRESSURE AVG!!!!!" << std::endl;
+  //     err = PressureFix(Uin, Uout, i, .5 * (Lavg + Ravg));
+  //   }
+  // }
+
   return err;
 }
 

@@ -3,12 +3,10 @@
 // This file is ripped almost completely from PLUTO/Src/RHD/rhd_pressure_fix.c
 // So all credit goes to those authors
 
-#define Min_p (1.e-2)
 #define Max_Iter 20
 
-int Domain::PressureFix(double *Uin, double *Uout, int i) {
+int Domain::PressureFix(double *Uin, double *Uout, int i, const double p) {
   double D, m2, m, umax, u0, lor, plor, Dh, f0, f1, u1, alpha, du;
-  const double p = Min_p;
   int done, k;
 
   D = Uin[Tidx(DENS, i)];
