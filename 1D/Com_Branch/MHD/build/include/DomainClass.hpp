@@ -16,8 +16,8 @@ public:
   /***********************************************/
   /*********** Internal Data Objects *************/
   /***********************************************/
-  double *Dens, *DensP, *Pres, *Xvel, *Yvel, *Zvel, *Bx, *By, *Bz;
-  double *MomX, *MomY, *MomZ, *Energy, *PBx, *PBy, *PBz, *Cs, *Buffer;
+  double *Dens, *DensP, *Pres, *Xvel, *Yvel, *Zvel;
+  double *MomX, *MomY, *MomZ, *Energy, *Cs, *Buffer;
   double *RS_CsL, *RS_CsR;
   double **FluxWalls_Cons;
   double **FluxWalls_Prims;
@@ -87,16 +87,6 @@ public:
     MomZ = MomY + xDim;
     Energy = MomZ + xDim;
 #endif
-
-#ifdef MHDPHYSICS
-    MomY = MomX + xDim;
-    MomZ = MomY + xDim;
-    Energy = MomZ + xDim;
-    Bx = Energy + xDim;
-    By = Bx + xDim;
-    Bz = By + xDim;
-#endif
-
 #ifdef HDPHYSICS
     Energy = MomX + xDim;
 #endif
@@ -108,15 +98,6 @@ public:
     Zvel = Yvel + xDim;
     Pres = Zvel + xDim;
 #endif
-#ifdef MHDPHYSICS
-    Yvel = Xvel + xDim;
-    Zvel = Yvel + xDim;
-    Pres = Zvel + xDim;
-    PBx = Pres + xDim;
-    PBy = PBx + xDim;
-    PBz = PBy + xDim;
-#endif
-
 #ifdef HDPHYSICS
     Pres = Xvel + xDim;
 #endif
