@@ -5,7 +5,7 @@
 #include <iostream>
 
 int main() {
-  int n = 1;
+  // int n = 1;
 #ifndef GP_METHOD
   feenableexcept(FE_INVALID);
 #endif

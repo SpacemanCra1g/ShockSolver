@@ -4,10 +4,10 @@ void Domain::Weno(int start, int stop) {
   double *Center, p1L, p1R, p2L, p2R, p3L, p3R, Beta1, Beta2, Beta3, eps, w1L,
       w2L, w3L, w1R, w2R, w3R, wLSum, wRSum, PresTest, DensTest;
   double **Stencil;
-  double LeftState[5], RightState[5];
+  double LeftState[NumVar], RightState[NumVar];
 
   Stencil = new double *[NumVar];
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < NumVar; ++i) {
     Stencil[i] = new double[5];
   }
 

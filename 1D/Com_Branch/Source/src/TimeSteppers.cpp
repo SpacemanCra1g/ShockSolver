@@ -2,7 +2,7 @@
 // #define PStuff
 
 void Domain::ForwardEuler() {
-  double *PrintVar;
+  // double *PrintVar;
 
   Cons2Prim(Cons, Prims, 0, REdgeX);
 

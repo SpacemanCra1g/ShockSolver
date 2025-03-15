@@ -13,32 +13,21 @@ double FindMaximum(double *Array, const int size) {
 
 void Domain::SignalSpeed(double *Uin, double *CS, int i, double &CSL,
                          double &CSR) {
-  double vx, cs2, ca, cfP, cfM, Bmag;
+  double vx, cs2, ca, Bdot, Bx, By, Bz, d;
 
   vx = Uin[Tidx(VELX, i)];
+  d = Uin[Tidx(PRES, i)];
+  Bx = Uin[Tidx(BX, i)];
+  By = Uin[Tidx(BY, i)];
+  Bz = Uin[Tidx(BZ, i)];
   cs2 = CS[i];
 
-  Bmag = std::sqrt(Uin[Tidx(BX, i)] * Uin[Tidx(BX, i)] +
-                   Uin[Tidx(BY, i)] * Uin[Tidx(BY, i)] +
-                   Uin[Tidx(BZ, i)] * Uin[Tidx(BZ, i)]);
+  Bdot = Bx * Bx + By * By + Bz * Bz;
 
-  ca = Uin[Tidx(BX, i)] / std::sqrt(Uin[Tidx(DENS, i)]);
-  cfP = (GAMMA * Uin[Tidx(PRES, i)] + Bmag) / Uin[Tidx(DENS)];
-  cfP = std::sqrt(
-      .5 * (cfP + std::sqrt(cfP * cfP -
-                            4 * GAMMA * Uin[Tidx(PRES, i)] * Uin[Tidx(BX, i)] *
-                                Uin[Tidx(BX, i)] /
-                                (Uin[Tidx(PRES, i)] * Uin[Tidx(PRES, i)]))));
-
-  cfM = (GAMMA * Uin[Tidx(PRES, i)] + Bmag) / Uin[Tidx(DENS)];
-  cfM = std::sqrt(
-      .5 * (cfM + std::sqrt(cfM * cfM -
-                            4 * GAMMA * Uin[Tidx(PRES, i)] * Uin[Tidx(BX, i)] *
-                                Uin[Tidx(BX, i)] /
-                                (Uin[Tidx(PRES, i)] * Uin[Tidx(PRES, i)]))));
-
-  cfP = std::fmax(std::fabs(cfM), std::fabs(cfP));
-  ca = std::fmax(std::fabs(cfP), std::fabs(ca));
+  ca = (cs2 + Bdot / d) + std::sqrt(std::pow(cs2 - Bdot / (d * d), 2) +
+                                    4 * cs2 * (By * By + Bz * Bz));
+  ca *= 0.5;
+  ca = std::sqrt(ca);
 
   CSR = vx + ca;
   CSL = vx - ca;

@@ -167,7 +167,7 @@ bool Domain::Detection() {
 
   int x, i;
 
-  double D, d, p, value, threshold1, mx;
+  double D, value, d, p, threshold1, mx;
 
   int LOrd, ROrd;
 

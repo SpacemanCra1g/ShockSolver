@@ -13,13 +13,24 @@ double FindMaximum(double *Array, const int size) {
 
 void Domain::SignalSpeed(double *Uin, double *CS, int i, double &CSL,
                          double &CSR) {
-  double vx, cs2;
+  double vx, cs2, ca, Bdot, Bx, By, Bz, d;
 
   vx = Uin[Tidx(VELX, i)];
+  d = Uin[Tidx(PRES, i)];
+  Bx = Uin[Tidx(BX, i)];
+  By = Uin[Tidx(BY, i)];
+  Bz = Uin[Tidx(BZ, i)];
   cs2 = CS[i];
 
-  CSR = vx + std::sqrt(cs2);
-  CSL = vx - std::sqrt(cs2);
+  Bdot = Bx * Bx + By * By + Bz * Bz;
+
+  ca = (cs2 + Bdot / d) + std::sqrt(std::pow(cs2 - Bdot / (d * d), 2) +
+                                    4 * cs2 * (By * By + Bz * Bz));
+  ca *= 0.5;
+  ca = std::sqrt(ca);
+
+  CSR = vx + ca;
+  CSL = vx - ca;
 }
 
 void Domain::Find_Cs(double *Uin, double *CS, int start, int end) {

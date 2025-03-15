@@ -157,7 +157,7 @@ void Domain::Autsm(int Start, int Stop) {
 
   double aL, ML, MpL, PpL, asL2, asL, atL;
   double aR, MR, MmR, PmR, asR2, asR, atR;
-  double a, m, mp, mm, p;
+  double a, m, mp, mm; //, p;
   double rhoL, pL, uL, rhoR, pR, uR;
   double HL, HR, Fp[3], Fm[3];
   double alpha = 3.0 / 16.0, beta = 0.125;

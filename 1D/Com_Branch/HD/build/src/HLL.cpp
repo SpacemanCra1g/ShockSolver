@@ -2,42 +2,49 @@
 
 void Domain::Hll(int Start, int Stop) {
 
-  double SL, SR;
-  double Lambda_Left_Minus, Lambda_Left_Plus;
-  double Lambda_Right_Minus, Lambda_Right_Plus;
+  double SL, SR, scalar;
   double *LeftState_Prims, *RightState_Prims;
-  int LeftIdx, RightIdx;
+  double LFlux[NumVar], RFlux[NumVar];
 
   Find_Cs(FluxWalls_Prims[LEFT], RS_CsL, Start, Stop + 1);
   Find_Cs(FluxWalls_Prims[RIGHT], RS_CsR, Start, Stop);
+
+  Prims2Cons(FluxWalls_Prims[LEFT], FluxWalls_Cons[LEFT], Start, Stop + 1);
+  Prims2Cons(FluxWalls_Prims[RIGHT], FluxWalls_Cons[RIGHT], Start, Stop);
 
   for (int i = Start; i < Stop; ++i) {
 
     LeftState_Prims = FluxWalls_Prims[RIGHT];
     RightState_Prims = FluxWalls_Prims[LEFT];
 
-    LeftIdx = i;
-    RightIdx = i + 1;
+    HLL_Speed(LeftState_Prims, RightState_Prims, RS_CsR, RS_CsL, i, SL, SR);
 
-    SignalSpeed(LeftState_Prims, RS_CsR, LeftIdx, Lambda_Left_Minus,
-                Lambda_Left_Plus);
-    SignalSpeed(RightState_Prims, RS_CsL, RightIdx, Lambda_Right_Minus,
-                Lambda_Right_Plus);
-
-    SL = std::fmin(Lambda_Left_Minus, Lambda_Right_Minus);
-    SR = std::fmax(Lambda_Left_Plus, Lambda_Right_Plus);
+    FillFlux(LeftState_Prims, LFlux, RightState_Prims, RFlux, i);
 
     // Left side Flux
     if (0.0 <= SL) {
-      Flux(CellFlux, LeftState_Prims, LeftIdx, i);
+      for (int var = 0; var < NumVar; ++var) {
+        CellFlux[Tidx(var, i)] = LeftState_Prims[Tidx(var, i)];
+      }
+
     }
     // HLL Flux
     else if (0.0 <= SR) {
-      HLL_Flux(CellFlux, LeftState_Prims, RightState_Prims, SL, SR, i);
+
+      for (int var = 0; var < NumVar; ++var) {
+        scalar = SL * SR *
+                 (FluxWalls_Cons[LEFT][Tidx(var, i + 1)] -
+                  FluxWalls_Cons[RIGHT][Tidx(var, i)]);
+        CellFlux[Tidx(var, i)] =
+            (SR * LFlux[var] - SL * RFlux[var] + scalar) / (SR - SL);
+      }
+
     }
     // Right side Flux
     else {
-      Flux(CellFlux, RightState_Prims, RightIdx, i);
+      for (int var = 0; var < NumVar; ++var) {
+        CellFlux[Tidx(var, i)] = RightState_Prims[Tidx(var, i + 1)];
+      }
     }
     // std::cout << CellFlux[Tidx(DENS, i)] << " " << Prims[Tidx(DENS, i)] << "
     // "

@@ -6,7 +6,7 @@
 /****************
  * X Parameters *
  ****************/
-#define NX 4000
+#define NX 400
 #define X0 0.0
 #define XN 1.0
 
@@ -14,7 +14,7 @@
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN .35
+#define TN .25
 
 /*****************
  *Run Parameters *

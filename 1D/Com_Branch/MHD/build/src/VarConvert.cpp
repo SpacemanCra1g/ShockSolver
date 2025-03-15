@@ -1,34 +1,62 @@
 #include "../include/DomainClass.hpp"
 #include "../include/Parameters.h"
 
-// Most of the structure of this code is taken from the PLUTO solver
-// So lots of credit to those authors
-
 void Domain::Prims2Cons(double *Uin, double *Uout, int start, int stop) {
-  double d, vx, p;
+  double d, vx, vy, vz, p, Bx, By, Bz, E, Z;
   for (int i = start; i < stop; ++i) {
     d = Uin[Tidx(DENSP, i)];
     vx = Uin[Tidx(VELX, i)];
+    vy = Uin[Tidx(VELY, i)];
+    vz = Uin[Tidx(VELZ, i)];
     p = Uin[Tidx(PRES, i)];
+    Bx = Uin[Tidx(BX, i)];
+    By = Uin[Tidx(BY, i)];
+    Bz = Uin[Tidx(BZ, i)];
 
     Uout[Tidx(DENS, i)] = d;
     Uout[Tidx(MOMX, i)] = d * vx;
-    Uout[Tidx(ENER, i)] = d * (vx * vx * 0.5 + p / ((GAMMA - 1.0) * d));
+    Uout[Tidx(MOMY, i)] = d * vy;
+    Uout[Tidx(MOMZ, i)] = d * vz;
+
+    E = (vx * vx + vy * vy + vz * vz) * 0.5 + p / ((GAMMA - 1.0) * d);
+    Z = E + .5 * (Bx * Bx + By * By + Bz * Bz) / d;
+    Uout[Tidx(ENER, i)] = d * Z;
+
+    Uout[Tidx(BX, i)] = Bx;
+    Uout[Tidx(BY, i)] = By;
+    Uout[Tidx(BZ, i)] = Bz;
   }
 }
 
 int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
-  double d, mx, E, vx;
+  double d, mx, my, mz, Bx, By, Bz, E, Z, vx, vy, vz;
 
   for (int i = start; i < stop; ++i) {
     d = Uin[Tidx(DENS, i)];
-    mx = Uin[Tidx(MOMX, i)];
-    E = Uin[Tidx(ENER, i)];
+    mx = Uin[Tidx(MOMY, i)];
+    my = Uin[Tidx(MOMY, i)];
+    mz = Uin[Tidx(MOMZ, i)];
+    Z = Uin[Tidx(ENER, i)];
+    Bx = Uin[Tidx(BX, i)];
+    By = Uin[Tidx(BY, i)];
+    Bz = Uin[Tidx(BZ, i)];
 
+    Uout[Tidx(BX, i)] = Bx;
+    Uout[Tidx(BY, i)] = By;
+    Uout[Tidx(BZ, i)] = Bz;
     Uout[Tidx(DENSP, i)] = d;
+
     vx = mx / d;
+    vy = my / d;
+    vz = mz / d;
+
     Uout[Tidx(VELX, i)] = vx;
-    Uout[Tidx(PRES, i)] = (E / d - vx * vx * 0.5) * (GAMMA - 1.0) * d;
+    Uout[Tidx(VELY, i)] = vy;
+    Uout[Tidx(VELZ, i)] = vz;
+    E = (Z - .5 * (Bx * Bx + By * By + Bz * Bz)) / d;
+    Uout[Tidx(PRES, i)] =
+        (E - (vx * vx + vy * vy + vz * vz) * 0.5) * (GAMMA - 1.0) * d;
+
     ConversionFailed[i] = false;
   }
   return 0;

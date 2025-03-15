@@ -13,7 +13,7 @@ Y = np.arange(0,1,1/30)
 
 X,Y = np.meshgrid(X,Y)
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-ax.plot_surface(X, Y, var/max(var[0]), vmin=var.min() * 2, cmap=cm.winter)
+ax.plot_surface(X, Y, var/max(var[0]), vmin=var.min() * 2, cmap=cm.jet)
 ax.set_ylabel("V_y")
 ax.set_xlabel("X")
 ax.set_zlabel("Pressure")

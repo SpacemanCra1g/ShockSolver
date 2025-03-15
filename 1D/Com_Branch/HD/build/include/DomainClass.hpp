@@ -16,8 +16,8 @@ public:
   /***********************************************/
   /*********** Internal Data Objects *************/
   /***********************************************/
-  double *Dens, *DensP, *Pres, *Xvel, *Yvel, *Zvel;
-  double *MomX, *MomY, *MomZ, *Energy, *Cs, *Buffer;
+  double *Dens, *DensP, *Pres, *Xvel, *Yvel, *Zvel, *Bx, *By, *Bz;
+  double *MomX, *MomY, *MomZ, *Energy, *PBx, *PBy, *PBz, *Cs, *Buffer;
   double *RS_CsL, *RS_CsR;
   double **FluxWalls_Cons;
   double **FluxWalls_Prims;
@@ -87,6 +87,16 @@ public:
     MomZ = MomY + xDim;
     Energy = MomZ + xDim;
 #endif
+
+#ifdef MHDPHYSICS
+    MomY = MomX + xDim;
+    MomZ = MomY + xDim;
+    Energy = MomZ + xDim;
+    Bx = Energy + xDim;
+    By = Bx + xDim;
+    Bz = By + xDim;
+#endif
+
 #ifdef HDPHYSICS
     Energy = MomX + xDim;
 #endif
@@ -98,6 +108,15 @@ public:
     Zvel = Yvel + xDim;
     Pres = Zvel + xDim;
 #endif
+#ifdef MHDPHYSICS
+    Yvel = Xvel + xDim;
+    Zvel = Yvel + xDim;
+    Pres = Zvel + xDim;
+    PBx = Pres + xDim;
+    PBy = PBx + xDim;
+    PBz = PBy + xDim;
+#endif
+
 #ifdef HDPHYSICS
     Pres = Xvel + xDim;
 #endif
@@ -228,6 +247,11 @@ public:
   // double HD_CS(int i);
   void SignalSpeed(double *Uin, double *SSVector, int i, double &CSL,
                    double &CSR);
+
+  // Defined in the HLL_Util.cpp file
+  void HLL_Speed(double *LP, double *RP, double *CsL, double *CsR, int i,
+                 double &SL, double &SR);
+  void FillFlux(double *, double *, double *, double *, int);
 
   // Defined in the TimeSteppers.cpp file
   void RK3();

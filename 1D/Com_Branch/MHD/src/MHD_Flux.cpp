@@ -1,21 +1,35 @@
 #include "../include/DomainClass.hpp"
 
 void Domain::Flux(double *Dest, double *P, int i, int destI) {
-  double vx, d, p;
+  double vx, vy, vz, d, p, Bx, By, Bz, TotP, E, Z;
   d = P[Tidx(DENSP, i)];
   vx = P[Tidx(VELX, i)];
+  vy = P[Tidx(VELY, i)];
+  vz = P[Tidx(VELZ, i)];
   p = P[Tidx(PRES, i)];
+  Bx = P[Tidx(BX, i)];
+  By = P[Tidx(BY, i)];
+  Bz = P[Tidx(BZ, i)];
+  TotP = p + .5 * (Bx * Bx + By * By + Bz * Bz) / d;
+
+  E = p / ((GAMMA - 1) * d) + .5 * (vx * vx + vy * vy + vz * vz);
+  Z = E + .5 * (Bx * Bx + By * By + Bz * Bz) / d;
 
   Dest[Tidx(DENS, destI)] = d * vx;
-  Dest[Tidx(MOMX, destI)] = d * vx * vx + p;
+  Dest[Tidx(MOMX, destI)] = d * vx * vx + TotP - Bx * Bx;
+  Dest[Tidx(MOMY, destI)] = d * vx * vy - Bx * By;
+  Dest[Tidx(MOMZ, destI)] = d * vx * vz - Bx * Bz;
   Dest[Tidx(ENER, destI)] =
-      vx * (d * (0.5 * vx * vx + p / ((GAMMA - 1.0) * d)) + p);
+      vx * (d * Z + TotP) - Bx * (Bx * vx + vy * By + vz * Bz);
+  Dest[Tidx(BX, destI)] = 0;
+  Dest[Tidx(BY, destI)] = vx * By - Bx * vy;
+  Dest[Tidx(BZ, destI)] = vx * Bz - Bx * vz;
 }
 
 void Domain::HLL_Flux(double *Dest, double *PrL, double *PrR, double SL,
                       double SR, int i) {
 
-  double FluxL[3], FluxR[3];
+  double FluxL[NumVar], FluxR[NumVar];
   double dL, vxL, pL;
   double dR, vxR, pR, scalar, EL, ER;
 

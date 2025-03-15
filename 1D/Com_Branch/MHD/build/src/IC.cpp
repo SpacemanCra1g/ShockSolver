@@ -7,10 +7,20 @@ void Domain::ShockTubeIC() {
       DensP[i] = 1.0;
       Pres[i] = 1.0;
       Xvel[i] = 0.0;
+      Yvel[i] = 0.0;
+      Zvel[i] = 0.0;
+      PMagX[i] = 0.0;
+      PMagY[i] = 0.0;
+      PMagZ[i] = 0.0;
     } else {
       DensP[i] = 0.125;
       Pres[i] = 0.1;
       Xvel[i] = 0.0;
+      Yvel[i] = 0.0;
+      Zvel[i] = 0.0;
+      PMagX[i] = 0.0;
+      PMagY[i] = 0.0;
+      PMagZ[i] = 0.0;
     }
   }
   Prims2Cons(Prims, Cons, 0, REdgeX);
