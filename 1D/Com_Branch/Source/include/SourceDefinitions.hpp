@@ -29,6 +29,8 @@
 #define SRSHOCKTUBE 2
 #define SLOWSHOCK 3
 #define RAREFACTION 4
+#define BRIOWU 5
+#define ALFVEN 6
 
 /*********************************/
 /******* Riemann Solvers ********/

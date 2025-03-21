@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 p = np.loadtxt("./OutputData/Pressure.dat")
 rho = np.loadtxt("./OutputData/Density.dat")
 u = np.loadtxt("./OutputData/VelocityX.dat")
+By = np.loadtxt("./OutputData/MagY.dat")
 
 OverlayExact = False
 PathToExact = "./ExactSolutions/SlowShockTORO/"
@@ -69,16 +70,19 @@ if len(np.shape(p)) == 1:
     maxu = max(u);
     maxp = max(p);
 
-    plt.plot(x,rho,'b-')
+    # plt.plot(x,rho,'b-')
     # plt.plot(x,u,'r-')
     # plt.plot(x,p,'k-')
+    plt.plot(x,By,'b-')
 
     if OverlayExact:
         plt.plot(xE,rhoE,'b--')
 
-    title =  "TestProblem = " +Problem + ", SpaceMethod = " + Method +", Nx = " + str(N) + ", " + RS
+    title =  "TestProblem = " +Problem + ", SpaceMethod = " + Method +", Nx = " + str(N) + ", " + RS + ", t = 0.27" 
     # title = "U2 Turned off, ShuOsher"
     plt.title(title)
+    plt.xlabel("X")
+    plt.ylabel("By")
     plt.grid()
     # plt.legend(["Rho","Vx","Pres"])
 

@@ -26,6 +26,58 @@ void Domain::ShockTubeIC() {
   Prims2Cons(Prims, Cons, 0, REdgeX);
 }
 
+void Domain::BrioWu() {
+  for (int i = 0; i < REdgeX; ++i) {
+    if ((i - NGC) * dx + dx * 0.5 < 0.5) {
+      DensP[i] = 1.0;
+      Pres[i] = 1.0;
+      Xvel[i] = 0.0;
+      Yvel[i] = 0.0;
+      Zvel[i] = 0.0;
+      PMagX[i] = 0.75;
+      PMagY[i] = 1.0;
+      PMagZ[i] = 0.0;
+    } else {
+      DensP[i] = 0.125;
+      Pres[i] = 0.1;
+      Xvel[i] = 0.0;
+      Yvel[i] = 0.0;
+      Zvel[i] = 0.0;
+      PMagX[i] = 0.75;
+      PMagY[i] = -1.0;
+      PMagZ[i] = 0.0;
+    }
+  }
+  Prims2Cons(Prims, Cons, 0, REdgeX);
+}
+
+void Domain::AlfvenWave() {
+  double x;
+  for (int i = 0; i < REdgeX; ++i) {
+    x = (i - NGC) * dx + dx * 0.5;
+    if (x < 0.7 && x > 0.3) {
+      DensP[i] = 1.0;
+      Pres[i] = 1.0;
+      Xvel[i] = 0.0;
+      Yvel[i] = .0; //-1.5 * (x - .3) * (x - .7);
+      Zvel[i] = 0.0;
+      PMagX[i] = 0.8;
+      PMagY[i] = -2.5 * (x - 0.3) * (x - .7);
+      PMagZ[i] = 0.0;
+    } else {
+      DensP[i] = 1.0;
+      Pres[i] = 1.0;
+      Xvel[i] = 0.0;
+      Yvel[i] = .0;
+      Zvel[i] = 0.0;
+      PMagX[i] = 0.8;
+      PMagY[i] = 0.0;
+      PMagZ[i] = 0.0;
+    }
+  }
+  Prims2Cons(Prims, Cons, 0, REdgeX);
+}
+
 void Domain::ShuOsherIC() {
 
   for (int i = 0; i < REdgeX; ++i) {

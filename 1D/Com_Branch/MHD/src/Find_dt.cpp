@@ -13,22 +13,32 @@ double FindMaximum(double *Array, const int size) {
 
 void Domain::SignalSpeed(double *Uin, double *CS, int i, double &CSL,
                          double &CSR) {
-  double vx, cs2, ca, Bdot, Bx, By, Bz, d;
+  double vx, cs2, ca, Bdot, Bx, By, Bz, d, p;
 
   vx = Uin[Tidx(VELX, i)];
-  d = Uin[Tidx(PRES, i)];
+  d = Uin[Tidx(DENS, i)];
+  p = Uin[Tidx(PRES, i)];
   Bx = Uin[Tidx(BX, i)];
   By = Uin[Tidx(BY, i)];
   Bz = Uin[Tidx(BZ, i)];
-  cs2 = CS[i];
+  // cs2 = CS[i];
 
   Bdot = Bx * Bx + By * By + Bz * Bz;
 
-  ca = (cs2 + Bdot / d) + std::sqrt(std::pow(cs2 - Bdot / (d * d), 2) +
-                                    4 * cs2 * (By * By + Bz * Bz));
-  ca *= 0.5;
-  ca = std::sqrt(ca);
+  // ca = (cs2 + Bdot / d) + std::sqrt(std::pow(cs2 - Bdot / (d * d), 2) +
+  //                                   4 * cs2 * (By * By + Bz * Bz) / d);
+  // ca *= 0.5;
+  // ca = std::sqrt(ca);
+  cs2 = .5 * ((GAMMA * p + Bdot) / d +
+              std::sqrt(std::pow((GAMMA * p + Bdot) / d, 2) -
+                        (4 * GAMMA * p * Bx * Bx) / (d * d)));
+  // cs2 = .5 *
+  //       (GAMMA * p + Bdot +
+  //        std::sqrt(std::pow(GAMMA * p - Bdot, 2) +
+  //                  4 * GAMMA * p * (By * By + Bz * Bz))) /
+  //       d;
 
+  ca = std::sqrt(cs2);
   CSR = vx + ca;
   CSL = vx - ca;
 }

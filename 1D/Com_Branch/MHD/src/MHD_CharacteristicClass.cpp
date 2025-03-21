@@ -1,3 +1,7 @@
+
+// This isn't actually implemented for MHD yet, this is just the Hydro
+// Characteristics for now
+
 #ifndef SR_CHARACTERISTICCLASS_H_
 #define SR_CHARACTERISTICCLASS_H_
 #include "../include/CharacteristicClass.hpp"

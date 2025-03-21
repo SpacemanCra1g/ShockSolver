@@ -13,4 +13,8 @@ void Domain::Recon(int start, int stop) {
       // }
     }
   }
+  // for (int x = start; x < stop; ++x) {
+  //   std::cout << Cons[Tidx(MOMX, x)] << std::endl;
+  // }
+  // exit(0);
 }

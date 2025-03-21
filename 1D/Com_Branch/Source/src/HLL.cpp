@@ -23,6 +23,7 @@ void Domain::Hll(int Start, int Stop) {
 
     // Left side Flux
     if (0.0 <= SL) {
+
       for (int var = 0; var < NumVar; ++var) {
         CellFlux[Tidx(var, i)] = LeftState_Prims[Tidx(var, i)];
       }
@@ -42,6 +43,7 @@ void Domain::Hll(int Start, int Stop) {
     }
     // Right side Flux
     else {
+
       for (int var = 0; var < NumVar; ++var) {
         CellFlux[Tidx(var, i)] = RightState_Prims[Tidx(var, i + 1)];
       }

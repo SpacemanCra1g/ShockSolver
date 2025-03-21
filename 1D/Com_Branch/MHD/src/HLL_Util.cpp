@@ -13,7 +13,7 @@ void Domain::HLL_Speed(double *LP, double *RP, double *CsL, double *CsR, int i,
 }
 
 void Domain::FillFlux(double *LP, double *FL, double *RP, double *FR, int i) {
-  double vx, vy, vz, d, p, Bx, By, Bz, TotP, E, Z;
+  double vx, vy, vz, d, p, Bx, By, Bz, TotP, E, Z, Bdot;
   d = LP[Tidx(DENSP, i)];
   vx = LP[Tidx(VELX, i)];
   vy = LP[Tidx(VELY, i)];
@@ -22,7 +22,8 @@ void Domain::FillFlux(double *LP, double *FL, double *RP, double *FR, int i) {
   Bx = LP[Tidx(BX, i)];
   By = LP[Tidx(BY, i)];
   Bz = LP[Tidx(BZ, i)];
-  TotP = p + .5 * (Bx * Bx + By * By + Bz * Bz) / d;
+  Bdot = Bx * Bx + By * By + Bz * Bz;
+  TotP = p + .5 * Bdot;
 
   E = p / ((GAMMA - 1) * d) + .5 * (vx * vx + vy * vy + vz * vz);
   Z = E + .5 * (Bx * Bx + By * By + Bz * Bz) / d;
@@ -44,7 +45,7 @@ void Domain::FillFlux(double *LP, double *FL, double *RP, double *FR, int i) {
   Bx = RP[Tidx(BX, i + 1)];
   By = RP[Tidx(BY, i + 1)];
   Bz = RP[Tidx(BZ, i + 1)];
-  TotP = p + .5 * (Bx * Bx + By * By + Bz * Bz) / d;
+  TotP = p + .5 * (Bx * Bx + By * By + Bz * Bz);
 
   E = p / ((GAMMA - 1) * d) + .5 * (vx * vx + vy * vy + vz * vz);
   Z = E + .5 * (Bx * Bx + By * By + Bz * Bz) / d;

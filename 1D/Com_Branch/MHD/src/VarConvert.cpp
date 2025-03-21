@@ -33,7 +33,7 @@ int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
 
   for (int i = start; i < stop; ++i) {
     d = Uin[Tidx(DENS, i)];
-    mx = Uin[Tidx(MOMY, i)];
+    mx = Uin[Tidx(MOMX, i)];
     my = Uin[Tidx(MOMY, i)];
     mz = Uin[Tidx(MOMZ, i)];
     Z = Uin[Tidx(ENER, i)];

@@ -6,7 +6,7 @@
 /****************
  * X Parameters *
  ****************/
-#define NX 400
+#define NX 800
 #define X0 0.0
 #define XN 1.0
 
@@ -14,14 +14,14 @@
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN .25
+#define TN 0.27
 
 /*****************
  *Run Parameters *
  *****************/
 #define EvolveChars false
 #define SpaceMethod WENO
-#define TestProblem SHOCKTUBE
+#define TestProblem ALFVEN
 #define BCS SHOCKTUBEBC
 #define RIEMANN HLL
 #define CFL 0.8
@@ -30,7 +30,7 @@
 #define ell 6.0
 #define MoodOrder 5
 #define SlowStart false
-#define GAMMA (1.4)
+#define GAMMA (2.0)
 #define LIMITSLOPE MINMOD
 
 /****************

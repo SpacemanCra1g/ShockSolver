@@ -187,6 +187,12 @@ public:
 #elif TestProblem == RAREFACTION
     IC = &Domain::RarefactionIC;
     BC = &Domain::NeumannBC;
+#elif TestProblem == BRIOWU
+    IC = &Domain::BrioWu;
+    BC = &Domain::NeumannBC;
+#elif TestProblem == ALFVEN
+    IC = &Domain::AlfvenWave;
+    BC = &Domain::NeumannBC;
 #endif
 
 #if RK_Method == 1
@@ -263,6 +269,8 @@ public:
   void ShockTubeIC();
   void SlowShockIC();
   void RarefactionIC();
+  void BrioWu();
+  void AlfvenWave();
 
   // Defined in the SR dependent EnergyInverter.cpp file
   int EnergyInverter(double *Uin, double *Uout, int i);
