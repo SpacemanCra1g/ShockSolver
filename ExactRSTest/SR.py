@@ -10,13 +10,60 @@ v = 1
 vt = 2
 p = 3
 gamma = 5/3
-RR = 0
+sigma = gamma/(gamma-1)
+nnRR = 0
 RS = 1
 SS = 2
 
+def SoundSpeed(State):
+    h = 1 + sigma*State[p]/State[r]
+    return np.sqrt(gamma*State[p]/(h*State[r]))
+
+def Find_SS_Wave(StateL,StateR,vstar, pstar):
+    Wave3 = FindShockWave(StateL,vstar,pstar)
+    Wave3Tick = FindShockWave(StateR,vstar,pstar)
+    return Wave3, Wave3Tick
+
+def Find_RS_Wave(StateL, StateR,vstar,pstar):
+    Wave3 = FindRiemannWave(StateL,vstar,pstar)
+    Wave3Tick = FindShockWave(StateR,vstar,pstar)
+
+    return Wave3, Wave3Tick
+
+
+def FindShockWave(state,vstar,pstar):
+    hB = Taub(state,pstar)
+    A = Geth(state[p],state[r])*(1/np.sqrt(1 - (state[v]**2 + state[vt]**2) ))*state[vt]
+    Wave = state.copy()
+    Wave[p] = pstar
+    Wave[v] = vstar
+    Wave[vt] = A*np.sqrt( (1 - vstar**2)/(hB**2 + A**2) )
+    Wave[r] = sigma/(hB-1)*pstar
+    return Wave
+
+def J_sqr(pres1,pres2,hA,hB):
+    val = - sigma * (pres1 - pres2) / (
+                hA * (hA - 1.) / pres1 - hB * (hB - 1.) / pres2)
+    return val
+
+def ShockSpeed(state,J,sign):
+    lor = 1/np.sqrt(1 - state[v]**2 - state[vt]**2)
+    D = state[r]*lor
+    return (D ** 2 * state[v] + sign * J * np.sqrt(J ** 2 + D ** 2 * (1 - state[v] ** 2))) / (D ** 2 + J ** 2)
+
+def Taub(state,pres):
+    hA = Geth(state[p],state[r])
+    c_2 = (1 + (state[p] - pres)/(pres*sigma) )
+    c_1 = - (state[p] - pres)/(pres*sigma)
+    c_0 = hA * (state[p] - pres)/state[r] - hA*hA
+
+    if c_2 == 0:
+        return -c_0/c_1
+    else:
+        return (-c_1 + np.sqrt(c_1*c_1 - 4 * c_2*c_0))/(2*c_2)
 
 def Geth(p,r):
-    return 1 + (gamma/(gamma-1))*p/r
+    return 1 + sigma*p/r
 
 def Solve_RR_vx(state,pres,sign):
     # Compute Entropy
@@ -37,6 +84,23 @@ def Solve_RR_vx(state,pres,sign):
     
     return np.tanh(B1+sign*B2)
 
+def Solve_Shock_vx(state,pres,sign):
+    # Get H
+    hA = Geth(state[p],state[r])
+    # Taub Adiabat
+    hB = Taub(state,pres)
+    J2 = J_sqr(state[p],pres,hA,hB)
+    J = np.sqrt(np.abs(J2))
+    Vs = ShockSpeed(state,J,sign)
+    Ws = 1/(np.sqrt(1 - Vs*Vs) )
+    lor = 1 / np.sqrt(1 - (state[v]**2 + state[vt]**2) )
+
+    Value = (hA * lor * state[v] + sign * Ws * (pres - state[p]) / J) / (
+                hA * lor + (pres - state[p]) * (
+                    sign * Ws * state[v] / J + 1 / (state[r] * lor) ))
+    # print("Shock Vel")
+    # print(Value)
+    return Value
 
 def Solve_RR(Left,Right,p):
     ux3 = Solve_RR_vx(Left,p,-1)
@@ -46,13 +110,29 @@ def Solve_RR(Left,Right,p):
     v24=GetRelSpeed(Right[v],ux4)
 
     return GetRelSpeed(v13,v24)
-    
+
+def Solve_RS(StateL, StateR, p):
+    ux3 = Solve_RR_vx(StateL,p,-1)
+    ux4 = Solve_Shock_vx(StateR,p,1)
+    v13 = GetRelSpeed(StateL[v],ux3)
+    v64 = GetRelSpeed(StateR[v],ux4)
+
+    return GetRelSpeed(v13,v64)
+
+def Solve_SS(StateL,StateR,p):
+    ux3 = Solve_Shock_vx(StateL,p,-1)
+    ux4 = Solve_Shock_vx(StateR,p,1)
+    v13 = GetRelSpeed(StateL[v],ux3)
+    v64 = GetRelSpeed(StateR[v],ux4)
+
+    return GetRelSpeed(v13,v64)
+
         
 def GetH(State):
     return 1 + gamma*State[p]/(State[r]* (gamma-1))
 
 def GetA(State):
-    return (1/np.sqrt(1-State[vt]**2 + State[v]**2))*State[vt]*GetH(State)
+    return (1/np.sqrt(1-State[vt]**2 - State[v]**2)) *State[vt]*GetH(State)
 
 def GetRelSpeed(Left,Right): #4.101
     return (Left - Right)/(1 - Left*Right)
@@ -83,7 +163,9 @@ def RightWaveType(StateL,StateR):
         cs = csFp(p,h,r)
         # A1 = h*lor1*StateL[vt]
         return np.sqrt(h**2 + (A1**2)*(1 - cs**2))/( (h**2 + A1**2)*r*cs)
+    # v1_x = np.tanh(INT.quad(Int1,StateL[p],0)[0]) # Equation 4.214
     v1_x = np.tanh(INT.quad(Int1,StateL[p],0)[0]) # Equation 4.214
+
     
 
     A2 = GetA(StateR)
@@ -120,12 +202,13 @@ def RightWaveType(StateL,StateR):
         Wave3Tick = FindRiemannWave(StateR,vstar,p_star)
         print(Wave3)
         print(Wave3Tick)
+        return Wave3, Wave3Tick
         
         
 
     else:
-       h1 = GetH(StateL[p],StateL[r])
-       h2 = GetH(StateR[p],StateR[r])
+       h1 = GetH(StateL)
+       h2 = GetH(StateR)
        
        D =  4*gamma*StateL[p]*( ( (gamma-1)*StateR[p] + StateL[p])/ ( ((gamma-1)*(StateL[p] - StateR[p]))**2   ))  
        D*= (h2*(StateR[p] - StateL[p])/StateR[r] - h2*h2)
@@ -143,20 +226,161 @@ def RightWaveType(StateL,StateR):
        v_12x_SS = (StateL[p] - StateR[p])*(1- StateR[v]*Vs)
        v_12x_SS /= (Vs- StateR[v])*(h2*StateR[r]*lor2*(1-StateR[v]**2) + StateL[p] - StateR[p])
 
+       # print (v12_0)
+       # print (v_12x_SS)
+       # exit()
 
        if v12_0 <= v_12x_SS:
            print("One Shock and one Rarefaction")
-           print(Vs)
-           print(v12_0)
+
+           eps = 1e-15
+           p_min = StateR[p] + eps
+           p_max = StateL[p]
+           assert (p_min < p_max)
+           p_star = opt.brentq(lambda p: Solve_RS(StateL, StateR, p) - v12_0, p_min, p_max)
+           vstar = Solve_Shock_vx(StateR, p_star, 1)
+
+           Wave3, Wave3Tick = Find_RS_Wave(StateL, StateR, vstar, p_star)
+
+           print(Wave3)
+           print(Wave3Tick)
+           # print(Wave3[v]*.4)
+           return Wave3, Wave3Tick
+
        else:
            print("Two Shocks")
-           print(Vs)
-           print(v_12x_SS)
-           print(v12_0)
-       
+           pstar = 1.1*StateL[p]
+           pstar = opt.root(lambda p: Solve_SS(StateL,StateR,p) - v12_0, pstar).x[0]
+           vstar = Solve_Shock_vx(StateR, pstar, 1)
+
+           Wave3, Wave3Tick = Find_SS_Wave(StateL,StateR,vstar, pstar)
+
+           print(Wave3)
+           print(Wave3Tick)
+           return Wave3, Wave3Tick
+
+
+def RightShockVT(StateL,StateR,sign):
+    state = StateL
+    hA = Geth(state[p],state[r])
+    # Taub Adiabat
+    pres = StateR[p] #Wave3Tick[p]
+    hB = Taub(state,pres)
+    print("HB == ", hA)
+    J2 = J_sqr(state[p],pres,hA,hB)
+    J = np.sqrt(np.abs(J2))
+    Vs = ShockSpeed(state,J,sign)
+    print("Shock Location")
+    print(Vs*.4 + .5)
+
+def CsFromE(press,S):
+   r = (press/S)**(1/gamma)
+   h = 1 + sigma*press/r
+   return np.sqrt(gamma*press/(h*r))
+
+def SVel(state,S,sign):
+    SP_sqr = state[v]**2 + state[vt]**2
+    cs = CsFromE(state[p],S)
+    cs_sqr = cs*cs
+    return (state[v] * (1 - cs_sqr)
+                + sign * cs * np.sqrt((1 - SP_sqr) * (1 - SP_sqr * cs_sqr - state[v] ** 2 * (1 - cs_sqr)))
+                ) / (1 - SP_sqr * cs_sqr)
+
+def RareFactionTails(StateL, StateR,sign):
+    S = StateL[p]/(StateL[r]**gamma)
+    S2 = StateR[p]/(StateR[r]**gamma)
+    assert ( np.abs(S - S2) < 1e-10 *S )
+    head = SVel(StateL,S,sign)
+    tail = SVel(StateR,S,sign)
+    print("Head velocity")
+    print(head*.4 + .5)
+    print("Tail velocity")
+    print(tail*.4 + .5)
+
+def ContactLocation(State):
+    print("Contact Wave Location")
+    print(State[v]*.4 + .5)
+
+def ux(xi,StateL,pressure, sign, A):
+    S = StateL[p]/np.power(StateL[r],gamma)
+    rho = np.power(pressure/S, 1/gamma)
+    h = 1 + sigma*pressure/rho
+    cs = np.sqrt(gamma*pressure/(h*rho))
+    a = cs*h
+    b = sign*np.sqrt(A*A *(1 - cs*cs) + h*h)
+    return (a-b*xi)/(a*xi - b)
+
+
+def RarefactionState(xi,StateL,StateR,sign):
+    pmin = min(StateL[p],StateR[p])
+    pmax = max(StateL[p],StateR[p])
+    h = 1 + sigma*StateL[p]/StateL[r]
+    lor = 1/np.sqrt(1 - StateL[v]**2 - StateL[vt]**2)
+    A = h*lor*StateL[vt]
+
+    pressure = opt.brentq(lambda pressure: ux(xi,StateL,pressure, sign, A) -
+                               Solve_RR_vx(StateL,pressure,sign), pmin, pmax)
+
+    S = StateL[p]/np.power(StateL[r],gamma)
+    rho = np.power(pressure/S, 1/gamma)
+    h = 1 + sigma*pressure/rho
+    Vx = ux(xi,StateL,pressure, sign, A)
+    Vt = A*np.sqrt( (1-Vx*Vx)/(h*h +A*A) )
+    return rho,Vx,Vt,pressure
+
+
 if __name__ == "__main__":
-    StateL = [1, 0, .9, 1000]
-    StateR = [1, 0,.9,.01]
-    RightWaveType(StateL,StateR)
-    
-    
+    # Test problem
+    StateL = [1.0, 0.0, 0.9, 1000]
+    StateR = [1.0, 0.0, 0.9, .01]
+
+   # SR Case
+    # StateL = [1.0, .5, 0.0, 1]
+    # StateR = [.125, 0.0, 0.3, .1]
+
+   # 2R Case
+    # StateL = [1.0, 0.0, 0.9, 1]
+    # StateR = [.125, 0.5, 0.0, .1]
+
+   # 2S Case
+    # StateL = [1.0, 0.5, 0.0, 1]
+    # StateR = [.125, 0.0, 0.999, .1]
+
+
+    Wave3, Wave3Tick = RightWaveType(StateL,StateR)
+
+    RightShockVT(Wave3Tick,StateR,1)
+    ContactLocation(Wave3)
+    # # RightShockVT(StateL,Wave3,-1)
+    print(RareFactionTails(StateL, Wave3,-1))
+    RareState = RarefactionState(.1/.4,StateL,Wave3,-1)
+
+    # print(RareState[v])
+    # print(Wave3[p]/1000)
+
+
+
+
+ # Solve_RR_vx == computeVxb
+# class Parent {
+# public:
+#   double data = 0;
+#   void print() { cout << "I am a parent" << endl; }
+# };
+
+# class Child : public Parent {
+# public:
+#   void print() { cout << "I am a child" << endl; }
+# };
+
+# int main() {
+#   Parent Test;
+#   Test.print();
+#   Test.data = 10;
+#   Child Test2 = *(Child *)&Test;
+#   // Child Test2 = *pTest2;
+#   Test2.print();
+#   cout << Test2.data << endl;
+
+#   return 0;
+# }

@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 
-p = np.loadtxt("./OutputData/Pressure.dat")
-rho = np.loadtxt("./OutputData/Density.dat")
-u = np.loadtxt("./OutputData/VelocityX.dat")
+# p = np.loadtxt("./OutputData/Pressure.dat")
+# rho = np.loadtxt("./OutputData/Density.dat")
+# u = np.loadtxt("./OutputData/VelocityX.dat")
 # v = np.loadtxt("./OutputData/VelocityY.dat")
 # w = np.loadtxt("./OutputData/VelocityZ.dat")
 
@@ -11,9 +11,9 @@ u = np.loadtxt("./OutputData/VelocityX.dat")
 # Hrho = np.loadtxt("./HLLC_Comp/Density.dat")
 # Hu = np.loadtxt("./HLLC_Comp/VelocityX.dat")
 
-# Ep = np.loadtxt("./ExactSolution/Pressure.dat")
-# Erho = np.loadtxt("./ExactSolution/Density.dat")
-# Eu = np.loadtxt("./ExactSolution/VelocityX.dat")
+Ep = np.loadtxt("./Pressure.dat")
+Erho = np.loadtxt("./Density.dat")
+Eu = np.loadtxt("./VelocityX.dat")
 
 
 
@@ -21,7 +21,7 @@ u = np.loadtxt("./OutputData/VelocityX.dat")
 
 # if len(np.shape(p)) == 1 or True:
 if  True:
-    with  open("include/Parameters.h",'r') as f:
+    with  open("../include/Parameters.h",'r') as f:
         param = f.readlines()
     N = 0
     xstart = 0
@@ -54,12 +54,15 @@ if  True:
 
     
     N = int(param[N][11:-1])
+    N = 60000
     xstart = float(param[xstart][11:-1])
     xend = float(param[xend][11:-1])
     VL = str(param[VL][14:-1])
     VR = str(param[VR][14:-1])
     RS = str(param[RS][16:-1])
+    RS = "HLLC"
     Method = str(param[Method][20:-1])
+    Method = "PLM"
 
     if RS == "AUSMPLUS":
         RS = "AUSM+"
@@ -71,13 +74,13 @@ if  True:
 
 
 
-    deltaX = (xend-xstart)/N
-    xstart += deltaX/2 #adjust the interval one half deltax away from the start
+    # deltaX = (xend-xstart)/N
+    # xstart += deltaX/2 #adjust the interval one half deltax away from the start
 
-    x = np.arange(xstart,xend,deltaX)
+    # x = np.arange(xstart,xend,deltaX)
 
-    # deltaX = (xend-xstart)/len(Erho)
-    # Ex = np.arange(xstart,xend,deltaX)
+    deltaX = (xend-xstart)/len(Erho)
+    Ex = np.arange(xstart,xend,deltaX)
 
     # deltaX = (xend-xstart)/len(Hrho)
     # Hx = np.arange(xstart,xend,deltaX)
@@ -87,17 +90,17 @@ if  True:
 
 
 
-    plt.plot(x,u,'b-')
-    plt.plot(x,rho/25,'k-')
-    plt.plot(x,p/1000,'r-')
+    # plt.plot(x,u,'b-')
+    # plt.plot(x,rho/25,'k-')
+    # plt.plot(x,p/1000,'r-')
 
     # plt.plot(Hx,Hu,'b.')
     # plt.plot(Hx,Hrho/25,'k.')
     # plt.plot(Hx,Hp/1000,'r.')
 
-    # plt.plot(Ex,Eu,'b--')
-    # plt.plot(Ex,Erho/25,'k--')
-    # plt.plot(Ex,Ep/1000,'r--')
+    plt.plot(Ex,Eu,'b--')
+    plt.plot(Ex,Erho/25,'k--')
+    plt.plot(Ex,Ep/1000,'r--')
     # plt.plot(x,(w*w + u*u + v*v),'g')
     # plt.scatter(x,u,color='b',s=5, marker='.')
     # plt.scatter(x,rho/25,color='k',s=5,marker='.')
