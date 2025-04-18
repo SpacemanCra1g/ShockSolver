@@ -45,6 +45,9 @@ struct SS_Pstar_Params {
   double Rh, Rp, Rr, Rv, Rlor;
   double v0;
 };
+struct RareFactionSample_Params {
+  double xi, pR, pL, SL, AL, vL, sign;
+};
 
 extern "C" {
 
@@ -74,24 +77,61 @@ double RarefactionVx(double p, RarefactionParams *params) {
   gsl_integration_workspace_free(w);
 
   double B1 = .5 * log((1.0 + params->v) / (1.0 - params->v));
-  return tanh(B1 + params->sign * result);
+  return tanh(B1 + (double)params->sign * result);
+};
+
+double ux(double xi, double S, double press, double A, double sign) {
+  double rho = pow(press / S, 1.0 / Gamma);
+  double h = 1.0 + Sigma * press / rho;
+  double cs = sqrt(Gamma * press / (h * rho));
+  double a = cs * h;
+  double b = sign * sqrt(A * A * (1.0 - cs * cs) + h * h);
+  return (a - b * xi) / (a * xi - b);
+};
+
+double SampleRarefactionWave(double pressure, void *Parms) {
+  struct RareFactionSample_Params *params =
+      (struct RareFactionSample_Params *)Parms;
+  struct IntParams IntPar = {params->SL, params->AL};
+  struct RarefactionParams RarePar = {IntPar, (int)params->sign, params->vL,
+                                      params->pL};
+
+  return ux(params->xi, params->SL, pressure, params->AL, params->sign) -
+         RarefactionVx(pressure, &RarePar);
 };
 
 double Taub(double hA, double rho, double p, double pres) {
   double c_2 = (1.0 + (p - pres) / (pres * Sigma));
   double c_1 = -(p - pres) / (pres * Sigma);
   double c_0 = hA * (p - pres) / rho - hA * hA;
+  double val, error = 1.0;
 
   if (fabs(c_2) < 1.0e-13) {
-    return -c_0 / c_1;
+    val = -c_0 / c_1;
   } else {
-    return (-c_1 + sqrt(c_1 * c_1 - 4.0 * c_2 * c_0)) / (2.0 * c_2);
+    val = (-c_1 + sqrt(c_1 * c_1 - 4.0 * c_2 * c_0)) / (2.0 * c_2);
   }
+  if (fabs(val - hA) < 1.e-15) {
+    error = error / 0.0;
+  }
+  return val;
 };
 
 double J_sqr(double pres1, double pres2, double hA, double hB) {
-  double val = -Sigma * (pres1 - pres2) /
-               (hA * (hA - 1.) / pres1 - hB * (hB - 1.0) / pres2);
+  double val;
+  if (fabs(hA - hB) < 1.0e-10) {
+    val = Sigma * pres1 * pres2 / (hA * (hA - 1.0));
+  } else {
+    val = -Sigma * (pres1 - pres2) /
+          (hA * (hA - 1.) / pres1 - hB * (hB - 1.0) / pres2);
+  }
+  if (val == val + 1.0) {
+    cout << "landed here" << endl;
+    cout << "WaveCrash" << endl;
+    double error = 1 / val;
+    error = 1.0 / val;
+    error = error / 0.0;
+  }
   return val;
 };
 
@@ -203,6 +243,52 @@ public:
     SetHFromState();
     SetA();
   };
+
+  void SampleRare(double xi, Wave *State, double sign, double Sample[4]) {
+    double pmin = fmin(State->p, p);
+    double pmax = fmax(State->p, p);
+    double p_star;
+    struct RareFactionSample_Params RareP = {
+        xi, p, State->p, State->S, State->A, State->v, sign};
+    int status;
+    const int max_iter = 150;
+    int iter = 0;
+
+    const gsl_root_fsolver_type *T;
+    gsl_root_fsolver *s;
+    gsl_function F;
+
+    F.function = &SampleRarefactionWave;
+    F.params = &RareP;
+    T = gsl_root_fsolver_brent;
+    s = gsl_root_fsolver_alloc(T);
+    gsl_root_fsolver_set(s, &F, pmin, pmax);
+
+    do {
+      iter++;
+      status = gsl_root_fsolver_iterate(s);
+      p_star = gsl_root_fsolver_root(s);
+      pmin = gsl_root_fsolver_x_lower(s);
+      pmax = gsl_root_fsolver_x_upper(s);
+      status = gsl_root_test_interval(pmin, pmax, 0, 1.e-12);
+
+    } while (status == GSL_CONTINUE && iter < max_iter);
+
+    gsl_root_fsolver_free(s);
+    if (iter == max_iter) {
+      cout << "Failed to converge before max iteration" << endl;
+      exit(0);
+    }
+
+    Sample[3] = p_star;
+    Sample[0] = pow(p_star / State->S, 1.0 / Gamma);
+    double H = 1.0 + Sigma * p_star / Sample[0];
+    // double ux(double xi, double S, double press, double A, double sign) {
+    Sample[1] = ux(xi, State->S, p_star, State->A, sign);
+    Sample[2] = State->A * sqrt((1.0 - Sample[1] * Sample[1]) /
+                                (H * H + State->A * State->A));
+  };
+
   void SetEntropy() { S = p / pow(rho, Gamma); };
   void Setlor() { lor = 1.0 / (sqrt(1.0 - vt * vt - v * v)); };
   void SetHFromState() { h = 1.0 + Sigma * p / rho; };
@@ -268,7 +354,6 @@ public:
       double hA = StateL->h;
       double pres = StateR->p;
       double hB = Taub(hA, StateL->rho, StateL->p, pres);
-      cout << "Test:: hB == " << hA << endl;
       double J2 = J_sqr(StateL->p, StateR->p, hA, hB);
       double J = sqrt(fabs(J2));
       double Vs = ShockSpeed(StateL->lor, StateL->rho, StateL->v, J, (int)sign);
@@ -289,10 +374,18 @@ public:
   Wave WaveR;
   Wave Wave3;
   Wave Wave4;
+  bool Reversed;
 
   void LoadStates(double StateL[4], double StateR[4]) {
-    WaveL.SetState(StateL);
-    WaveR.SetState(StateR);
+    if (StateR[3] > StateL[3]) {
+      Reversed = true;
+      WaveR.SetState(StateL);
+      WaveL.SetState(StateR);
+    } else {
+      Reversed = false;
+      WaveL.SetState(StateL);
+      WaveR.SetState(StateR);
+    }
   };
   double FindD(const Wave &Left, const Wave &Right) const {
     double D;
@@ -300,7 +393,7 @@ public:
     D *= ((Gamma - 1.0) * Right.p + Left.p) /
          pow((Gamma - 1.0) * (Left.p - Right.p), 2);
     D *= Right.h * (Right.p - Left.p) / Right.rho - Right.h * Right.h;
-    return 1 - D;
+    return 1.0 - D;
   };
 
   double VaccuumLimit() const {
@@ -320,16 +413,20 @@ public:
     */
 
     //  Assumed no singularities 61pt Gauss-Kronrod
-    gsl_integration_qag(&Int, WaveL.p, 0, 0, 1.0e-12, 1000, 6, w, &result,
+    gsl_integration_qag(&Int, WaveL.p, 0, 0, 1.0e-13, 1000, 6, w, &result,
                         &error);
+    // gsl_integration_qags(&Int, WaveL.p, 0, 0, 1.0e-13, 1000, w, &result,
+    //                      &error);
     v1_x = tanh(result);
 
     // Set up the second integral
     Params.A = WaveR.A;
     Params.S = WaveR.S;
 
-    gsl_integration_qag(&Int, 0, WaveR.p, 0, 1.0e-12, 1000, 6, w, &result,
+    gsl_integration_qag(&Int, 0, WaveR.p, 0, 1.0e-13, 1000, 6, w, &result,
                         &error);
+    // gsl_integration_qags(&Int, 0, WaveR.p, 0, 1.0e-13, 1000, w, &result,
+    //                      &error);
 
     v2_x = tanh(result);
 
@@ -348,7 +445,7 @@ public:
     Int.function = &Integral1;
     Int.params = &Params;
 
-    gsl_integration_qag(&Int, WaveL.p, WaveR.p, 0, 1.0e-12, 1000, 6, w, &result,
+    gsl_integration_qag(&Int, WaveL.p, WaveR.p, 0, 1.0e-13, 1000, 6, w, &result,
                         &error);
 
     gsl_integration_workspace_free(w);
@@ -389,6 +486,7 @@ public:
     double v_star, p_star;
     int status;
 
+    cout << "V12_0 Values = " << v0 << endl;
     // if (p_min > p_max) {
     //   cout << "Waves facing the wrong way, 2 Rarefaction case" << endl;
     //   cout << "Terminating" << endl;
@@ -454,8 +552,8 @@ public:
   };
 
   void RareShockStarValues(double v12_0) {
-    double eps = 1.0e-15;
-    double p_min = WaveR.p + eps;
+    double eps = 1.0e-13;
+    double p_min = WaveR.p - eps;
     double p_max = WaveL.p;
     double v_star, p_star;
     int status;
@@ -497,7 +595,7 @@ public:
       p_star = gsl_root_fsolver_root(s);
       p_min = gsl_root_fsolver_x_lower(s);
       p_max = gsl_root_fsolver_x_upper(s);
-      status = gsl_root_test_interval(p_min, p_max, 0, 1.e-12);
+      status = gsl_root_test_interval(p_min, p_max, 0.0, 1.e-9);
 
     } while (status == GSL_CONTINUE && iter < max_iter);
 
@@ -530,7 +628,7 @@ public:
     double v_star, p_star;
     double eps = 1.0e-14;
     // double p_min = WaveR.p, p_max = 10.0; // 1.0e11;
-    double p_min = WaveL.p + eps, p_max = 1.e12;
+    double p_min = WaveL.p - eps, p_max = 1.e12;
     int status;
     const int max_iter = 150;
     int iter = 0;
@@ -559,6 +657,11 @@ public:
     // T = gsl_root_fsolver_bisection;
     // T = gsl_root_fsolver_falsepos;
     s = gsl_root_fsolver_alloc(T);
+
+    // cout << "Min Value = " << ShockShockPstar(p_min, &Parameters) << endl;
+    // cout << "Max Value = " << ShockShockPstar(p_max, &Parameters) << endl;
+    // exit(0);
+
     gsl_root_fsolver_set(s, &F, p_min, p_max);
 
     do {
@@ -610,12 +713,16 @@ public:
       double p_star, v_star;
       Wave3.WaveType = "Rarefaction";
       Wave4.WaveType = "Rarefaction";
+      cout << "In the Double rare Case" << endl;
+      cout << "The Double Rare Limit was " << DoubleRarefactionLimit() << endl;
+      cout << "The difference is " << DoubleRarefactionLimit() - v12_0 << endl;
       DoubleRarefactionStarValues(v12_0);
 
     } else if (v12_0 <= RareShockLimit()) {
       // This is the One Rarefaction, One Shock case
       Wave3.WaveType = "Rarefaction";
       Wave4.WaveType = "Shock";
+
       RareShockStarValues(v12_0);
       // cout << "The limit was: " << RareShockLimit();
     } else {
@@ -635,7 +742,94 @@ public:
     Wave3.Boundaries(&WaveL, &Wave3, -1.0);
     Wave4.Boundaries(&Wave4, &WaveR, 1.0);
   };
+
+  void SampleState(double xi, double State[4]) {
+    if (Reversed) {
+      xi = -xi;
+    }
+    if (xi < Wave3.LeftB) {
+      cout << "Left State" << endl;
+      State[0] = WaveL.rho;
+      State[1] = WaveL.v;
+      State[2] = WaveL.vt;
+      State[3] = WaveL.p;
+    } else if (xi < Wave3.RightB) {
+      cout << "Rare State" << endl;
+      Wave3.SampleRare(xi, &WaveL, -1.0, State);
+      // cout << "In the Rarefaction Wave" << endl;
+    } else if (xi < Wave3.ContactSpeed) {
+      cout << "Left Star" << endl;
+      State[0] = Wave3.rho;
+      State[1] = Wave3.v;
+      State[2] = Wave3.vt;
+      State[3] = Wave3.p;
+    } else if (xi < Wave4.LeftB) {
+      cout << "Right Star" << endl;
+      State[0] = Wave4.rho;
+      State[1] = Wave4.v;
+      State[2] = Wave4.vt;
+      State[3] = Wave4.p;
+    } else if (xi < Wave4.RightB) {
+      cout << "Right Rare" << endl;
+      Wave4.SampleRare(xi, &WaveR, 1.0, State);
+    } else {
+      cout << "Right State" << endl;
+      State[0] = WaveR.rho;
+      State[1] = WaveR.v;
+      State[2] = WaveR.vt;
+      State[3] = WaveR.p;
+    }
+  };
 };
+
+void SolveRiemannFlux(double StateL[4], double StateR[4], double Result[4]) {
+  RiemannFan Problem;
+  Problem.LoadStates(StateL, StateR);
+  Problem.FindWaveTypes();
+  Problem.CalculateIntermediateStates();
+  Problem.FanBoundaries();
+  Problem.SampleState(0.0, Result);
+}
+
+void SolveShockTube(double StateL[4], double StateR[4], double Time) {
+  RiemannFan Problem;
+  double Result[4];
+  double Dens[400], XVel[400], YVel[400], Pres[400];
+  Problem.LoadStates(StateL, StateR);
+  Problem.FindWaveTypes();
+  Problem.CalculateIntermediateStates();
+  Problem.FanBoundaries();
+  for (int x = 0; x < 400; ++x) {
+    Problem.SampleState((-.5 + (x / 399.0)) / Time, Result);
+    Dens[x] = Result[0];
+    XVel[x] = Result[1];
+    YVel[x] = Result[2];
+    Pres[x] = Result[3];
+  }
+  FILE *File1 = fopen("OutputData/Density.dat", "w");
+  FILE *File2 = fopen("OutputData/VelocityX.dat", "w");
+  FILE *File3 = fopen("OutputData/VelocityY.dat", "w");
+  FILE *File4 = fopen("OutputData/Pressure.dat", "w");
+  if (File1 && File2 && File3 && File4) {
+
+    for (int i = 0; i < 400; i++) {
+
+      fprintf(File1, "%.9g ", Dens[i]);
+      fprintf(File2, "%.9g ", XVel[i]);
+      fprintf(File3, "%.9g ", YVel[i]);
+      fprintf(File4, "%.9g ", Pres[i]);
+    }
+    fprintf(File1, "\n");
+    fprintf(File2, "\n");
+    fprintf(File3, "\n");
+    fprintf(File4, "\n");
+
+    fclose(File1);
+    fclose(File2);
+    fclose(File3);
+    fclose(File4);
+  }
+}
 
 int main() {
   cout << setprecision(15);
@@ -646,29 +840,44 @@ int main() {
   double StateR[4] = {1.0, 0.0, 0.9, .01};
 
   // SR Case
-  // double StateL[4] = {1.0, .5, 0.0, 1};
-  // double StateR[4] = {.125, 0.0, 0.3, .1};
+  // double StateL[4] = {1.0, .5, 0.0, 1.0};
+  // double StateR[4] = {.125, 0.0, 0.0, .1};
 
   // 2R Case
-  // double StateL[4] = {1.0, 0.0, 0.9, 1};
+  // double StateL[4] = {1.0, 0.0, 0.999, 1};
   // double StateR[4] = {.125, 0.5, 0.0, .1};
 
   //  2S Case
   // double StateL[4] = {1.0, 0.5, 0.0, 1};
-  // double StateR[4] = {.125, 0.0, 0.999, .1};
+  // double StateR[4] = {.125, 0.0, 0.9, .1};
 
-  Problem.LoadStates(StateL, StateR);
-  Problem.FindWaveTypes();
-  Problem.CalculateIntermediateStates();
-  Problem.Wave3.PrintWave();
-  Problem.Wave4.PrintWave();
-  Problem.FanBoundaries();
+  // All normal Forward States Work. Let's try reversing the waves
 
-  cout << "RareFaction Head: " << Problem.Wave3.LeftB * .4 + .5 << endl;
-  cout << "RareFaction Tail: " << Problem.Wave3.RightB * .4 + .5 << endl;
-  cout << "Contact Point: " << Problem.Wave3.ContactSpeed * .4 + .5 << endl;
+  // double StateR[4] = {1.0, .0, 0.9, 1000.0};
+  // double StateL[4] = {1.0, 0.0, 0.9, .01};
 
-  cout << "Shock Location: " << Problem.Wave4.LeftB * .4 + .5 << endl;
+  // SR Case
+  // double StateR[4] = {1.0, .5, 0.0, 1.0};
+  // double StateL[4] = {.125, 0.0, 0.0, .1};
 
+  // 2R Case
+  // double StateR[4] = {1.0, 0.0, 0.999, 1};
+  // double StateL[4] = {.125, 0.5, 0.0, .1};
+
+  //  2S Case
+  // double StateR[4] = {1.0, 0.5, 0.0, 1};
+  // double StateL[4] = {.125, 0.0, 0.9, .1};
+
+  SolveShockTube(StateL, StateR, .4);
+  // double Result[4];
+  // double StateL[4] = {0.237488597667484, 0.333823183668201,
+  // 0.950230347920938,
+  //                     7.91488442703943};
+  // double StateR[4] = {0.263094468682757, 0.334768150497356,
+  // 0.948934888668851,
+  //                     7.54624591778466};
+  // SolveRiemannFlux(StateL, StateR, Result);
+  // cout << "Result is: " << Result[0] << " " << Result[1] << " " << Result[2]
+  //      << " " << Result[3] << " " << endl;
   return 0;
 }

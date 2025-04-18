@@ -88,7 +88,7 @@ if  True:
 
 
     plt.plot(x,u,'b-')
-    plt.plot(x,rho/25,'k-')
+    plt.plot(x,rho/25,'k.')
     plt.plot(x,p/1000,'r-')
 
     # plt.plot(Hx,Hu,'b.')

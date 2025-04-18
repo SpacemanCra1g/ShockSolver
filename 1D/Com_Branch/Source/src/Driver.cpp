@@ -39,10 +39,10 @@ int main() {
 
     (Solver.*(Solver.RK_TimeStepper))();
 
-    if (counter % 100 == 0) {
-      std::cout << "The time is: " << Solver.T << " dt = " << Solver.dt
-                << std::endl;
-    }
+    // if (counter % 100 == 0) {
+    std::cout << "The time is: " << Solver.T << " dt = " << Solver.dt
+              << std::endl;
+    // }
   } while (true && Solver.T < TN);
 
   Solver.writeResults();

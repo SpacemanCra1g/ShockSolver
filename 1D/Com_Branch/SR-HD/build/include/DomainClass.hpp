@@ -219,6 +219,8 @@ public:
     RiemannSolver = &Domain::Autsm;
 #elif RIEMANN == AUSMPLUSUP
     RiemannSolver = &Domain::Autsmup;
+#elif RIEMANN == EXACT
+    RiemannSolver = &Domain::Exact;
 #endif
 
 #if LIMITSLOPE == MINMOD
@@ -306,6 +308,9 @@ public:
 
   // Defined in the src/HLLC.cpp file
   void Hllc(int Start, int Stop);
+
+  // Defined in the src/Exact.cpp file
+  void Exact(int Start, int Stop);
 
   // Defined in the src/UpdateSolution.cpp file
   void Recon(int start, int stop);

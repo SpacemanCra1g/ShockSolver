@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 Ep = np.loadtxt("./Pressure.dat")
 Erho = np.loadtxt("./Density.dat")
 Eu = np.loadtxt("./VelocityX.dat")
+Ev = np.loadtxt("./VelocityY.dat")
 
 
 
@@ -99,6 +100,7 @@ if  True:
     # plt.plot(Hx,Hp/1000,'r.')
 
     plt.plot(Ex,Eu,'b--')
+    plt.plot(Ex,Ev,'g--')
     plt.plot(Ex,Erho/25,'k--')
     plt.plot(Ex,Ep/1000,'r--')
     # plt.plot(x,(w*w + u*u + v*v),'g')

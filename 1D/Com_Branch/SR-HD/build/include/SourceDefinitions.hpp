@@ -40,6 +40,7 @@
 #define AUSM 3
 #define AUSMPLUS 4
 #define AUSMPLUSUP 5
+#define EXACT 6
 
 /*******************************/
 /******* Slope Limiters ********/

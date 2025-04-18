@@ -89,6 +89,7 @@ def Solve_Shock_vx(state,pres,sign):
     hA = Geth(state[p],state[r])
     # Taub Adiabat
     hB = Taub(state,pres)
+    # print(hA, hB, hA-hB)
     J2 = J_sqr(state[p],pres,hA,hB)
     J = np.sqrt(np.abs(J2))
     Vs = ShockSpeed(state,J,sign)
@@ -114,6 +115,7 @@ def Solve_RR(Left,Right,p):
 def Solve_RS(StateL, StateR, p):
     ux3 = Solve_RR_vx(StateL,p,-1)
     ux4 = Solve_Shock_vx(StateR,p,1)
+    # print(ux4)
     v13 = GetRelSpeed(StateL[v],ux3)
     v64 = GetRelSpeed(StateR[v],ux4)
 
@@ -236,14 +238,17 @@ def RightWaveType(StateL,StateR):
            eps = 1e-15
            p_min = StateR[p] + eps
            p_max = StateL[p]
+           # print(Solve_RS(StateL, StateR, p_min) - v12_0)
+           # print(Solve_RS(StateL, StateR, p_max) - v12_0)
+           # exit(0)
            assert (p_min < p_max)
            p_star = opt.brentq(lambda p: Solve_RS(StateL, StateR, p) - v12_0, p_min, p_max)
            vstar = Solve_Shock_vx(StateR, p_star, 1)
 
            Wave3, Wave3Tick = Find_RS_Wave(StateL, StateR, vstar, p_star)
 
-           print(Wave3)
-           print(Wave3Tick)
+           # print(Wave3)
+           # print(Wave3Tick)
            # print(Wave3[v]*.4)
            return Wave3, Wave3Tick
 
@@ -331,9 +336,22 @@ def RarefactionState(xi,StateL,StateR,sign):
 
 if __name__ == "__main__":
     # Test problem
-    StateL = [1.0, 0.0, 0.9, 1000]
-    StateR = [1.0, 0.0, 0.9, .01]
+    # StateL = [1.0, 0.0, 0.9, 1000]
+    # StateR = [1.0, 0.0, 0.9, .01]
 
+    # StateL = [ 0.999999999999998, 0.0, 0.9, 999.999999999995 ]
+    # StateR = [0.999999281059228 ,5.55358611647988e-12, 0.900000124923523, 999.998677473982]
+
+    # print(Solve_RS(StateL, StateR, p))
+    # exit(0)
+
+    # StateR = [0.482647065761285, 0.137082381825524, 0.949284868771044,
+    #                   296.972419369809]
+    # StateL = [0.486091920584473, 0.136066029998986, 0.949050531361542,
+    #                   300.513512308036]
+
+    StateR = [0.999999999999559, -4.52552302505939e-17, 0, 999.999999999846]
+    StateL = [1.0000009350629, -4.04613917707267e-10, 0, 1000.00074624785]
    # SR Case
     # StateL = [1.0, .5, 0.0, 1]
     # StateR = [.125, 0.0, 0.3, .1]
@@ -349,13 +367,13 @@ if __name__ == "__main__":
 
     Wave3, Wave3Tick = RightWaveType(StateL,StateR)
 
-    RightShockVT(Wave3Tick,StateR,1)
-    ContactLocation(Wave3)
+    # RightShockVT(Wave3Tick,StateR,1)
+    # ContactLocation(Wave3)
     # # RightShockVT(StateL,Wave3,-1)
-    print(RareFactionTails(StateL, Wave3,-1))
-    RareState = RarefactionState(.1/.4,StateL,Wave3,-1)
+    # print(RareFactionTails(StateL, Wave3,-1))
+    # RareState = RarefactionState(.0/.4,StateL,Wave3,-1)
 
-    # print(RareState[v])
+    # print(RareState[vt])
     # print(Wave3[p]/1000)
 
 
