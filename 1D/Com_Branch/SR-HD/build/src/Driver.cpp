@@ -7,7 +7,7 @@
 int main() {
   // int n = 1;
 #ifndef GP_METHOD
-  feenableexcept(FE_INVALID);
+  // feenableexcept(FE_INVALID);
 #endif
   std::cout << std::setprecision(15);
   Domain Solver;

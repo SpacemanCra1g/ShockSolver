@@ -197,6 +197,8 @@ public:
 
 #if RK_Method == 1
     RK_TimeStepper = &Domain::ForwardEuler;
+#elif RK_Method == 2
+    RK_TimeStepper = &Domain::RK2;
 #elif RK_Method == 3
     RK_TimeStepper = &Domain::RK3;
 #elif RK_Method == 4
@@ -262,6 +264,7 @@ public:
   void FillFlux(double *, double *, double *, double *, int);
 
   // Defined in the TimeSteppers.cpp file
+  void RK2();
   void RK3();
   void ForwardEuler();
   void RK4();

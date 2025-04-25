@@ -142,6 +142,14 @@ void Domain::ForwardEuler() {
   // exit(0);
   (*this.*BC)();
 }
+void Domain::RK2() {
+  DomainCopy(Cons, CopyBuffer);
+
+  ForwardEuler();
+  ForwardEuler();
+
+  DomainAdd(.5, .5, CopyBuffer, Cons);
+}
 
 void Domain::RK3() {
 #if SpaceMethod == MOOD

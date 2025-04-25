@@ -51,7 +51,7 @@ struct RareFactionSample_Params {
 
 extern "C" {
 
-double Integral1(double p, void *pram) {
+static double Integral1(double p, void *pram) {
   struct IntParams *params = (struct IntParams *)pram;
   double S = params->S;
   double A = params->A;

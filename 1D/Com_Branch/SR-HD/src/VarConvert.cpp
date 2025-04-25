@@ -44,7 +44,9 @@ int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
     if (Uin[Tidx(DENS, i)] < 0.0) {
       std::cout << "WARNING!\n Density is Negative at Cell " << i << std::endl;
       std::cout << "Time is " << T << std::endl;
-      Uin[Tidx(DENS, i)] = MIN_DENSITY;
+      // Uin[Tidx(DENS, i)] = MIN_DENSITY;
+      Uin[Tidx(DENS, i)] =
+          .5 * (Uin[Tidx(DENS, i - 1)] + Uin[Tidx(DENS, i + 1)]);
     }
 
     SolMethod = ENERGY_SOLVE;
