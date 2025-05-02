@@ -41,6 +41,7 @@
 #define AUSMPLUS 4
 #define AUSMPLUSUP 5
 #define EXACT 6
+#define RCM 7
 
 /*******************************/
 /******* Slope Limiters ********/

@@ -82,7 +82,7 @@ int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
     }
 
     if (SolMethod == PRESURE_FIX_SOLVE) {
-      err = PressureFix(Uin, Uout, i);
+      err = PressureFix(Uin, Uout, i, .5*(Uin[Tidx(PRES,i-1)] +Uin[Tidx(PRES,i+1)]) );
       if (err) {
         std::cout << "CRASH REPORT" << std::endl;
         std::cout << "Failure in Pressure fix" << std::endl;

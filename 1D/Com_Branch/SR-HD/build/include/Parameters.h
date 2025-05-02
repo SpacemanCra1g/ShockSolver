@@ -6,7 +6,7 @@
 /****************
  * X Parameters *
  ****************/
-#define NX 100
+#define NX 400
 #define X0 0.0
 #define XN 1.0
 
@@ -20,18 +20,18 @@
 #define PR 0.01
 
 #define XVELL 0.0
-#define YVELL 0.99
+#define YVELL 0.0
 #define ZVELL 0.0
 
 #define XVELR 0.0
-#define YVELR 0.9
+#define YVELR 0.0
 #define ZVELR 0.0
 
 /****************
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN .40
+#define TN .4
 
 /*****************
  *Run Parameters *
@@ -40,10 +40,10 @@
 #define SpaceMethod FOG
 #define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
-#define RIEMANN HLLC
-#define CFL 0.8
+#define RIEMANN RCM
+#define CFL 0.4
 #define EOS IDEAL
-#define RK_Method 2 /*set to -1 for CharTracing, sets automatically for PLM*/
+#define RK_Method 3 /*set to -1 for CharTracing, sets automatically for PLM*/
 #define ell 6.0
 #define MoodOrder 3
 #define SlowStart true

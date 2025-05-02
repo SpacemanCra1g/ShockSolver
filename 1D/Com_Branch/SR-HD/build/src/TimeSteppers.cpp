@@ -80,7 +80,7 @@ void Domain::ForwardEuler() {
 
   MoodFinished = false;
 
-  (this->*RiemannSolver)(XStart - 1, XEnd);
+  (this->*RiemannSolver)(XStart-1, XEnd);
 
   // #ifdef PStuff
 
@@ -95,7 +95,9 @@ void Domain::ForwardEuler() {
   //   }
   //   // exit(0);
   // #endif
+  #if RIEMANN != RCM
   Recon(XStart, XEnd);
+  #endif
 
   // #ifdef PStuff
   //   Cons2Prim(Cons, Prims, 0, xDim);

@@ -2,7 +2,7 @@
 
 void Domain::Weno(int start, int stop) {
   double *Center, p1L, p1R, p2L, p2R, p3L, p3R, Beta1, Beta2, Beta3, eps, w1L,
-      w2L, w3L, w1R, w2R, w3R, wLSum, wRSum, PresTest, DensTest;
+      w2L, w3L, w1R, w2R, w3R, wLSum, wRSum, PresTest, DensTest, VelTest;
   double **Stencil;
   double LeftState[NumVar], RightState[NumVar];
 
@@ -100,13 +100,16 @@ void Domain::Weno(int start, int stop) {
     Chars.Char_Recover_Prims(RightState, FluxWalls_Prims[RIGHT], xdir);
 
 #endif
+    // TODO: Try this checking velocity as well
     PresTest = (Prims[Tidx(PRES, xdir)] - LeftState[PRES]) *
                (RightState[PRES] - Prims[Tidx(PRES, xdir)]);
 
     DensTest = (Prims[Tidx(DENS, xdir)] - LeftState[DENS]) *
                (RightState[DENS] - Prims[Tidx(DENS, xdir)]);
+    VelTest = (Prims[Tidx(VELX, xdir)] - LeftState[VELX]) *
+               (RightState[VELX] - Prims[Tidx(VELX, xdir)]);
 
-    if (PresTest < 0.0 || DensTest < 0.0) {
+    if (PresTest < 0.0 || DensTest < 0.0 || VelTest < 0.0) {
       for (int var = 0; var < NumVar; ++var) {
         FluxWalls_Prims[LEFT][Tidx(var, xdir)] = Prims[Tidx(var, xdir)];
         FluxWalls_Prims[RIGHT][Tidx(var, xdir)] = Prims[Tidx(var, xdir)];

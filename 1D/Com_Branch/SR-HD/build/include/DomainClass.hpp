@@ -34,7 +34,7 @@ public:
   bool *Troubled;
   bool *ConversionFailed;
   int *TroubledIdx;
-  int IdxStop;
+  int IdxStop, rcm_Counter = 1;
 
   Characteristics Chars;
 
@@ -223,6 +223,9 @@ public:
     RiemannSolver = &Domain::Autsmup;
 #elif RIEMANN == EXACT
     RiemannSolver = &Domain::Exact;
+#elif RIEMANN == RCM
+    RiemannSolver = &Domain::rcm;
+    SpaceRecon = &Domain::Fog;
 #endif
 
 #if LIMITSLOPE == MINMOD
@@ -303,6 +306,9 @@ public:
   // Defined in the src/HLL.cpp file
   void Hll(int, int);
   void HllSide(int);
+
+  // Defined in the src/RCM.cpp file
+  void rcm(int, int);
 
   // Defined the src/AUSM.cpp file
   void Ausm(int, int);

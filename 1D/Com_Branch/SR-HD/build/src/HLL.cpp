@@ -25,7 +25,7 @@ void Domain::Hll(int Start, int Stop) {
     if (0.0 <= SL) {
 
       for (int var = 0; var < NumVar; ++var) {
-        CellFlux[Tidx(var, i)] = LeftState_Prims[Tidx(var, i)];
+        CellFlux[Tidx(var, i)] = LFlux[var];
       }
 
     }
@@ -45,7 +45,7 @@ void Domain::Hll(int Start, int Stop) {
     else {
 
       for (int var = 0; var < NumVar; ++var) {
-        CellFlux[Tidx(var, i)] = RightState_Prims[Tidx(var, i + 1)];
+        CellFlux[Tidx(var, i)] = RFlux[var];
       }
     }
     // std::cout << CellFlux[Tidx(DENS, i)] << " " << Prims[Tidx(DENS, i)] << "

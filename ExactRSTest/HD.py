@@ -7,7 +7,6 @@ v = 1
 p = 2
 gamma = 1.4
 
-
 def NewtonsMethod(StateL,StateR,f,fp,guess):
     guess2 = guess - (fside(guess,StateL) + fside(guess,StateR) + (StateR[v] - StateL[v]) )/(fprime(guess,StateL) + fprime(guess,StateR))
     if guess2 < 0.0:
@@ -131,7 +130,7 @@ if __name__ == "__main__":
     plt.plot(wave1x[:33],wave1[:33])
     plt.plot(-wave1x[:28],wave2[:28],'-', color='black')
     plt.plot(wave1x,wave3)
-    plt.plot(-wave1x[:38],wave4[:38],'--', color='black')
+    # plt.plot(-wave1x[:38],wave4[:38],'--', color='black')
     plt.plot(-wave1x[:4],wave5[:4],'--', color='black')
     
     plt.plot(np.linspace(-.5,.5,100),timestop)

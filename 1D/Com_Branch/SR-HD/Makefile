@@ -1,5 +1,5 @@
-CC=g++
-FLAGS= -g -lgsl -Wall -Wextra -pedantic -march=native # -Qunused-arguments
+CC=clang++
+FLAGS= -O3 -lgsl -Wall -Wextra -pedantic -march=native -Qunused-arguments
 SRC=src
 OBJ=build
 OUTDIR=OutputData
@@ -31,8 +31,8 @@ $(OBJ)/%.o: $(OBJSRC)/%.cpp
 	$(CC) $(FLAGS) $(INC_DIR) -c $< -o $@ $(LINKERS)
 
 $(LFILE): $(OBJ) $(OUTDIR)
-	cp ./include/* ../Source/include/* ./build/include/ &&\
-	cp ./src/* ../Source/src/* ./build/src/ &&\
+	cp -r ./include/* ../Source/include/* ./build/include/ &&\
+	cp -r ./src/* ../Source/src/* ./build/src/ &&\
 	touch $(LFILE)
 
 $(OBJ):

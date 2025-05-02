@@ -4,10 +4,12 @@
 #include <iomanip>
 #include <iostream>
 
+
+
 int main() {
   // int n = 1;
 #ifndef GP_METHOD
-  // feenableexcept(FE_INVALID);
+  feenableexcept(FE_INVALID);
 #endif
   std::cout << std::setprecision(15);
   Domain Solver;
@@ -29,8 +31,8 @@ int main() {
   int counter = 0;
   do {
     counter++;
+    std::cout << "Counter = " << counter << std::endl;
     Solver.Find_dt();
-
     Solver.T += Solver.dt;
     if (Solver.dt < 0.0) {
       std::cout << "dt broke at Time: " << Solver.T << std::endl;
@@ -39,13 +41,14 @@ int main() {
 
     (Solver.*(Solver.RK_TimeStepper))();
 
-    // if (counter % 100 == 0) {
+    if (counter % 10 == 0) {
     std::cout << "The time is: " << Solver.T << " dt = " << Solver.dt
               << std::endl;
-    // }
+    }
   } while (true && Solver.T < TN);
 
   Solver.writeResults();
   // }
+  
   return 0;
 }
