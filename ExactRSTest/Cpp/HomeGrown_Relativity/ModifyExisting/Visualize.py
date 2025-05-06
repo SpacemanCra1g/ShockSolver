@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 p = np.loadtxt("./OutputData/Pressure.dat")
 rho = np.loadtxt("./OutputData/Density.dat")
 u = np.loadtxt("./OutputData/VelocityX.dat")
+v = np.loadtxt("./OutputData/VelocityY.dat")
 
 if max(p) > 100:
     p /= 1000
@@ -20,6 +21,7 @@ x = np.arange(xstart,xend,deltaX)
 
 
 plt.plot(x,u,'b-')
+plt.plot(x,v,'g-')
 plt.plot(x,rho,'k-')
 plt.plot(x,p,'r-')
 

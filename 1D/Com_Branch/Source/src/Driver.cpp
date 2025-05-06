@@ -31,7 +31,7 @@ int main() {
   int counter = 0;
   do {
     counter++;
-    std::cout << "Counter = " << counter << std::endl;
+    // std::cout << "Counter = " << counter << std::endl;
     Solver.Find_dt();
     Solver.T += Solver.dt;
     if (Solver.dt < 0.0) {

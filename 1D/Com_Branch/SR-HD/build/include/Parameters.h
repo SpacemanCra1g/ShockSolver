@@ -20,11 +20,11 @@
 #define PR 0.01
 
 #define XVELL 0.0
-#define YVELL 0.0
+#define YVELL 0.9
 #define ZVELL 0.0
 
 #define XVELR 0.0
-#define YVELR 0.0
+#define YVELR 0.99
 #define ZVELR 0.0
 
 /****************
@@ -41,9 +41,9 @@
 #define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
 #define RIEMANN RCM
-#define CFL 0.4
+#define CFL 0.49
 #define EOS IDEAL
-#define RK_Method 3 /*set to -1 for CharTracing, sets automatically for PLM*/
+#define RK_Method 1 /*set to -1 for CharTracing, sets automatically for PLM*/
 #define ell 6.0
 #define MoodOrder 3
 #define SlowStart true

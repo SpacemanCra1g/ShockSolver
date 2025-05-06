@@ -1,6 +1,7 @@
 #include <cmath>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_integration.h>
+#include <cfenv>
 #include <gsl/gsl_roots.h>
 #include <iomanip>
 #include <iostream>
@@ -8,6 +9,7 @@
 #define TOLS (1.e-8)
 
 using namespace std;
+// typedef double realkind; 
 
 const realkind Gamma = (5.0 / 3);
 const realkind Sigma = (Gamma / (Gamma - 1.0));
@@ -280,6 +282,10 @@ public:
     T = gsl_root_fsolver_brent;
     s = gsl_root_fsolver_alloc(T);
     gsl_root_fsolver_set(s, &F, pmin, pmax);
+    if(SampleRarefactionWave(pmin,&RareP)*SampleRarefactionWave(pmax, &RareP) >= 0.0){
+      cout << "Failure Line 286" << endl;
+      exit(0);
+    }
 
     do {
       iter++;
@@ -497,7 +503,7 @@ public:
   };
 
   void DoubleRarefactionStarValues(realkind v0) {
-    realkind eps = 1.0e-15;
+    realkind eps = 1.0e-10;
     realkind p_min = (WaveR.p + eps) * eps;
     realkind p_max = 2*WaveL.p;
     realkind v_star, p_star;
@@ -536,6 +542,10 @@ public:
     s = gsl_root_fsolver_alloc(T);
     gsl_root_fsolver_set(s, &F, p_min, p_max);
 
+    if(DoubleRarefactionPstar(p_min,&Parameters)*DoubleRarefactionPstar(p_max, &Parameters) >= 0.0){
+      cout << "Failure Line 545" << endl;
+      exit(0);
+    }
     do {
       iter++;
       status = gsl_root_fsolver_iterate(s);
@@ -569,9 +579,9 @@ public:
   };
 
   void RareShockStarValues(realkind v12_0) {
-    realkind eps = 1.0e-13;
+    realkind eps = 1.0e-7;
     realkind p_min = WaveR.p - eps;
-    realkind p_max = WaveL.p;
+    realkind p_max = WaveL.p + eps;
     realkind v_star, p_star;
     int status;
     if (p_min > p_max) {
@@ -605,6 +615,13 @@ public:
     T = gsl_root_fsolver_brent;
     s = gsl_root_fsolver_alloc(T);
     gsl_root_fsolver_set(s, &F, p_min, p_max);
+
+    while(RareShockPstar(p_min,&Parameters)*RareShockPstar(p_max, &Parameters) >= 0.0){
+      cout << "Failure Line 620" << endl;
+      // exit(0);
+      p_min *= .10;
+      p_max *= 10.;
+    }
 
     do {
       iter++;
@@ -680,7 +697,10 @@ public:
     // exit(0);
 
     gsl_root_fsolver_set(s, &F, p_min, p_max);
-
+    if(ShockShockPstar(p_min,&Parameters)*ShockShockPstar(p_max, &Parameters) >= 0.0){
+      cout << "Failure Line 699" << endl;
+      exit(0);
+    }
     do {
       iter++;
       status = gsl_root_fsolver_iterate(s);
@@ -800,6 +820,26 @@ public:
 };
 
 void SolveRiemannFlux(realkind StateL[4], realkind StateR[4], realkind Result[4], realkind T) {
+  if (fabs(StateL[3] - StateR[3]) < 1.e-11){
+    if (fabs(StateL[3] - StateR[3]) < 1.e-14){
+      for (int i = 0; i < 4; ++i ){
+        Result[i] = .5*(StateL[i] + StateR[i]);
+      }
+      // cout << "Stopped solve short" << endl;
+      return;
+    }
+    double maxval = 0.0;
+    for (int i = 0; i < 3; ++i){
+      maxval = fmax( fabs(StateL[i] - StateR[i]), maxval);
+    }
+    if (maxval < 1.e-13){
+      for (int i = 0; i < 4; ++i ){
+        Result[i] = .5*(StateL[i] + StateR[i]);
+      }
+      // cout << "Stopped solve short" << endl;
+      return;
+    }
+  }
   RiemannFan Problem;
   Problem.LoadStates(StateL, StateR);
   Problem.FindWaveTypes();
@@ -849,14 +889,28 @@ void SolveShockTube(realkind StateL[4], realkind StateR[4], realkind Time) {
 }
 
 // int main(){
-//   cout << setprecision(15);
-//   // RiemannFan Problem;
+  // cout << setprecision(15);
+// //   // RiemannFan Problem;
 
-//   // Test Case
-//   realkind StateL[4] = {1.0, .0, 0.99, 1000.0};
-//   realkind StateR[4] = {1.0, 0.0, 0.99, .01};
-//   realkind State[4];
-//   SolveShockTube(StateL,  StateR, .4);
+// //   // Test Case
+// //   realkind StateL[4] = {1.0, .0, 0.99, 1000.0};
+// //   realkind StateR[4] = {1.0, 0.0, 0.99, .01};
+// //   realkind State[4];
+
+
+// int main(){
+//   feenableexcept(FE_INVALID);
+// // realkind StateL[4] = {1.50617912044735, 0.469992817665391, 0.0, 0.417613895434584 };
+// // realkind StateR[4] = {1.0, 0.0, 0.0, 0.00999999999999979 };
+// realkind StateL[4] = {1.11471317639988, 0.507473466608499, 0, 0.507428210356333}; 
+// realkind StateR[4] = {1, 0, 0, 0.00999999999999979}; 
+// realkind Out[4];
+// SolveRiemannFlux(StateL,  StateR,Out, -1.195631);
+// for(int i = 0; i < 4; ++i){
+//   cout << Out[i] << " " << endl;
+// }
+// return 0;
+// }
 
 //   // SolveShockTube(StateL, StateR, .4);
 //   // Problem.LoadStates(StateL, StateR);

@@ -852,13 +852,15 @@ int main(){
   // RiemannFan Problem;
 
   // Test Case
-  long double StateL[4] = {1.0, .0, 0.99, 1000.0};
-  long double StateR[4] = {1.0, 0.0, 0.99, .01};
-
+  
+  
+  // long double StateL[4] = {1.50617912044735, 0.469992817665391, 0.0, 0.417613895434584 };
+  // long double StateR[4] = {1.0, 0.0, 0.0, 0.00999999999999979 };
   // long double StateL[4] = {0.999999999999998,-1.70431767385411e-23,0.9,999.999999999994};
   // long double StateR[4] = {0.999999999999998,4.27594960269152e-16,0.9,999.999999999995};
   
-  
+  long double StateL[4] = {1.0, 0.0, 0.9, 1000.0};
+  long double StateR[4] = {1.0, 0.0, 0.9, .01 };
   
   long double State[4];
   SolveShockTube(StateL,  StateR, .4);

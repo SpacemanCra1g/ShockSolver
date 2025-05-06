@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 p = np.loadtxt("./OutputData/Pressure.dat")
 rho = np.loadtxt("./OutputData/Density.dat")
 u = np.loadtxt("./OutputData/VelocityX.dat")
-# v = np.loadtxt("./OutputData/VelocityY.dat")
+v = np.loadtxt("./OutputData/VelocityY.dat")
 # w = np.loadtxt("./OutputData/VelocityZ.dat")
 
 # Hp = np.loadtxt("./HLLC_Comp/Pressure.dat")
@@ -88,7 +88,8 @@ if  True:
 
 
     plt.plot(x,u,'b-')
-    plt.plot(x,rho/25,'k.')
+    plt.plot(x,v,'g-')
+    plt.plot(x,rho/25,'k-')
     plt.plot(x,p/1000,'r-')
 
     # plt.plot(Hx,Hu,'b.')

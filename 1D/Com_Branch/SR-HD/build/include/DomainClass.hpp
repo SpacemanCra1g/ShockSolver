@@ -225,7 +225,7 @@ public:
     RiemannSolver = &Domain::Exact;
 #elif RIEMANN == RCM
     RiemannSolver = &Domain::rcm;
-    SpaceRecon = &Domain::Fog;
+    // SpaceRecon = &Domain::Fog;
 #endif
 
 #if LIMITSLOPE == MINMOD

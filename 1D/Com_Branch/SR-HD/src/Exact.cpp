@@ -31,9 +31,7 @@ void Domain::Exact(int Start, int Stop) {
 
     // SolveRiemannFlux(StateL, StateR, Result);
     if (std::fabs(StateL[3] - StateR[3]) < 1.e-10) {
-      for (int var = 0; var < 4; ++var) {
         Hllc(i, i + 1);
-      }
     } else {
       // std::cout << "Cell is  = " << i << std::endl;
       // // if (i == 43) {
@@ -53,7 +51,6 @@ void Domain::Exact(int Start, int Stop) {
       //     std::cout << StateR[j] << std::endl;
       //   }
       // }
-      
       SolveRiemannFlux(StateL, StateR, Result, Time);
 
       rho = (double) Result[0];
