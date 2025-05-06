@@ -662,7 +662,8 @@ public:
     realkind v_star, p_star;
     realkind eps = 1.0e-10;
     // realkind p_min = WaveR.p, p_max = 10.0; // 1.0e11;
-    realkind p_min = WaveL.p - eps, p_max = 1.e12;
+    realkind p_min = WaveL.p - eps;
+    realkind p_max = 1.e12;
     int status;
     const int max_iter = 150;
     int iter = 0;
@@ -696,11 +697,13 @@ public:
     // cout << "Max Value = " << ShockShockPstar(p_max, &Parameters) << endl;
     // exit(0);
 
-    gsl_root_fsolver_set(s, &F, p_min, p_max);
-    if(ShockShockPstar(p_min,&Parameters)*ShockShockPstar(p_max, &Parameters) >= 0.0){
+    
+    while(ShockShockPstar(p_min,&Parameters)*ShockShockPstar(p_max, &Parameters) >= 0.0){
       cout << "Failure Line 699" << endl;
-      exit(0);
+      // exit(0);
+      p_min *= .1;
     }
+    gsl_root_fsolver_set(s, &F, p_min, p_max);
     do {
       iter++;
       status = gsl_root_fsolver_iterate(s);
