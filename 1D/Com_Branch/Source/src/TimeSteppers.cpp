@@ -154,23 +154,10 @@ void Domain::RK2() {
 }
 
 void Domain::RK3() {
-#if SpaceMethod == MOOD
-  std::fill(MoodOrd, MoodOrd + xDim, MoodOrder);
-  std::fill(DMP_MaxRho, DMP_MaxRho + xDim, -1.0e14);
-  std::fill(DMP_MinRho, DMP_MinRho + xDim, 1.0e14);
-  std::fill(U2_MaxC, U2_MaxC + xDim, -1.0e14);
-  std::fill(U2_MinC, U2_MinC + xDim, 1.0e14);
-#endif
 
   DomainCopy(Cons, CopyBuffer);
 
   ForwardEuler();
-
-  // Cons2Prim(Cons, Prims, 0, REdgeX);
-  // for (int i = 0; i < xDim; ++i) {
-  //   std::cout << Prims[Tidx(PRES, i)] << " " << i << std::endl;
-  // }
-  // exit(0);
 
   ForwardEuler();
 
@@ -180,58 +167,34 @@ void Domain::RK3() {
   DomainAdd(1.0 / 3.0, 2.0 / 3.0, CopyBuffer, Cons);
 }
 
-// void Domain::RK4() {
-//   double c1 = 0.391752226571890;
-//   double a20 = 0.444370493651235;
-//   double c2 = 0.368410593050371;
-//   double a21 = 0.555629506348765;
-//   double a30 = 0.620101851488403;
-//   double c3 = 0.251891774271694;
-//   double a32 = 0.379898148511597;
-//   double c4 = 0.544974750228521;
-//   double a40 = 0.178079954393132;
-//   double a43 = 0.821920045606868;
-//   double f4 = 0.386708617503269;
-//   double ff4 = 0.226007483236906;
-//   double ff3 = 0.063692468666290;
-//   double f2 = 0.517231671970585;
-//   double f3 = 0.096059710526147;
-// #if SpaceMethod == Mood53
-//   std::fill(Flux.MoodOrd, Flux.MoodOrd + xDim, 5);
-//   std::copy(Cons, Cons + NumVar * xDim, ConsCopy);
-// #endif
+void Domain::RK4() {
+  double a10 = 1., c1 = 0.391752226571890;
+  double a20 = 0.444370493651235, a21 = 0.555629506348765, c2 = 0.368410593050371;
+  double a30 = 0.620101851488403, a32 = 0.379898148511597, c3 = 0.251891774271694;
+  double a40 = 0.178079954393132, a43 = 0.821920045606868, c4 = 0.544974750228521;
+  double f2  = 0.517231671970585, f3  = 0.096059710526147, f4 = 0.386708617503269;
+  double ff3 = 0.063692468666290, ff4 = 0.226007483236906;
 
-//   DomainCopy(Cons, CopyBuffer);
-
-//   ForwardEuler();
-
-//   DomainAdd(c1, 1.0, CopyBuffer, Cons);
-
-//   DomainCopy(Cons, U1);
-
-//   ForwardEuler();
-
-//   // DomainAdd(c2, a20, c2, CopyBuffer, Cons);
-//   DomainAdd(a21, 1.0, U1, Cons);
-
-//   DomainCopy(Cons, U2);
-//   ForwardEuler();
-
-//   DomainAdd(a30, c3, CopyBuffer, Cons);
-//   DomainAdd(a32, 1.0, U2, Cons);
-
-//   DomainCopy(Cons, U3);
-//   ForwardEuler();
-//   DomainCopy(Cons, FU3);
-
-//   DomainAdd(a40, c4, CopyBuffer, Cons);
-//   DomainAdd(a43, 1.0, U3, Cons);
-
-//   DomainCopy(Cons, U4);
-//   ForwardEuler();
-
-//   DomainAdd(f4, ff4, U4, Cons);
-//   DomainAdd(ff3, 1.0, FU3, Cons);
-//   DomainAdd(f3, 1.0, U3, Cons);
-//   DomainAdd(f2, 1.0, U2, Cons);
-// }
+  DomainCopy(Cons, CopyBuffer);
+  ForwardEuler(); // Cons = Fl, CopyBuffer = U0 
+  DomainAdd(a10, c1, CopyBuffer, Cons);
+  DomainCopy(Cons, U1);                                                                                               // U1 and CopyBuffer, and Cons Fine
+  ForwardEuler(); // Cons = Fl, CopyBuffer = U0, U1 = U1
+  DomainAdd(a21, c2, U1, Cons);
+  DomainAdd(a20, 1.0, CopyBuffer, Cons); // Cons = U2, CopyBuffer = U0, U1 = U1
+  DomainCopy(Cons, U1);  // Cons = U2, CopyBuffer = U0, U1 = U2
+  ForwardEuler();  // Cons = Fl, CopyBuffer = U0, U1 = U2
+  DomainCopy(U1, UNew); // Cons = Fl, CopyBuffer = U0, U1 = U2, UNew = U2                                            // U1, CopyBuffer, Cons, UNew
+  DomainAdd(c3, a32, Cons, U1);
+  DomainAdd(a30, 1.0, CopyBuffer, U1); // Cons = Fl, CopyBuffer = U0, U1 = U3, UNew = U2
+  DomainCopy(U1, Cons); // Cons = U3, CopyBuffer = U0, U1 = U3, UNew = U2
+  DomainAdd(f3, f2, U1 , UNew); // Cons = U3, CopyBuffer = U0, U1 = U3, UNew = f2U2 + f3U3
+  ForwardEuler();  // Cons = FU3, CopyBuffer = U0, U1 = U3, UNew = f2U2 + f3U3
+  DomainAdd(ff3, 1.0, Cons, UNew); // Cons = FU3, CopyBuffer = U0, U1 = U3, UNew = f2*U2 + f3*U3 + ff3*FU3
+  DomainAdd(a43, c4, U1, Cons);
+  DomainAdd(a40, 1.0, CopyBuffer, Cons); // Cons = U4, CopyBuffer = U0, U1 = U3, UNew = f2*U2 + f3*U3 + ff3*FU3
+  DomainCopy(Cons, U1); // Cons = U4, CopyBuffer = U0, U1 = U4, UNew = f2*U2 + f3*U3 + ff3*FU3
+  DomainAdd(f4, 1.0, U1, UNew); // Cons = U4, CopyBuffer = U0, U1 = U4, UNew = f2*U2 + f3*U3 + ff3*FU3 + f4*U4
+  ForwardEuler(); // Cons = FU4, CopyBuffer = U0, U1 = U4, UNew = f2*U2 + f3*U3 + ff3*FU3 + f4*U4
+  DomainAdd(1.0, ff4, UNew, Cons);
+}

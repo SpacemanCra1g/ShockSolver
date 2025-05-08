@@ -14,7 +14,7 @@
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN .02
+#define TN .0000005
 
 /*****************
  *Run Parameters *
@@ -23,10 +23,10 @@
 #define SpaceMethod WENO
 #define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
-#define RIEMANN RCM
-#define CFL 0.4
+#define RIEMANN HLL
+#define CFL 0.123
 #define EOS IDEAL
-#define RK_Method 2 /*set to -1 for CharTracing, sets automatically for PLM*/
+#define RK_Method 4 /*set to -1 for CharTracing, sets automatically for PLM*/
 #define ell 6.0
 #define MoodOrder 5
 #define SlowStart true

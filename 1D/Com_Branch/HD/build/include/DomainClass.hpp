@@ -25,7 +25,7 @@ public:
   double T, dt, dt_sim;
   double *CopyBuffer;
   double *PrimsCopy;
-  double *U1, *U2, *U3, *U4, *Fl, *FU3, *FU4;
+  double *U1,*UNew;
   double *Cons, *Prims;
   bool MoodFinished = true;
   int *MoodOrd;
@@ -122,7 +122,7 @@ public:
 #endif
 
     T = T0;
-    dt_sim = 1E-10;
+    dt_sim = 1.0e-10;
 
     /*****************************************************/
     /*************** Conditional Allocations *************/
@@ -164,12 +164,7 @@ public:
 
 #if RK_Method > 3
     U1 = new double[NumVar * xDim];
-    U2 = new double[NumVar * xDim];
-    U3 = new double[NumVar * xDim];
-    U4 = new double[NumVar * xDim];
-    FU3 = new double[NumVar * xDim];
-    FU4 = new double[NumVar * xDim];
-    Fl = new double[NumVar * xDim];
+    UNew = new double[NumVar * xDim];
 #endif
 
     /******************************************************/
@@ -348,7 +343,11 @@ public:
   }
 
   void DomainAdd(double a, double b, double *Uin, double *Uresult) {
+    // Total Effect: Uresult := a*Uin + b*Uresult
+
+    // Uresult = b*Uresult
     cblas_dscal(NumVar * xDim, b, Uresult, 1);
+    // Uresult := a*Uin + Uresult
     cblas_daxpy(NumVar * xDim, a, Uin, 1, Uresult, 1);
   }
 
