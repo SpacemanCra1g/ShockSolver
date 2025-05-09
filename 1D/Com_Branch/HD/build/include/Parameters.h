@@ -6,7 +6,7 @@
 /****************
  * X Parameters *
  ****************/
-#define NX 400
+#define NX 200
 #define X0 0.0
 #define XN 1.0
 
@@ -14,21 +14,21 @@
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN .0000005
+#define TN .25
 
 /*****************
  *Run Parameters *
  *****************/
 #define EvolveChars false
-#define SpaceMethod WENO
+#define SpaceMethod FOG
 #define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
 #define RIEMANN HLL
-#define CFL 0.123
+#define CFL .9
 #define EOS IDEAL
 #define RK_Method 4 /*set to -1 for CharTracing, sets automatically for PLM*/
 #define ell 6.0
-#define MoodOrder 5
+#define MoodOrder 3
 #define SlowStart true
 #define GAMMA (1.4)
 #define LIMITSLOPE MINMOD

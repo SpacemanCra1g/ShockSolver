@@ -45,8 +45,7 @@ int main() {
     std::cout << "The time is: " << Solver.T << " dt = " << Solver.dt
               << std::endl;
     }
-  } while (false && Solver.T < TN);
-
+  } while (true && Solver.T < TN);
   Solver.writeResults();
   // }
   

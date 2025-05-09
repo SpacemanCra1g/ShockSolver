@@ -25,7 +25,7 @@ public:
   double T, dt, dt_sim;
   double *CopyBuffer;
   double *PrimsCopy;
-  double *U1,*UNew;
+  double *Uin,*U1,*U2,*U3,*U4,*FU3,*FU4;
   double *Cons, *Prims;
   bool MoodFinished = true;
   int *MoodOrd;
@@ -163,8 +163,15 @@ public:
 #endif
 
 #if RK_Method > 3
-    U1 = new double[NumVar * xDim];
-    UNew = new double[NumVar * xDim];
+    // U1 = new double[NumVar * xDim];
+    // UNew = new double[NumVar * xDim];
+    Uin = new double[NumVar*xDim] ;
+    U1 = new double[NumVar*xDim] ;
+    U2 = new double[NumVar*xDim] ;
+    U3 = new double[NumVar*xDim] ;
+    U4 = new double[NumVar*xDim] ;
+    FU3 = new double[NumVar*xDim] ;
+    FU4 = new double[NumVar*xDim] ;
 #endif
 
     /******************************************************/
