@@ -22,10 +22,13 @@ void Domain::rcm(int Start, int Stop){
 
   Seq = VanDerCorput(rcm_Counter);
   Seq = (Seq > .5) ? Seq - 1.0 : Seq;
-  rcm_Counter++;  
 
-  for (int i = Start+5; i < Stop; ++i){
-    if (Seq > 0.0){
+  #if RIEMANN != HYBRID
+  rcm_Counter++;  
+  #endif
+
+  for (int i = Start+1; i < Stop; ++i){
+    if (Seq > 0.0){                                             
       StateL[0] = (realkind) FluxWalls_Prims[RIGHT][Tidx(DENSP, i-1)];
       StateR[0] = (realkind) FluxWalls_Prims[LEFT][Tidx(DENSP, i)];
 
@@ -55,16 +58,16 @@ void Domain::rcm(int Start, int Stop){
     // SolveRiemannFlux(StateL, StateR, Result, 0.0);
 
     // std::cout << "Cell Number = "  << i << " Seq = " << Seq*dxt << std::endl;
-    if (i == 172 && false){
-      for (int j = 0; j < 4; ++j){
-        std::cout << StateL[j] << " ";
-      }
-      std::cout <<  std::endl;
-      
-      for (int j = 0; j < 4; ++j){
-        std::cout << StateR[j] << " ";
-      }
-      std::cout << std::endl;
+    double va = StateL[1]*StateL[1] + StateL[2]*StateL[2];
+    if ( va > 1.0){
+      StateL[1] /= va;
+      StateL[2] /= va;
+    }
+
+    va = StateR[1]*StateR[1] + StateR[2]*StateR[2];
+    if ( va > 1.0){
+      StateR[1] /= va;
+      StateR[2] /= va;
     }
     
     SolveRiemannFlux(StateL, StateR, Result, Seq*dxt);

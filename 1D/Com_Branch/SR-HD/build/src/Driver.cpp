@@ -46,7 +46,6 @@ int main() {
               << std::endl;
     }
   } while (true && Solver.T < TN);
-
   Solver.writeResults();
   // }
   

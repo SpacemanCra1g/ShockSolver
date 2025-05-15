@@ -5,6 +5,7 @@ p = np.loadtxt("./OutputData/Pressure.dat")
 rho = np.loadtxt("./OutputData/Density.dat")
 u = np.loadtxt("./OutputData/VelocityX.dat")
 v = np.loadtxt("./OutputData/VelocityY.dat")
+rcm = np.loadtxt("./OutputData/Rcm.dat")
 # w = np.loadtxt("./OutputData/VelocityZ.dat")
 
 # Hp = np.loadtxt("./HLLC_Comp/Pressure.dat")
@@ -91,6 +92,7 @@ if  True:
     plt.plot(x,v,'g-')
     plt.plot(x,rho/25,'k-')
     plt.plot(x,p/1000,'r-')
+    plt.scatter(x,rcm*.5)
 
     # plt.plot(Hx,Hu,'b.')
     # plt.plot(Hx,Hrho/25,'k.')

@@ -14,6 +14,15 @@ void Domain::Prims2Cons(double *Uin, double *Uout, int start, int stop) {
 
     v2 = std::pow(Uin[Tidx(VELX, i)], 2) + std::pow(Uin[Tidx(VELY, i)], 2) +
          std::pow(Uin[Tidx(VELZ, i)], 2);
+    
+    if (v2 > 1.0){
+      Uin[Tidx(VELX,i)] /= v2;
+      Uin[Tidx(VELY,i)] /= v2;
+      Uin[Tidx(VELZ,i)] /= v2;
+
+      v2 = std::pow(Uin[Tidx(VELX, i)], 2) + std::pow(Uin[Tidx(VELY, i)], 2) +
+         std::pow(Uin[Tidx(VELZ, i)], 2);
+    }
 
     Lor = 1.0 / (std::sqrt(1.0 - v2));
 

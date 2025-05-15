@@ -20,13 +20,13 @@
  *Run Parameters *
  *****************/
 #define EvolveChars false
-#define SpaceMethod FOG
+#define SpaceMethod WENO
 #define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
-#define RIEMANN HLL
-#define CFL .9
+#define RIEMANN HYBRID
+#define CFL .49
 #define EOS IDEAL
-#define RK_Method 4 /*set to -1 for CharTracing, sets automatically for PLM*/
+#define RK_Method 2 /*set to -1 for CharTracing, sets automatically for PLM*/
 #define ell 6.0
 #define MoodOrder 3
 #define SlowStart true

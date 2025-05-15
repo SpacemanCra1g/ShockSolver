@@ -45,11 +45,12 @@ void Domain::Find_dt() {
   dt = dx / FindMaximum(Buffer, XEnd + 1);
   dt *= CFL;
 
-  #if RIEMANN == RCM
+  #if RIEMANN == RCM or RIEMANN==HYBRID
     if (CFL > .5){
       dt *= .5;
     }
   #endif
+
 
   if (T + dt > TN) {
     dt = TN - T;

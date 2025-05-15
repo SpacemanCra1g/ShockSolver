@@ -26,7 +26,7 @@ public:
   double *CopyBuffer;
   double *PrimsCopy;
   double *Uin,*U1,*U2,*U3,*U4,*FU3,*FU4;
-  double *Cons, *Prims;
+  double *Cons, *Prims, *VSSave;
   bool MoodFinished = true;
   int *MoodOrd;
   double *DMP_MaxRho, *DMP_MinRho;
@@ -35,6 +35,8 @@ public:
   bool *ConversionFailed;
   int *TroubledIdx;
   int IdxStop, rcm_Counter = 1;
+  // Here for RCM Hybrid Testing
+  bool *RcmReduction;
 
   Characteristics Chars;
 
@@ -59,6 +61,8 @@ public:
     Prims = new double[NumVar * xDim];
     Buffer = new double[xDim];
     Cs = new double[xDim];
+    // Here for RCM Hybrid Testing
+    RcmReduction = new bool[xDim];
 
     FluxWalls_Cons = new double *[2];
     FluxWalls_Cons[LEFT] = new double[NumVar * xDim];
@@ -76,6 +80,7 @@ public:
     RS_CsR = new double[xDim];
 
     ConversionFailed = new bool[xDim];
+    VSSave = new double[xDim];
 
     /*********************************************/
     /*************** Assign Pointers *************/
@@ -227,7 +232,11 @@ public:
     RiemannSolver = &Domain::Exact;
 #elif RIEMANN == RCM
     RiemannSolver = &Domain::rcm;
-    // SpaceRecon = &Domain::Fog;
+    SpaceRecon = &Domain::Fog;
+    RK_TimeStepper = &Domain::ForwardEuler;
+#elif RIEMANN == HYBRID
+    RiemannSolver = &Domain::Hllc;
+    
 #endif
 
 #if LIMITSLOPE == MINMOD

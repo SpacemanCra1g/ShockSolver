@@ -540,12 +540,13 @@ public:
 
     T = gsl_root_fsolver_brent;
     s = gsl_root_fsolver_alloc(T);
-    gsl_root_fsolver_set(s, &F, p_min, p_max);
-
-    if(DoubleRarefactionPstar(p_min,&Parameters)*DoubleRarefactionPstar(p_max, &Parameters) >= 0.0){
+    
+    while(DoubleRarefactionPstar(p_min,&Parameters)*DoubleRarefactionPstar(p_max, &Parameters) >= 0.0){
       cout << "Failure Line 545" << endl;
-      exit(0);
+      p_min *= .1;
+      p_max *= 10.;
     }
+    gsl_root_fsolver_set(s, &F, p_min, p_max);
     do {
       iter++;
       status = gsl_root_fsolver_iterate(s);

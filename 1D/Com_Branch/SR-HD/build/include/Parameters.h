@@ -24,7 +24,7 @@
 #define ZVELL 0.0
 
 #define XVELR 0.0
-#define YVELR 0.99
+#define YVELR 0.9
 #define ZVELR 0.0
 
 /****************
@@ -37,13 +37,13 @@
  *Run Parameters *
  *****************/
 #define EvolveChars false
-#define SpaceMethod FOG
+#define SpaceMethod WENO
 #define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
-#define RIEMANN RCM
-#define CFL 0.49
+#define RIEMANN HYBRID
+#define CFL 0.3
 #define EOS IDEAL
-#define RK_Method 1 /*set to -1 for CharTracing, sets automatically for PLM*/
+#define RK_Method 2 /*set to -1 for CharTracing, sets automatically for PLM*/
 #define ell 6.0
 #define MoodOrder 3
 #define SlowStart true

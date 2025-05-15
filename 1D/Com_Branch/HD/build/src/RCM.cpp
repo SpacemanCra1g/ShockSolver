@@ -20,7 +20,9 @@ void Domain::rcm(int Start, int Stop){
 
   Seq = VanDerCorput(rcm_Counter);
   Seq = (Seq > .5) ? Seq - 1.0 : Seq;
+  #if RIEMANN != HYBRID
   rcm_Counter++;  
+  #endif
 
   for (int i = Start+1; i < Stop; ++i){
     if (Seq > 0.0){

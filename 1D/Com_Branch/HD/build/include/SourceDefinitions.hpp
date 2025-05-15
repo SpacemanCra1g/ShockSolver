@@ -42,6 +42,7 @@
 #define AUSMPLUSUP 5
 #define EXACT 6
 #define RCM 7
+#define HYBRID 8
 
 /*******************************/
 /******* Slope Limiters ********/

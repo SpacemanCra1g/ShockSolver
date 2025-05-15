@@ -59,7 +59,7 @@ void Domain::ForwardEuler() {
   //   std::cout << std::endl;
   //   std::cout << "Left States" << std::endl;
   //   PrintVar = FluxWalls_Prims[LEFT];
-  //   for (int i = 0; i < xDim; ++i) {
+  //   fopr (int i = 0; i < xDim; ++i) {
   //     for (int var = 0; var < NumVar; ++var) {
   //       std::cout << PrintVar[Tidx(var, i)] << " ";
   //     }
@@ -151,11 +151,29 @@ void Domain::RK2() {
   ForwardEuler();
 
   DomainAdd(.5, .5, CopyBuffer, Cons);
+
+  #if RIEMANN==HYBRID
+  rcm_Counter++;
+  Cons2Prim(CopyBuffer,Prims,XStart,XEnd);
+  for (int i = XStart; i < XEnd-1; ++i){
+    if (RcmReduction[i]){
+      for (int var = 0; var < NumVar; ++var){
+        FluxWalls_Prims[RIGHT][Tidx(var,i)] = Prims[Tidx(var,i)];
+        FluxWalls_Prims[LEFT][Tidx(var,i+1)] = Prims[Tidx(var,i+1)];
+        rcm(i-1,i+1);
+      }
+    }
+  }
+  Cons2Prim(Cons,Prims,0,REdgeX);
+   (*this.*BC)();
+  #endif
 }
 
 void Domain::RK3() {
 
   DomainCopy(Cons, CopyBuffer);
+  // Here for RCM Hybrid Testing
+  std::fill(RcmReduction,RcmReduction+xDim,false);
 
   ForwardEuler();
 
@@ -165,6 +183,23 @@ void Domain::RK3() {
 
   ForwardEuler();
   DomainAdd(1.0 / 3.0, 2.0 / 3.0, CopyBuffer, Cons);
+
+  #if RIEMANN==HYBRID
+  rcm_Counter++;
+  Cons2Prim(CopyBuffer,Prims,XStart,XEnd);
+  for (int i = XStart; i < XEnd-1; ++i){
+    if (RcmReduction[i]){
+      for (int var = 0; var < NumVar; ++var){
+        FluxWalls_Prims[RIGHT][Tidx(var,i)] = Prims[Tidx(var,i)];
+        FluxWalls_Prims[LEFT][Tidx(var,i+1)] = Prims[Tidx(var,i+1)];
+        rcm(i-1,i+1);
+      }
+    }
+  }
+  Cons2Prim(Cons,Prims,0,REdgeX);
+   (*this.*BC)();
+  #endif
+
 }
 
 void Domain::RK4() {
@@ -213,7 +248,7 @@ void Domain::RK4() {
 
   ForwardEuler();
   for (int i = 0; i < iter; ++i){
-    U1[i] = Uin[i] + c1*Cons[i];
+    U1[i] = a10*Uin[i] + c1*Cons[i];
   }
   // DomainCopy(U1, Cons);
   for (int i = 0; i < iter; ++i){

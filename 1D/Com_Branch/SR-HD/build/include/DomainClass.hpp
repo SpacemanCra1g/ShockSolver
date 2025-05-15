@@ -25,8 +25,8 @@ public:
   double T, dt, dt_sim;
   double *CopyBuffer;
   double *PrimsCopy;
-  double *U1, *U2, *U3, *U4, *Fl, *FU3, *FU4;
-  double *Cons, *Prims;
+  double *Uin,*U1,*U2,*U3,*U4,*FU3,*FU4;
+  double *Cons, *Prims, *VSSave;
   bool MoodFinished = true;
   int *MoodOrd;
   double *DMP_MaxRho, *DMP_MinRho;
@@ -35,6 +35,8 @@ public:
   bool *ConversionFailed;
   int *TroubledIdx;
   int IdxStop, rcm_Counter = 1;
+  // Here for RCM Hybrid Testing
+  bool *RcmReduction;
 
   Characteristics Chars;
 
@@ -59,6 +61,8 @@ public:
     Prims = new double[NumVar * xDim];
     Buffer = new double[xDim];
     Cs = new double[xDim];
+    // Here for RCM Hybrid Testing
+    RcmReduction = new bool[xDim];
 
     FluxWalls_Cons = new double *[2];
     FluxWalls_Cons[LEFT] = new double[NumVar * xDim];
@@ -76,6 +80,7 @@ public:
     RS_CsR = new double[xDim];
 
     ConversionFailed = new bool[xDim];
+    VSSave = new double[xDim];
 
     /*********************************************/
     /*************** Assign Pointers *************/
@@ -122,7 +127,7 @@ public:
 #endif
 
     T = T0;
-    dt_sim = 1E-10;
+    dt_sim = 1.0e-10;
 
     /*****************************************************/
     /*************** Conditional Allocations *************/
@@ -163,13 +168,15 @@ public:
 #endif
 
 #if RK_Method > 3
-    U1 = new double[NumVar * xDim];
-    U2 = new double[NumVar * xDim];
-    U3 = new double[NumVar * xDim];
-    U4 = new double[NumVar * xDim];
-    FU3 = new double[NumVar * xDim];
-    FU4 = new double[NumVar * xDim];
-    Fl = new double[NumVar * xDim];
+    // U1 = new double[NumVar * xDim];
+    // UNew = new double[NumVar * xDim];
+    Uin = new double[NumVar*xDim] ;
+    U1 = new double[NumVar*xDim] ;
+    U2 = new double[NumVar*xDim] ;
+    U3 = new double[NumVar*xDim] ;
+    U4 = new double[NumVar*xDim] ;
+    FU3 = new double[NumVar*xDim] ;
+    FU4 = new double[NumVar*xDim] ;
 #endif
 
     /******************************************************/
@@ -225,7 +232,11 @@ public:
     RiemannSolver = &Domain::Exact;
 #elif RIEMANN == RCM
     RiemannSolver = &Domain::rcm;
-    // SpaceRecon = &Domain::Fog;
+    SpaceRecon = &Domain::Fog;
+    RK_TimeStepper = &Domain::ForwardEuler;
+#elif RIEMANN == HYBRID
+    RiemannSolver = &Domain::Hllc;
+    
 #endif
 
 #if LIMITSLOPE == MINMOD
@@ -348,7 +359,11 @@ public:
   }
 
   void DomainAdd(double a, double b, double *Uin, double *Uresult) {
+    // Total Effect: Uresult := a*Uin + b*Uresult
+
+    // Uresult = b*Uresult
     cblas_dscal(NumVar * xDim, b, Uresult, 1);
+    // Uresult := a*Uin + Uresult
     cblas_daxpy(NumVar * xDim, a, Uin, 1, Uresult, 1);
   }
 
