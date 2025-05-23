@@ -7,6 +7,7 @@ void Domain::writeResults() {
   FILE *File4 = fopen("OutputData/VelocityZ.dat", "w");
   FILE *File5 = fopen("OutputData/Pressure.dat", "w");
   FILE *File6 = fopen("OutputData/Rcm.dat", "w");
+  FILE *File7 = fopen("OutputData/DivP.dat", "w");
   if (File1 && File2 && File3 && File4 && File5) {
 
     for (int i = XStart; i < XEnd; i++) {
@@ -17,6 +18,7 @@ void Domain::writeResults() {
       fprintf(File4, "%.9g ", Zvel[i]);
       fprintf(File5, "%.9g ", Pres[i]);
       fprintf(File6, "%.9b ", RcmReduction[i]);
+      fprintf(File7, "%.9g ", DivP[i]);
     }
     fprintf(File1, "\n");
     fprintf(File2, "\n");
@@ -24,6 +26,7 @@ void Domain::writeResults() {
     fprintf(File4, "\n");
     fprintf(File5, "\n");
     fprintf(File6, "\n");
+    fprintf(File7, "\n");
 
     fclose(File1);
     fclose(File2);
@@ -31,6 +34,7 @@ void Domain::writeResults() {
     fclose(File4);
     fclose(File5);
     fclose(File6);
+    fclose(File7);
 
   } else {
     printf("There was an issue with the file printing!");

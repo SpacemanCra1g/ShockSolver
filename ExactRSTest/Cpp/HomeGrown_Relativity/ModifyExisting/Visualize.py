@@ -26,7 +26,7 @@ plt.plot(x,rho,'k-')
 plt.plot(x,p,'r-')
 
 plt.grid()
-plt.legend(["Vx"," Rho","Pres"])
+plt.legend(["Vx","Vy"," Rho","Pres"])
 
 plt.show()
 

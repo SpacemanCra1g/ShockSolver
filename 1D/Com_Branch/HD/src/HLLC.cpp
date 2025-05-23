@@ -83,25 +83,25 @@ void Domain::Hllc(int Start, int Stop) {
         }
         
       }
-      if (pStar / FluxWalls_Prims[RIGHT][Tidx(PRES,i)] > P){
-        RcmReduction[i] = true;
-      }
-      if (pStar / FluxWalls_Prims[LEFT][Tidx(PRES,i+1)] > P){
-         RcmReduction[i+1] = true;
-      }
-      rhoLStar =rhoL*(SL - vL)/(SL - vs);
-      rhoRStar =rhoR*(SR - vR)/(SR - vs);
+      // if (pStar / FluxWalls_Prims[RIGHT][Tidx(PRES,i)] > P){
+      //   RcmReduction[i] = true;
+      // }
+      // if (pStar / FluxWalls_Prims[LEFT][Tidx(PRES,i+1)] > P){
+      //    RcmReduction[i+1] = true;
+      // }
+      // rhoLStar =rhoL*(SL - vL)/(SL - vs);
+      // rhoRStar =rhoR*(SR - vR)/(SR - vs);
 
-      VSSave[i] = std::fabs(rhoLStar/rhoRStar) - 1.0;
+      // VSSave[i] = std::fabs(rhoLStar/rhoRStar) - 1.0;
 
-      if (i > Start){
-        if(VSSave[i-1] > D && vs > 0.0){
-          RcmReduction[i] = true;
-        }
-      }
-      if(std::fabs(rhoLStar/rhoRStar - 1.0) > D && vs < 0.0){
-          RcmReduction[i] = true;
-      }
+      // if (i > Start){
+      //   if(VSSave[i-1] > D && vs > 0.0){
+      //     RcmReduction[i] = true;
+      //   }
+      // }
+      // if(std::fabs(rhoLStar/rhoRStar - 1.0) > D && vs < 0.0){
+      //     RcmReduction[i] = true;
+      // }
     }
   }
 }

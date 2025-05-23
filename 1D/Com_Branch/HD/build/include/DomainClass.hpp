@@ -35,6 +35,7 @@ public:
   bool *ConversionFailed;
   int *TroubledIdx;
   int IdxStop, rcm_Counter = 1;
+  double *DivP;
   // Here for RCM Hybrid Testing
   bool *RcmReduction;
 
@@ -63,6 +64,7 @@ public:
     Cs = new double[xDim];
     // Here for RCM Hybrid Testing
     RcmReduction = new bool[xDim];
+    DivP = new double[xDim];
 
     FluxWalls_Cons = new double *[2];
     FluxWalls_Cons[LEFT] = new double[NumVar * xDim];

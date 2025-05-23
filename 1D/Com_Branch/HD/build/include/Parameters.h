@@ -14,7 +14,7 @@
  * T Parameters *
  ****************/
 #define T0 0.0
-#define TN .25
+#define TN .03
 
 /*****************
  *Run Parameters *

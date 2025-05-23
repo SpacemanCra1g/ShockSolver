@@ -2,12 +2,13 @@
 
 double SIGN(double x) { return (x >= 0.0) ? 1.0 : -1.0; }
 
+
 void Domain::Hllc(int Start, int Stop) {
   double SL, SR, Lam_CR, Lam_CL, Lam_RR, Lam_RL;
   double AL, BL, AR, BR, a, b, c, scrh, lamStar;
   double FL[5], FR[5], UL[5], UR[5], UStar[5];
   double p, div, dif, rhoLStar, rhoRStar, vL, vR, rhoL, rhoR;
-  const double P = 1.3, D = 1.3;
+  const double P = 1.6, D = 1.6;
 
   // Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], Start, Stop);
   // Cons2Prim(FluxWalls_Cons[RIGHT], FluxWalls_Prims[RIGHT], Start, Stop);
@@ -18,6 +19,7 @@ void Domain::Hllc(int Start, int Stop) {
   Find_Cs(FluxWalls_Prims[RIGHT], RS_CsR, Start, Stop);
 
   for (int i = Start; i < Stop; ++i) {
+
     SignalSpeed(FluxWalls_Prims[LEFT], RS_CsL, i + 1, Lam_RL, Lam_RR);
     SignalSpeed(FluxWalls_Prims[RIGHT], RS_CsR, i, Lam_CL, Lam_CR);
 
@@ -97,31 +99,31 @@ void Domain::Hllc(int Start, int Stop) {
         }
       }
 
-      if (p / FluxWalls_Prims[RIGHT][Tidx(PRES,i)] > P){
-        RcmReduction[i] = true;
-      }
-      if (p / FluxWalls_Prims[LEFT][Tidx(PRES,i+1)] > P){
-         RcmReduction[i+1] = true;
-      }
-      vL = FluxWalls_Prims[RIGHT][Tidx(VELX,i)];
-      vR = FluxWalls_Prims[LEFT][Tidx(VELX,i+1)];
+      // if (p / FluxWalls_Prims[RIGHT][Tidx(PRES,i)] > P){
+      //   RcmReduction[i] = true;
+      // }
+      // if (p / FluxWalls_Prims[LEFT][Tidx(PRES,i+1)] > P){
+      //    RcmReduction[i+1] = true;
+      // }
+      // vL = FluxWalls_Prims[RIGHT][Tidx(VELX,i)];
+      // vR = FluxWalls_Prims[LEFT][Tidx(VELX,i+1)];
 
-      rhoL = FluxWalls_Prims[RIGHT][Tidx(DENSP,i)];
-      rhoR = FluxWalls_Prims[LEFT][Tidx(DENSP,i+1)];
+      // rhoL = FluxWalls_Prims[RIGHT][Tidx(DENSP,i)];
+      // rhoR = FluxWalls_Prims[LEFT][Tidx(DENSP,i+1)];
 
-      rhoLStar =rhoL*(SL - vL)/(SL - lamStar);
-      rhoRStar =rhoR*(SR - vR)/(SR - lamStar);
+      // rhoLStar =rhoL*(SL - vL)/(SL - lamStar);
+      // rhoRStar =rhoR*(SR - vR)/(SR - lamStar);
 
-      VSSave[i] = std::fabs(rhoLStar/rhoRStar) - 1.0;
+      // VSSave[i] = std::fabs(rhoLStar/rhoRStar) - 1.0;
 
-      if (i > Start){
-        if(VSSave[i-1] > D && lamStar > 0.0){
-          RcmReduction[i] = true;
-        }
-      }
-      if(std::fabs(rhoLStar/rhoRStar - 1.0) > D && lamStar < 0.0){
-          RcmReduction[i] = true;
-      }
+      // if (i > Start){
+      //   if(VSSave[i-1] > D && lamStar > 0.0){
+      //     RcmReduction[i] = true;
+      //   }
+      // }
+      // if(std::fabs(rhoLStar/rhoRStar - 1.0) > D && lamStar < 0.0){
+      //     RcmReduction[i] = true;
+      // }
       // RcmReduction[i] = false;
       // if (dx*i > 0.5){
       //   RcmReduction[i] = true;

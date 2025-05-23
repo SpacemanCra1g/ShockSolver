@@ -1,5 +1,6 @@
 #include "../include/DomainClass.hpp"
 #include "../include/QuadExactSolver.hpp"
+#include <random>
 using namespace std;
 realkind VanDerCorput(int i){
   realkind result = 0.0;
@@ -12,6 +13,32 @@ realkind VanDerCorput(int i){
   return result;
 }
 
+realkind Uniform(){
+    std::random_device rd;  // Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+    std::uniform_real_distribution<> dis(.0, 1.0);
+    return (realkind)dis(gen);
+}
+
+void ValidState(realkind *State, double *Prims, int i){
+  if (State[3] > 0.0) {return;}
+  int Left = -1, Right = 1;
+  while(Prims[Tidx(PRES,i+Left)] <= 0.0){
+    Left--;
+  }
+  while(Prims[Tidx(PRES,i+Right)] <= 0.0){
+    Right++;
+  }
+  double m = (double)(-Left) + (double)Right;
+  double B = Prims[Tidx(PRES,i+Right)];
+  double A = Prims[Tidx(PRES,i+Left)];
+  double val = (B-A)/m;
+  for(int p = 0; p <= (int)m; ++p){
+    Prims[Tidx(PRES,i+Left+p)] = Prims[Tidx(PRES,i+Left)] + (double)p*val;
+  }
+  State[3] = (realkind)Prims[Tidx(PRES,i)];
+}
+
 void Domain::rcm(int Start, int Stop){
   
   realkind Seq;
@@ -19,8 +46,12 @@ void Domain::rcm(int Start, int Stop){
   double d,vx,p,vy;
   realkind dxt = dx/dt;
   double alpha, lor, h;
+  // std::cout << dx << std::endl;
+  // exit(0);
+  
 
-  Seq = VanDerCorput(rcm_Counter);
+  Seq = VanDerCorput(rcm_Counter); // .655
+  // Seq = Uniform(); // .7407, .644, ,6755
   Seq = (Seq > .5) ? Seq - 1.0 : Seq;
 
   #if RIEMANN != HYBRID
@@ -28,6 +59,11 @@ void Domain::rcm(int Start, int Stop){
   #endif
 
   for (int i = Start+1; i < Stop; ++i){
+  //   rcm_Counter += 0;
+  //   Seq = VanDerCorput(rcm_Counter); // .655
+  // // Seq = Uniform(); // .7407, .644, ,6755
+  // Seq = (Seq > .5) ? Seq - 1.0 : Seq;
+  // Seq *=.8;
     if (Seq > 0.0){                                             
       StateL[0] = (realkind) FluxWalls_Prims[RIGHT][Tidx(DENSP, i-1)];
       StateR[0] = (realkind) FluxWalls_Prims[LEFT][Tidx(DENSP, i)];
@@ -40,6 +76,8 @@ void Domain::rcm(int Start, int Stop){
 
       StateL[3] = (realkind) FluxWalls_Prims[RIGHT][Tidx(PRES, i-1)];
       StateR[3] = (realkind) FluxWalls_Prims[LEFT][Tidx(PRES, i)];
+      ValidState(StateL, Prims, i-1);
+      ValidState(StateR, Prims, i);
       
     }else{
       StateL[0] = (realkind) FluxWalls_Prims[RIGHT][Tidx(DENS, i)];
@@ -53,19 +91,29 @@ void Domain::rcm(int Start, int Stop){
 
       StateL[3] = (realkind) FluxWalls_Prims[RIGHT][Tidx(PRES, i)];
       StateR[3] = (realkind) FluxWalls_Prims[LEFT][Tidx(PRES, i+1)];
+
+      ValidState(StateL, Prims, i);
+      ValidState(StateR, Prims, i+1);
     }
     // ExactSample(StateL, StateR, Result, Seq*dxt);
     // SolveRiemannFlux(StateL, StateR, Result, 0.0);
 
     // std::cout << "Cell Number = "  << i << " Seq = " << Seq*dxt << std::endl;
+
+    
+
     double va = StateL[1]*StateL[1] + StateL[2]*StateL[2];
     if ( va > 1.0){
+      // std::cout << "TRIGGERED 1";
+      // exit(0);
       StateL[1] /= va;
       StateL[2] /= va;
     }
 
     va = StateR[1]*StateR[1] + StateR[2]*StateR[2];
     if ( va > 1.0){
+      // std::cout << "TRIGGERED 2";
+      // exit(0);
       StateR[1] /= va;
       StateR[2] /= va;
     }

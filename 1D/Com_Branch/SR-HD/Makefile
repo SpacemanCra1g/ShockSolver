@@ -1,5 +1,5 @@
 CC=clang++
-FLAGS= -g -lgsl -Wall -Wextra -pedantic -march=native -Qunused-arguments
+FLAGS= -O3 -lgsl -Wall -Wextra -pedantic -march=native -Qunused-arguments
 SRC=src
 OBJ=build
 OUTDIR=OutputData
@@ -15,6 +15,7 @@ INC_DIR = -I./build/include
 OBJSRC=build/src
 OBJI=build/include
 LFILE=LINKING_FAILED.txt
+# MAKEFLAGS += j
 
 # OMP_NUM_THREADS=2
 # export OMP_NUM_THREADS

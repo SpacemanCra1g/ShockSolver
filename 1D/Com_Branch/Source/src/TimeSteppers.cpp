@@ -144,11 +144,76 @@ void Domain::ForwardEuler() {
   // exit(0);
   (*this.*BC)();
 }
+
+void HybridDetection(double *Prims, bool *Det, int Start, int Stop, const int rcm_Counter ){
+  double DivP, DivV, DivR; 
+
+  const int Radius = 2;
+  for (int i = Start; i < Stop; ++i){
+      // DivP = std::fabs((1./12.)*Prims[Tidx(PRES,i-2)] - (2./3.)*Prims[Tidx(PRES,i-1)]
+    //  + (2./3.)*Prims[Tidx(PRES,i+1)] - (1./12.)*Prims[Tidx(PRES,i+2)]);
+
+    DivP = std::fabs(Prims[Tidx(PRES,i+1)] - Prims[Tidx(PRES,i-1)])/std::fmin(Prims[Tidx(PRES,i+1)], Prims[Tidx(PRES,i-1)]);
+
+    //  DivR = std::fabs((1./12.)*Prims[Tidx(DENS,i-2)] - (2./3.)*Prims[Tidx(DENS,i-1)]
+    //  + (2./3.)*Prims[Tidx(DENS,i+1)] - (1./12.)*Prims[Tidx(DENS,i+2)]);
+
+    DivR = std::fabs(Prims[Tidx(DENS,i+1)] - Prims[Tidx(DENS,i-1)])/std::fmin(Prims[Tidx(DENS,i+1)], Prims[Tidx(DENS,i-1)]);
+
+    DivV = (Prims[Tidx(VELX,i+1)] - Prims[Tidx(VELX,i-1)])/(2.*dx);
+
+     if ((DivP > 10.*dx  && DivV < -dx*dx)){
+      for (int rad = - Radius; rad <= Radius; ++rad){
+      Det[i+rad] = true;
+      }
+     }else if (DivR > 200*dx && rcm_Counter % 1== 0 ){
+        for (int rad = - Radius; rad <= Radius; ++rad){
+          Det[i+rad] = true;
+        }
+      }
+     
+
+    //  if (DivR > 10.*dx){
+    //   for (int rad = - Radius; rad <= Radius; ++rad){
+    //   Det[i+rad] = true;
+    //   }
+    //  }
+
+  }
+}
+
 void Domain::RK2() {
   DomainCopy(Cons, CopyBuffer);
+  std::fill(RcmReduction,RcmReduction+xDim,false);
+  Cons2Prim(Cons, Prims, 0, xDim);
+  // rcm_Counter += 20;
+
+  for (int i = 3; i < REdgeX - 3; ++i){
+    // Pressure 
+    // DivP[i] = (std::fabs((1./12.)*Prims[Tidx(PRES,i-2)] - (2./3.)*Prims[Tidx(PRES,i-1)]
+    //  + (2./3.)*Prims[Tidx(PRES,i+1)] - (1./12.)*Prims[Tidx(PRES,i+2)]));
+
+    // DivP[i] = std::fabs(Prims[Tidx(PRES,i+1)] - Prims[Tidx(PRES,i-1)])/(std::fmin(Prims[Tidx(PRES,i+1)], Prims[Tidx(PRES,i-1)]));
+
+    //  Dens
+    //  DivP[i] = (std::fabs((1./12.)*Prims[Tidx(DENS,i-2)] - (2./3.)*Prims[Tidx(DENS,i-1)]
+    //  + (2./3.)*Prims[Tidx(DENS,i+1)] - (1./12.)*Prims[Tidx(DENS,i+2)]))/dx;
+
+    DivP[i] = std::fabs(Prims[Tidx(DENS,i+1)] - Prims[Tidx(DENS,i-1)])/(std::fmin(Prims[Tidx(DENS,i+1)], Prims[Tidx(DENS,i-1)]));
+
+    // Numerical divergence of Velocity
+    //  DivP[i] = (Prims[Tidx(VELX,i+1)] - Prims[Tidx(VELX,i-1)])/(2.*dx);
+     
+
+    //  DivP[i]/= dx;
+  }
+
+  HybridDetection(Prims, RcmReduction, 3, REdgeX-3, rcm_Counter);
 
   ForwardEuler();
+  
   ForwardEuler();
+  
 
   DomainAdd(.5, .5, CopyBuffer, Cons);
 
@@ -158,6 +223,9 @@ void Domain::RK2() {
   for (int i = XStart; i < XEnd-1; ++i){
     if (RcmReduction[i]){
       for (int var = 0; var < NumVar; ++var){
+        FluxWalls_Prims[RIGHT][Tidx(var,i-1)] = Prims[Tidx(var,i-1)];
+        FluxWalls_Prims[LEFT][Tidx(var,i)] = Prims[Tidx(var,i)];
+        
         FluxWalls_Prims[RIGHT][Tidx(var,i)] = Prims[Tidx(var,i)];
         FluxWalls_Prims[LEFT][Tidx(var,i+1)] = Prims[Tidx(var,i+1)];
         rcm(i-1,i+1);
@@ -174,6 +242,27 @@ void Domain::RK3() {
   DomainCopy(Cons, CopyBuffer);
   // Here for RCM Hybrid Testing
   std::fill(RcmReduction,RcmReduction+xDim,false);
+  Cons2Prim(Cons, Prims, 0, xDim);
+  HybridDetection(Prims, RcmReduction, 3, REdgeX-3, rcm_Counter);
+  for (int i = 3; i < REdgeX - 3; ++i){
+    // Pressure 
+    // DivP[i] = (std::fabs((1./12.)*Prims[Tidx(PRES,i-2)] - (2./3.)*Prims[Tidx(PRES,i-1)]
+    //  + (2./3.)*Prims[Tidx(PRES,i+1)] - (1./12.)*Prims[Tidx(PRES,i+2)]));
+
+    // DivP[i] = std::fabs(Prims[Tidx(PRES,i+1)] - Prims[Tidx(PRES,i-1)])/(std::fmin(Prims[Tidx(PRES,i+1)], Prims[Tidx(PRES,i-1)]));
+
+    //  Dens
+    //  DivP[i] = (std::fabs((1./12.)*Prims[Tidx(DENS,i-2)] - (2./3.)*Prims[Tidx(DENS,i-1)]
+    //  + (2./3.)*Prims[Tidx(DENS,i+1)] - (1./12.)*Prims[Tidx(DENS,i+2)]))/dx;
+
+    DivP[i] = std::fabs(Prims[Tidx(DENS,i+1)] - Prims[Tidx(DENS,i-1)])/(std::fmin(Prims[Tidx(DENS,i+1)], Prims[Tidx(DENS,i-1)]));
+
+    // Numerical divergence of Velocity
+    //  DivP[i] = (Prims[Tidx(VELX,i+1)] - Prims[Tidx(VELX,i-1)])/(2.*dx);
+     
+
+    //  DivP[i]/= dx;
+  }
 
   ForwardEuler();
 
@@ -190,6 +279,9 @@ void Domain::RK3() {
   for (int i = XStart; i < XEnd-1; ++i){
     if (RcmReduction[i]){
       for (int var = 0; var < NumVar; ++var){
+        FluxWalls_Prims[RIGHT][Tidx(var,i-1)] = Prims[Tidx(var,i-1)];
+        FluxWalls_Prims[LEFT][Tidx(var,i)] = Prims[Tidx(var,i)];
+        
         FluxWalls_Prims[RIGHT][Tidx(var,i)] = Prims[Tidx(var,i)];
         FluxWalls_Prims[LEFT][Tidx(var,i+1)] = Prims[Tidx(var,i+1)];
         rcm(i-1,i+1);

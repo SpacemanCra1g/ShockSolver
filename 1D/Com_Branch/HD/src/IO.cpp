@@ -6,6 +6,7 @@ void Domain::writeResults() {
   FILE *File3 = fopen("OutputData/Pressure.dat", "w");
   // Here to test RCM reduction
   FILE *File4 = fopen("OutputData/Rcm.dat", "w");
+  FILE *File5 = fopen("OutputData/DivP.dat", "w");
   if (File1 && File2 && File3) {
 
     for (int i = XStart; i < XEnd; i++) {
@@ -14,16 +15,19 @@ void Domain::writeResults() {
       fprintf(File2, "%.9g ", Xvel[i]);
       fprintf(File3, "%.9g ", Pres[i]);
       fprintf(File4, "%.9b ", RcmReduction[i]);
+      fprintf(File5, "%.9g ", DivP[i]);
     }
     fprintf(File1, "\n");
     fprintf(File2, "\n");
     fprintf(File3, "\n");
     fprintf(File4, "\n");
+    fprintf(File5, "\n");
 
     fclose(File1);
     fclose(File2);
     fclose(File3);
     fclose(File4);
+    fclose(File5);
 
   } else {
     printf("There was an issue with the file printing!");

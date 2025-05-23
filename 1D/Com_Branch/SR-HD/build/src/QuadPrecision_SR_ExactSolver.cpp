@@ -360,7 +360,6 @@ public:
 
   void Boundaries(Wave *StateL, Wave *StateR, realkind sign) {
     ContactSpeed = v;
-
     if (WaveType == "Rarefaction") {
       realkind s = StateL->p / (pow(StateL->rho, Gamma));
       realkind s2 = StateR->p / (pow(StateR->rho, Gamma));

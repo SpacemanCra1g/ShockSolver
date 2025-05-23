@@ -5,6 +5,7 @@ p = np.loadtxt("./OutputData/Pressure.dat")
 rho = np.loadtxt("./OutputData/Density.dat")
 u = np.loadtxt("./OutputData/VelocityX.dat")
 rcm = np.loadtxt("./OutputData/Rcm.dat")
+DivP = np.loadtxt("./OutputData/DivP.dat")
 
 OverlayExact = False
 PathToExact = "./ExactSolutions/SlowShockTORO/"
@@ -73,8 +74,12 @@ if len(np.shape(p)) == 1:
     plt.plot(x,rho,'b-')
     plt.plot(x,u,'r-')
     plt.plot(x,p,'k-')
+    
+    # plt.plot(x,DivP,'g-')
+    plt.plot(x,DivP/max(abs(DivP)),'g-')
+    # plt.plot(x,-np.ones(len(x))*deltaX**2,'k-')
     plt.scatter(x,rcm*.5)
-    plt.legend(["Rho","Vx","P"])
+    plt.legend(["Rho","Vx","P","DivP"])
     if OverlayExact:
         plt.plot(xE,rhoE,'b--')
 

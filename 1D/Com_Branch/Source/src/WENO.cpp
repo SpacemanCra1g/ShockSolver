@@ -114,7 +114,12 @@ void Domain::Weno(int start, int stop) {
         FluxWalls_Prims[LEFT][Tidx(var, xdir)] = Prims[Tidx(var, xdir)];
         FluxWalls_Prims[RIGHT][Tidx(var, xdir)] = Prims[Tidx(var, xdir)];
       }
-    } else {
+    } else if (LeftState[PRES] < 0.0 || RightState[PRES] < 0.0 || LeftState[DENS] < 0.0 || RightState[DENS] < 0.0){
+      for (int var = 0; var < NumVar; ++var) {
+        FluxWalls_Prims[LEFT][Tidx(var, xdir)] = Prims[Tidx(var, xdir)];
+        FluxWalls_Prims[RIGHT][Tidx(var, xdir)] = Prims[Tidx(var, xdir)];
+      }
+    }else {
 
       for (int var = 0; var < NumVar; ++var) {
         FluxWalls_Prims[LEFT][Tidx(var, xdir)] = LeftState[var];

@@ -6,6 +6,7 @@ rho = np.loadtxt("./OutputData/Density.dat")
 u = np.loadtxt("./OutputData/VelocityX.dat")
 v = np.loadtxt("./OutputData/VelocityY.dat")
 rcm = np.loadtxt("./OutputData/Rcm.dat")
+DivP = np.loadtxt("./OutputData/DivP.dat")
 # w = np.loadtxt("./OutputData/VelocityZ.dat")
 
 # Hp = np.loadtxt("./HLLC_Comp/Pressure.dat")
@@ -87,11 +88,15 @@ if  True:
 
 
 
-
+    DivP -= 200*deltaX
+    DivP/=max(DivP)
+    # DivP/=25
     plt.plot(x,u,'b-')
     plt.plot(x,v,'g-')
     plt.plot(x,rho/25,'k-')
     plt.plot(x,p/1000,'r-')
+    # plt.plot(x,(DivP - 10*deltaX)/max(abs(DivP - 10*deltaX)) ,'y-')
+    # plt.plot(x,DivP,'y-')
     plt.scatter(x,rcm*.5)
 
     # plt.plot(Hx,Hu,'b.')
@@ -109,7 +114,7 @@ if  True:
     plt.title(title)
     plt.grid()
     # plt.legend([RS +" Vx",RS +" Rho",RS+" Pres", "HLLC Vx","HLLC Rho","HLLC Pres","Exact Vx","Exact Rho","Exact Pres",])
-    plt.legend(["Vx"," Rho","Pres"])
+    plt.legend(["Vx",'Vy'," Rho","Pres","DivP"])
 
     plt.show()
 
