@@ -862,7 +862,7 @@ int main(){
   //long double StateL[4] = {.01158*25., 0.76688, 0.0, 126.72};
   //  long double StateR[4] = {.9427*25., 0.76688, 0.28622, 126.72 };
 
-  long double StateL[4] = {1.0, 0.0, 0.99, 1000.0};
+  long double StateL[4] = {1.0, 0.0, 0.9, 1000.0};
   long double StateR[4] = {1.0, 0.0, 0.99, .01 };
   
   long double State[4];

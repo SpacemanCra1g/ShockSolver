@@ -66,12 +66,17 @@ void Domain::Find_dt() {
     Buffer[i] = std::fmax(Buffer[i], std::fabs(Prims[Tidx(VELX, i)]));
   }
 
-  dt = dx / FindMaximum(Buffer, XEnd + 1);
+  dt = dx * FindMaximum(Buffer, XEnd + 1);
   dt *= CFL;
 
   if (T + dt > TN) {
     dt = TN - T;
   }
+#if RIEMANN==RCM
+// dt = .49*dx;
+// std::cout << "Dt = " << dt << std::endl;
+// exit(0);
+#endif
 
 #if SlowStart
   if (dt > dt_sim) {
@@ -79,6 +84,7 @@ void Domain::Find_dt() {
     dt_sim *= 2.0;
   }
 #endif
+
 }
 
 // double Domain::HD_CS(int i) { return std::sqrt(Pres[i] * GAMMA / Dens[i]); }

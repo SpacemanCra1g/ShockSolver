@@ -52,19 +52,21 @@ void Domain::rcm(int Start, int Stop){
 
   Seq = VanDerCorput(rcm_Counter); // .655
   // Seq = Uniform(); // .7407, .644, ,6755
-  Seq = (Seq > .5) ? Seq - 1.0 : Seq;
+  // Seq = (Seq > .5) ? Seq - 1.0 : Seq;
+  Seq -= .5;
 
   #if RIEMANN != HYBRID
   rcm_Counter++;  
   #endif
-
   for (int i = Start+1; i < Stop; ++i){
-  //   rcm_Counter += 0;
-  //   Seq = VanDerCorput(rcm_Counter); // .655
-  // // Seq = Uniform(); // .7407, .644, ,6755
-  // Seq = (Seq > .5) ? Seq - 1.0 : Seq;
-  // Seq *=.8;
+    // rcm_Counter += 0;
+    // Seq = VanDerCorput(rcm_Counter); // .655
+    // Seq -= .5;
+    // Seq = Uniform(); // .7407, .644, ,6755
+    // Seq = (Seq > .5) ? Seq - 1.0 : Seq;
+    // Seq *=.8;
     if (Seq > 0.0){                                             
+      // Seq -= .5;
       StateL[0] = (realkind) FluxWalls_Prims[RIGHT][Tidx(DENSP, i-1)];
       StateR[0] = (realkind) FluxWalls_Prims[LEFT][Tidx(DENSP, i)];
 
@@ -100,8 +102,7 @@ void Domain::rcm(int Start, int Stop){
 
     // std::cout << "Cell Number = "  << i << " Seq = " << Seq*dxt << std::endl;
 
-    
-
+ 
     double va = StateL[1]*StateL[1] + StateL[2]*StateL[2];
     if ( va > 1.0){
       // std::cout << "TRIGGERED 1";

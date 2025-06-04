@@ -96,7 +96,7 @@ if  True:
     plt.plot(x,rho/25,'k-')
     plt.plot(x,p/1000,'r-')
     # plt.plot(x,(DivP - 10*deltaX)/max(abs(DivP - 10*deltaX)) ,'y-')
-    # plt.plot(x,DivP,'y-')
+    plt.plot(x,DivP,'y-')
     plt.scatter(x,rcm*.5)
 
     # plt.plot(Hx,Hu,'b.')

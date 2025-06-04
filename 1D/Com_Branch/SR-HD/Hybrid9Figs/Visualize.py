@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 File1 = "0_0_Data"
 File2 = "0_9_Data"
-File3 = "0_9_Data"
+File3 = "0_99_Data"
 
 File4 = "9_0_Data"
 File5 = "9_9_Data"
@@ -33,9 +33,8 @@ for i in range(3):
     ax[i][j].plot(x,Xvel,'b-')
     ax[i][j].plot(x,Yvel,'g-')
     ax[i][j].plot(x,Pres/1000,'r-')
-    ax[i][j].scatter(x,rcm*.5)
+    ax[i][j].scatter(x,rcm*.5,s=10)
     ax[i][j].set_title("Weno, HLLC + RCM, RK3, " + LTitles[i] + " " + RTitles[j] )
-
 
 
 plt.show()

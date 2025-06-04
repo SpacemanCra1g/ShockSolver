@@ -34,7 +34,7 @@ public:
   bool *Troubled;
   bool *ConversionFailed;
   int *TroubledIdx;
-  int IdxStop, rcm_Counter = 100001;
+  int IdxStop, rcm_Counter = 0;
   double *DivP;
   // Here for RCM Hybrid Testing
   bool *RcmReduction;

@@ -797,7 +797,7 @@ public:
       // cout << "Rare State" << endl;
       Wave3.SampleRare(xi, &WaveL, -1.0, State);
       // cout << "In the Rarefaction Wave" << endl;
-    } else if (xi < Wave3.ContactSpeed) {
+    } else if (xi < Wave4.ContactSpeed) {
       // cout << "Left Star" << endl;
       State[0] = Wave3.rho;
       State[1] = Wave3.v;
@@ -823,32 +823,114 @@ public:
 };
 
 void SolveRiemannFlux(realkind StateL[4], realkind StateR[4], realkind Result[4], realkind T) {
-  if (fabs(StateL[3] - StateR[3]) < 1.e-11){
-    if (fabs(StateL[3] - StateR[3]) < 1.e-14){
-      for (int i = 0; i < 4; ++i ){
-        Result[i] = .5*(StateL[i] + StateR[i]);
+  // Attempt #1 
+  // if (fabs(StateL[3] - StateR[3]) < 1.e-11){
+  //   if (fabs(StateL[3] - StateR[3]) < 1.e-14){
+  //     for (int i = 0; i < 4; ++i ){
+  //       Result[i] = .5*(StateL[i] + StateR[i]);
+  //     }
+  //     // cout << "Stopped solve short" << endl;
+  //     return;
+  //   }
+  //   double maxval = 0.0;
+  //   for (int i = 0; i < 3; ++i){
+  //     maxval = fmax( fabs(StateL[i] - StateR[i]), maxval);
+  //   }
+  //   if (maxval < 1.e-13){
+  //     for (int i = 0; i < 4; ++i ){
+  //       Result[i] = .5*(StateL[i] + StateR[i]);
+  //     }
+  //     // cout << "Stopped solve short" << endl;
+  //     return;
+  //   }
+  // }
+
+  // Attempt #2 
+  // if (fabs(StateL[3] - StateR[3]) < 1.e-13 ){
+  //   if (fabs(StateL[0] - StateR[0]) > 1.e-3){
+  //     // Contact Wave
+  //     double ConSpeed = fmax(StateL[1],StateR[1]);
+  //     if (T < ConSpeed){
+  //       for (int i = 0; i < 4; ++i ){
+  //         Result[i] = StateL[i];
+  //       }
+  //     } else{
+  //       for (int i = 0; i < 4; ++i ){
+  //         Result[i] = StateR[i];
+  //       }
+  //     }
+  //   } else{
+  //     // Flat State
+  //     for (int i = 0; i < 4; ++i ){
+  //     // Result[i] = (T < 0.0)? StateL[i] :  StateR[i];
+  //     Result[i] = .5*(StateL[i] +  StateR[i]);
+  //     } 
+  //   }
+  //   return;
+  // }
+
+  // Attempt #3 
+  realkind val1 = (StateL[3] - StateR[3])*(StateL[3] - StateR[3]);
+  realkind val2 = (StateL[2] - StateR[2])*(StateL[2] - StateR[2]);
+  realkind val3 = (StateL[1] - StateR[1])*(StateL[1] - StateR[1]);
+  realkind val4 = (StateL[0] - StateR[0])*(StateL[0] - StateR[0]);
+  if (val1+val2+val3+val4 < 1.e-8){
+    // Flat Wave
+    for (int i = 0; i < 4; ++i){
+    Result[i] = .5*(StateL[i] + StateR[i]);
+    }
+    return;
+  }else if(val1 < 1.e-5 && val3 < 1.e-7 && val4 > 1.0){
+    // Contact Wave
+    double ConSpeed = fmax(StateL[1],StateR[1]);
+      if (T < ConSpeed){
+        for (int i = 0; i < 4; ++i ){
+          Result[i] = StateL[i];
+        }
+      } else{
+        for (int i = 0; i < 4; ++i ){
+          Result[i] = StateR[i];
+        }
       }
-      // cout << "Stopped solve short" << endl;
       return;
-    }
-    double maxval = 0.0;
-    for (int i = 0; i < 3; ++i){
-      maxval = fmax( fabs(StateL[i] - StateR[i]), maxval);
-    }
-    if (maxval < 1.e-13){
-      for (int i = 0; i < 4; ++i ){
-        Result[i] = .5*(StateL[i] + StateR[i]);
-      }
-      // cout << "Stopped solve short" << endl;
-      return;
-    }
-  }
+  }else{
+
+  // Attempt #4
+  // double dx = 1./400.;
+  // realkind val1 = (StateR[0] - StateL[0])/fmin(StateR[0],StateL[0]);
+  // realkind val2 = (StateR[1] - StateL[1])/(2.*dx);
+  // realkind val3 = (StateR[2] - StateL[2])/(2.*dx);
+  // realkind val4 = (StateR[3] - StateL[3])/fmin(StateR[3],StateL[3]);
+  
+
+  // if (fmax(fmax(val1,val2),val4) < 1.e-8 ){
+  //   // Flat wave
+  //   for (int i = 0; i < 4; ++i){
+  //     Result[i] = .5*(StateL[i] + StateR[i]);
+  //   }
+  //   return;
+  // } else if (val1 > 200.*dx && val4 < 200.*dx){
+  //   // Contact wave
+  //     double ConSpeed = fmax(StateL[1],StateR[1]);
+  //     if (T < ConSpeed){
+  //       for (int i = 0; i < 4; ++i ){
+  //         Result[i] = StateL[i];
+  //       }
+  //     } else{
+  //       for (int i = 0; i < 4; ++i ){
+  //         Result[i] = StateR[i];
+  //       }
+  //     }
+  //     return;
+  // }else{
+
   RiemannFan Problem;
   Problem.LoadStates(StateL, StateR);
   Problem.FindWaveTypes();
   Problem.CalculateIntermediateStates();
   Problem.FanBoundaries();
   Problem.SampleState(T, Result);
+  }
   // delete Problem;
 }
 void SolveShockTube(realkind StateL[4], realkind StateR[4], realkind Time) {

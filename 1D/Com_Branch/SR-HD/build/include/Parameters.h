@@ -41,7 +41,7 @@
 #define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
 #define RIEMANN HYBRID
-#define CFL 0.3
+#define CFL 0.49
 #define EOS IDEAL
 #define RK_Method 3 /*set to -1 for CharTracing, sets automatically for PLM*/
 #define ell 6.0

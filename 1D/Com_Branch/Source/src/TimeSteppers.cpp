@@ -148,7 +148,7 @@ void Domain::ForwardEuler() {
 void HybridDetection(double *Prims, bool *Det, int Start, int Stop, const int rcm_Counter ){
   double DivP, DivV, DivR; 
 
-  const int Radius = 2;
+  const int Radius = 3;
   for (int i = Start; i < Stop; ++i){
       // DivP = std::fabs((1./12.)*Prims[Tidx(PRES,i-2)] - (2./3.)*Prims[Tidx(PRES,i-1)]
     //  + (2./3.)*Prims[Tidx(PRES,i+1)] - (1./12.)*Prims[Tidx(PRES,i+2)]);
@@ -162,11 +162,11 @@ void HybridDetection(double *Prims, bool *Det, int Start, int Stop, const int rc
 
     DivV = (Prims[Tidx(VELX,i+1)] - Prims[Tidx(VELX,i-1)])/(2.*dx);
 
-     if ((DivP > 10.*dx  && DivV < -dx*dx)){
+     if ((DivP > 200.*dx  && DivV < -dx*dx)){
       for (int rad = - Radius; rad <= Radius; ++rad){
       Det[i+rad] = true;
       }
-     }else if (DivR > 200*dx && rcm_Counter % 1== 0 ){
+     }else if (DivR > 500*dx){
         for (int rad = - Radius; rad <= Radius; ++rad){
           Det[i+rad] = true;
         }
@@ -291,6 +291,7 @@ void Domain::RK3() {
   Cons2Prim(Cons,Prims,0,REdgeX);
    (*this.*BC)();
   #endif
+  
 
 }
 
