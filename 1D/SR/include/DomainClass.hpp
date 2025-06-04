@@ -1,12 +1,12 @@
 #ifndef DOMAINCLASS_H_
 #define DOMAINCLASS_H_
 
+#include "CharacteristicClass.hpp"
 #include "GP_Kernel.hpp"
 #include "Parameters.h"
 
 #include <algorithm>
 #include <cblas.h>
-#include <cmath>
 
 class Domain {
 public:
@@ -22,15 +22,19 @@ public:
   double T, dt, dt_sim;
   double *CopyBuffer;
   double *ConsCopy;
+  double *U1, *U2, *U3, *U4, *Fl, *FU3, *FU4;
   double *Cons, *Prims;
   bool MoodFinished = true;
   int *MoodOrd;
   int *Troubled;
+  Characteristics Chars;
 
   void (Domain::*BC)();
   void (Domain::*IC)();
+  void (Domain::*RiemannSolver)(int, int);
   void (Domain::*RK_TimeStepper)();
   void (Domain::*SpaceRecon)(int, int);
+  void (Domain::*SlopeLimiter)(double *, double *, Characteristics *, int, int);
 
   GP_Kernel Ker;
 
@@ -39,7 +43,9 @@ public:
   /***********************************************/
   Domain() {
 
-    // Allocate Variables
+    /*********************************************/
+    /*************** Allocate Arrays *************/
+    /*********************************************/
     Cons = new double[NumVar * xDim];
     Prims = new double[NumVar * xDim];
     Buffer = new double[xDim];
@@ -55,10 +61,32 @@ public:
 
     CellFlux = new double[NumVar * xDim];
     CopyBuffer = new double[NumVar * xDim];
-    Buffer = new double[xDim];
+
     Cs = new double[xDim];
     RS_CsL = new double[xDim];
     RS_CsR = new double[xDim];
+
+    /*********************************************/
+    /*************** Assign Pointers *************/
+    /*********************************************/
+    Dens = Cons;
+    MomX = Dens + xDim;
+    MomY = MomX + xDim;
+    MomZ = MomY + xDim;
+    Energy = MomZ + xDim;
+
+    DensP = Prims;
+    Xvel = DensP + xDim;
+    Yvel = Xvel + xDim;
+    Zvel = Yvel + xDim;
+    Pres = Zvel + xDim;
+
+    T = T0;
+    dt_sim = 1E-10;
+
+    /*****************************************************/
+    /*************** Conditional Allocations *************/
+    /*****************************************************/
 
 #if SpaceMethod == GPR1
     SolutionKer.calculate_Preds1D(1);
@@ -82,44 +110,58 @@ public:
 
 #elif SpaceMethod == WENO
     SpaceRecon = &Domain::Weno;
+
+#elif SpaceMethod == PLM
+    SpaceRecon = &Domain::PiecewiseLinear;
 #endif
 
-    Dens = Cons;
-    MomX = Dens + xDim;
-    MomY = MomX + xDim;
-    MomZ = MomY + xDim;
-    Energy = MomZ + xDim;
+#if RK_Method > 3
+    U1 = new double[NumVar * xDim];
+    U2 = new double[NumVar * xDim];
+    U3 = new double[NumVar * xDim];
+    U4 = new double[NumVar * xDim];
+    FU3 = new double[NumVar * xDim];
+    FU4 = new double[NumVar * xDim];
+    Fl = new double[NumVar * xDim];
+#endif
 
-    DensP = Prims;
-    Xvel = DensP + xDim;
-    Yvel = Xvel + xDim;
-    Zvel = Yvel + xDim;
-    Pres = Zvel + xDim;
-
-    T = T0;
-    dt_sim = 1E-10;
-
-/**********Member Function Pointers***********/
+    /******************************************************/
+    /*************** Member Function Pointers *************/
+    /******************************************************/
 #if TestProblem == SHUOSHER
     BC = &Domain::ShuOsherBC;
     IC = &Domain::ShuOsherIC;
 #elif TestProblem == SHOCKTUBE
     IC = &Domain::ShockTubeIC;
-    BC = &Domain::ShuOsherBC;
-#else
-
-#if BCS == NEUMANN
-    BCS = &Domain::NeumannBC;
-#else
-    std::cout << "Invalid Boundary Conditions \nExiting" << std::endl;
-    exit(0);
-#endif
+    BC = &Domain::NeumannBC;
 #endif
 
 #if RK_Method == 1
     RK_TimeStepper = &Domain::ForwardEuler;
 #elif RK_Method == 3
     RK_TimeStepper = &Domain::RK3;
+#elif RK_Method == 4
+    RK_TimeStepper = &Domain::RK4;
+#elif RK_Method == -1
+    RK_TimeStepper = &Domain::CharTracing;
+#endif
+
+#if SpaceMethod == PLM
+    RK_TimeStepper = &Domain::CharTracing;
+#endif
+
+#if RIEMANN == HLL
+    RiemannSolver = &Domain::Hll;
+#elif RIEMANN == HLLC
+    RiemannSolver = &Domain::Hllc;
+#endif
+
+#if LIMITSLOPE == MINMOD
+    SlopeLimiter = &Domain::minmod;
+#elif LIMITSLOPE == MC
+    SlopeLimiter = &Domain::mc;
+#elif LIMITSLOPE == VANLEER
+    SlopeLimiter = &Domain::vanleer;
 #endif
   }
 
@@ -149,6 +191,7 @@ public:
   // Defined in the TimeSteppers.cpp file
   void RK3();
   void ForwardEuler();
+  void RK4();
 
   // Defined in the IC.cpp file
   void ShuOsherIC();
@@ -181,6 +224,9 @@ public:
   void Hll(int, int);
   void HllSide(int);
 
+  // Defined in the src/HLLC.cpp file
+  void Hllc(int Start, int Stop);
+
   // Defined in the src/UpdateSolution.cpp file
   void Recon(int start, int stop);
 
@@ -198,12 +244,25 @@ public:
   void SR_HLL_Flux(double *Dest, double *PrL, double *CL, double *PrR,
                    double *CR, double SL, double SR, int i);
 
-  void DomainCopy() { std::copy(Cons, Cons + xDim * NumVar, CopyBuffer); }
-
-  void DomainAdd(double a, double b) {
-    cblas_dscal(NumVar * xDim, b, Cons, 1);
-    cblas_daxpy(NumVar * xDim, a, CopyBuffer, 1, Cons, 1);
+  void DomainCopy(double *Uin, double *Ufill) {
+    std::copy(Uin, Uin + xDim * NumVar, Ufill);
   }
+
+  void DomainAdd(double a, double b, double *Uin, double *Uresult) {
+    cblas_dscal(NumVar * xDim, b, Uresult, 1);
+    cblas_daxpy(NumVar * xDim, a, Uin, 1, Uresult, 1);
+  }
+
+  // Defined in the src/CharacteristicTracing.cpp file
+  void CharTracing();
+
+  // Defined in the src/PLM.cpp file
+  void PiecewiseLinear(int, int);
+
+  // Defined in the src/TVD_SlopeLimit.cpp file
+  void minmod(double *, double *, Characteristics *, int, int);
+  void vanleer(double *, double *, Characteristics *, int, int);
+  void mc(double *, double *, Characteristics *, int, int);
 };
 
 #endif // DOMAINCLASS_H_

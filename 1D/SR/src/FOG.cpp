@@ -1,10 +1,13 @@
 #include "../include/DomainClass.hpp"
 
 void Domain::Fog(int start, int stop) {
+  double val;
+  Cons2Prim(Cons, Prims, start, stop);
   for (int xdir = start; xdir < stop; ++xdir) {
     for (int var = 0; var < NumVar; ++var) {
-      FluxWalls_Cons[LEFT][Tidx(var, xdir)] = Cons[Tidx(var, xdir)];
-      FluxWalls_Cons[RIGHT][Tidx(var, xdir)] = Cons[Tidx(var, xdir)];
+      val = Prims[Tidx(var, xdir)];
+      FluxWalls_Prims[LEFT][Tidx(var, xdir)] = val;
+      FluxWalls_Prims[RIGHT][Tidx(var, xdir)] = val;
     }
   }
 }

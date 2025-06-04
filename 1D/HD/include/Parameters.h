@@ -3,9 +3,23 @@
 /****************
  * X Parameters *
  ****************/
+<<<<<<< HEAD
 #define NX 1000
 #define X0 0.0
 #define XN 9.0
+=======
+#define NX 256
+#define X0 0.0
+#define XN 9.0
+
+/****************
+ * Y Parameters *
+ ****************/
+#define NY 1
+#define Y0 0.0
+#define YN 1.0
+#define NumVar 3
+>>>>>>> 1D-SR_DevBranch
 
 /****************
  * T Parameters *
@@ -16,11 +30,21 @@
 /*****************
  *Run Parameters *
  *****************/
+<<<<<<< HEAD
 #define SpaceMethod WENO
 #define TestProblem SHUOSHER
 #define BCS NEUMANN
 #define CFL 0.8
 #define EOS IDEAL
+=======
+#define SpaceMethod Weno
+
+#define GAMMA 1.4
+#define CFL 0.8
+#define TestProblem ShuOsher
+#define BoundaryCon Shu
+
+>>>>>>> 1D-SR_DevBranch
 #define RK_Method 3
 #define ell 6.0
 #define MoodOrder 5

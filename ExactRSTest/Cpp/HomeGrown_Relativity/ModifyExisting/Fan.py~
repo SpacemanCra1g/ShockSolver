@@ -1,0 +1,33 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.zeros(2)
+dx = 1/400
+negX = x.copy()
+negX[1] = -dx
+posX = abs(negX.copy())
+y = x.copy()
+m = -.131622
+
+y[1] = -dx*m
+plt.plot(negX,y)
+
+m = .76688
+y[1] = dx*m
+plt.plot(posX,y)
+
+m = .9635
+y[1] = dx*m
+plt.plot
+(posX,y)
+
+seq = .4
+m = (dx/.0012500)
+y[1] = dx*m
+print(m)
+plt.plot(posX,y)
+
+plt.xlim([-dx,dx])
+plt.grid()
+plt.show()
+    

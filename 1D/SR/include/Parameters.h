@@ -1,9 +1,10 @@
 #include "definitions.hpp"
+#include <cmath>
 
 /****************
  * X Parameters *
  ****************/
-#define NX 400
+#define NX 1000
 #define X0 0.0
 #define XN 1.0
 
@@ -17,7 +18,7 @@
 #define PR 0.01
 
 #define XVELL 0.0
-#define YVELL 0.0
+#define YVELL 0.99
 #define ZVELL 0.0
 
 #define XVELR 0.0
@@ -33,16 +34,19 @@
 /*****************
  *Run Parameters *
  *****************/
-#define SpaceMethod WENO
+#define EvolveChars false
+#define SpaceMethod PLM
 #define TestProblem SHOCKTUBE
 #define BCS SHOCKTUBEBC
+#define RIEMANN HLL
 #define CFL 0.8
 #define EOS IDEAL
-#define RK_Method 3
+#define RK_Method 3 /*set to -1 for CharTracing, sets automatically for PLM*/
 #define ell 6.0
 #define MoodOrder 5
 #define SlowStart true
 #define GAMMA (5.0 / 3.0)
+#define LIMITSLOPE MINMOD
 /****************
  *NN Parameters *
  ****************/
