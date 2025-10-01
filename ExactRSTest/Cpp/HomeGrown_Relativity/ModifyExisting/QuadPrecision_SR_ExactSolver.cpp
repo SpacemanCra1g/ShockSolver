@@ -10,7 +10,9 @@ using namespace std;
 const long double Gamma = 5.0 / 3;
 const long double Sigma = Gamma / (Gamma - 1.0);
 
-long double RelSpeed(long double a, long double b) { return (a - b) / (1 - a * b); }
+long double RelSpeed(long double a, long double b) {
+  return (a - b) / (1 - a * b);
+}
 
 struct IntParams {
   long double S;
@@ -59,7 +61,8 @@ static double Integral1(double P, void *pram) {
   long double rho = pow((p / S), 1.0 / Gamma);
   long double H = 1.0 + Sigma * p / rho;
   long double Cs = sqrt(Gamma * p / (H * rho));
-  return (double)sqrt(H * H + A * A * (1 - Cs * Cs)) / ((H * H + A * A) * rho * Cs);
+  return (double)sqrt(H * H + A * A * (1 - Cs * Cs)) /
+         ((H * H + A * A) * rho * Cs);
 };
 
 long double RarefactionVx(long double p, RarefactionParams *params) {
@@ -81,7 +84,8 @@ long double RarefactionVx(long double p, RarefactionParams *params) {
   return tanh(B1 + (long double)params->sign * result);
 };
 
-long double ux(long double xi, long double S, long double press, long double A, long double sign) {
+long double ux(long double xi, long double S, long double press, long double A,
+               long double sign) {
   long double rho = pow(press / S, 1.0 / Gamma);
   long double h = 1.0 + Sigma * press / rho;
   long double cs = sqrt(Gamma * press / (h * rho));
@@ -92,7 +96,7 @@ long double ux(long double xi, long double S, long double press, long double A, 
 
 double SampleRarefactionWave(double pressu, void *Parms) {
   long double result;
-  long double pressure = (long double ) pressu;
+  long double pressure = (long double)pressu;
   struct RareFactionSample_Params *params =
       (struct RareFactionSample_Params *)Parms;
   struct IntParams IntPar = {params->SL, params->AL};
@@ -100,12 +104,13 @@ double SampleRarefactionWave(double pressu, void *Parms) {
                                       params->pL};
 
   result = ux(params->xi, params->SL, pressure, params->AL, params->sign) -
-         RarefactionVx(pressure, &RarePar);
+           RarefactionVx(pressure, &RarePar);
 
-  return (double) result;
+  return (double)result;
 };
 
-long double Taub(long double hA, long double rho, long double p, long double pres) {
+long double Taub(long double hA, long double rho, long double p,
+                 long double pres) {
   long double c_2 = (1.0 + (p - pres) / (pres * Sigma));
   long double c_1 = -(p - pres) / (pres * Sigma);
   long double c_0 = hA * (p - pres) / rho - hA * hA;
@@ -122,7 +127,8 @@ long double Taub(long double hA, long double rho, long double p, long double pre
   return val;
 };
 
-long double J_sqr(long double pres1, long double pres2, long double hA, long double hB) {
+long double J_sqr(long double pres1, long double pres2, long double hA,
+                  long double hB) {
   long double val;
   if (fabs(hA - hB) < 1.0e-10) {
     val = Sigma * pres1 * pres2 / (hA * (hA - 1.0));
@@ -141,9 +147,11 @@ long double J_sqr(long double pres1, long double pres2, long double hA, long dou
   return val;
 };
 
-long double ShockSpeed(long double lor, long double r, long double v, long double J, int sign) {
+long double ShockSpeed(long double lor, long double r, long double v,
+                       long double J, int sign) {
   long double D = r * lor;
-  return (D * D * v + (long double)sign * J * sqrt(J * J + D * D * (1.0 - v * v))) /
+  return (D * D * v +
+          (long double)sign * J * sqrt(J * J + D * D * (1.0 - v * v))) /
          (D * D + J * J);
 }
 
@@ -152,7 +160,8 @@ long double ShockVx(long double p, ShockParams *params) {
   long double hB = Taub(hA, params->r, params->p, p);
   long double J2 = J_sqr(params->p, p, hA, hB);
   long double J = sqrt(fabs(J2));
-  long double Vs = ShockSpeed(params->lor, params->r, params->v, J, params->sign);
+  long double Vs =
+      ShockSpeed(params->lor, params->r, params->v, J, params->sign);
   long double Ws = 1.0 / sqrt(1.0 - Vs * Vs);
 
   return (hA * params->lor * params->v +
@@ -162,8 +171,8 @@ long double ShockVx(long double p, ShockParams *params) {
                              1.0 / (params->r * params->lor)));
 };
 
-double DoubleRarefactionPstar( double pre, void *param) {
-  long double p = (long double ) pre;
+double DoubleRarefactionPstar(double pre, void *param) {
+  long double p = (long double)pre;
   long double result;
   struct RR_Pstar_Params *params = (struct RR_Pstar_Params *)param;
   struct IntParams IntPar = {params->LS, params->LA};
@@ -183,12 +192,12 @@ double DoubleRarefactionPstar( double pre, void *param) {
   long double v13 = RelSpeed(params->Lv, ux3);
   long double v24 = RelSpeed(params->Rv, ux4);
 
-  result =  RelSpeed(v13, v24) - params->v0;
-  return (double) result;
+  result = RelSpeed(v13, v24) - params->v0;
+  return (double)result;
 };
 
- double RareShockPstar(double pre, void *param) {
-  long double p = (long double ) pre;
+double RareShockPstar(double pre, void *param) {
+  long double p = (long double)pre;
   long double result;
   struct RS_Pstar_Params *params = (struct RS_Pstar_Params *)param;
   struct IntParams IntPar = {params->LS, params->LA};
@@ -209,11 +218,11 @@ double DoubleRarefactionPstar( double pre, void *param) {
   long double v64 = RelSpeed(params->Rv, ux4);
 
   result = RelSpeed(v13, v64) - params->v0;
-  return (double) result;
+  return (double)result;
 };
 
 double ShockShockPstar(double pre, void *param) {
-  long double p = (long double ) pre;
+  long double p = (long double)pre;
   long double result;
   struct SS_Pstar_Params *params = (struct SS_Pstar_Params *)param;
 
@@ -230,7 +239,7 @@ double ShockShockPstar(double pre, void *param) {
   long double v13 = RelSpeed(params->Lv, ux3);
   long double v64 = RelSpeed(params->Rv, ux4);
   result = RelSpeed(v13, v64) - params->v0;
-  return (double) result;
+  return (double)result;
 };
 }
 
@@ -259,7 +268,8 @@ public:
     SetA();
   };
 
-  void SampleRare(long double xi, Wave *State, long double sign, long double Sample[4]) {
+  void SampleRare(long double xi, Wave *State, long double sign,
+                  long double Sample[4]) {
     long double pmin = fmin(State->p, p);
     long double pmax = fmax(State->p, p);
     long double p_star;
@@ -298,7 +308,8 @@ public:
     Sample[3] = p_star;
     Sample[0] = pow(p_star / State->S, 1.0 / Gamma);
     long double H = 1.0 + Sigma * p_star / Sample[0];
-    // long double ux(long double xi, long double S, long double press, long double A, long double sign) {
+    // long double ux(long double xi, long double S, long double press, long
+    // double A, long double sign) {
     Sample[1] = ux(xi, State->S, p_star, State->A, sign);
     Sample[2] = State->A * sqrt((1.0 - Sample[1] * Sample[1]) /
                                 (H * H + State->A * State->A));
@@ -371,7 +382,8 @@ public:
       long double hB = Taub(hA, StateL->rho, StateL->p, pres);
       long double J2 = J_sqr(StateL->p, StateR->p, hA, hB);
       long double J = sqrt(fabs(J2));
-      long double Vs = ShockSpeed(StateL->lor, StateL->rho, StateL->v, J, (int)sign);
+      long double Vs =
+          ShockSpeed(StateL->lor, StateL->rho, StateL->v, J, (int)sign);
 
       LeftB = Vs;
       RightB = Vs;
@@ -432,7 +444,7 @@ public:
                         &error);
     // gsl_integration_qags(&Int, WaveL.p, 0, 0, 1.0e-13, 1000, w, &result,
     //                      &error);
-    v1_x = (long double) tanh(result);
+    v1_x = (long double)tanh(result);
 
     // Set up the second integral
     Params.A = WaveR.A;
@@ -443,7 +455,7 @@ public:
     // gsl_integration_qags(&Int, 0, WaveR.p, 0, 1.0e-13, 1000, w, &result,
     //                      &error);
 
-    v2_x = (long double) tanh(result);
+    v2_x = (long double)tanh(result);
 
     gsl_integration_workspace_free(w);
 
@@ -465,7 +477,7 @@ public:
 
     gsl_integration_workspace_free(w);
 
-    return (long double) tanh(result);
+    return (long double)tanh(result);
   };
 
   long double RareShockLimit() const {
@@ -497,7 +509,7 @@ public:
   void DoubleRarefactionStarValues(long double v0) {
     long double eps = 1.0e-15;
     long double p_min = (WaveR.p + eps) * eps;
-    long double p_max = 2*WaveL.p;
+    long double p_max = 2 * WaveL.p;
     long double v_star, p_star;
     int status;
 
@@ -718,8 +730,9 @@ public:
   void FindWaveTypes() {
     long double v12_0 = RelSpeed(WaveL.v, WaveR.v);
     // cout << v12_0 << " The intermediate speed" << endl;
-    // cout << "The long double Rare Limit was " << DoubleRarefactionLimit() << endl;
-    // cout << "The difference is " << DoubleRarefactionLimit() - v12_0 << endl;
+    // cout << "The long double Rare Limit was " << DoubleRarefactionLimit() <<
+    // endl; cout << "The difference is " << DoubleRarefactionLimit() - v12_0 <<
+    // endl;
     long double Limit = VaccuumLimit();
 
     if (v12_0 <= Limit) {
@@ -798,7 +811,8 @@ public:
   };
 };
 
-void SolveRiemannFlux(long double StateL[4], long double StateR[4], long double Result[4]) {
+void SolveRiemannFlux(long double StateL[4], long double StateR[4],
+                      long double Result[4]) {
   RiemannFan Problem;
   Problem.LoadStates(StateL, StateR);
   Problem.FindWaveTypes();
@@ -807,7 +821,8 @@ void SolveRiemannFlux(long double StateL[4], long double StateR[4], long double 
   Problem.SampleState(0.0, Result);
   // delete &Problem;
 }
-void SolveShockTube(long double StateL[4], long double StateR[4], long double Time) {
+void SolveShockTube(long double StateL[4], long double StateR[4],
+                    long double Time) {
   RiemannFan Problem;
   long double Result[4];
   long double Dens[400], XVel[400], YVel[400], Pres[400];
@@ -847,31 +862,31 @@ void SolveShockTube(long double StateL[4], long double StateR[4], long double Ti
   }
 }
 
-int main(){
+int main() {
   // cout << setprecision(15);
   // RiemannFan Problem;
 
   // Test Case
-  
-  
-  // long double StateL[4] = {1.50617912044735, 0.469992817665391, 0.0, 0.417613895434584 };
-  // long double StateR[4] = {1.0, 0.0, 0.0, 0.00999999999999979 };
-  // long double StateL[4] = {0.999999999999998,-1.70431767385411e-23,0.9,999.999999999994};
-  // long double StateR[4] = {0.999999999999998,4.27594960269152e-16,0.9,999.999999999995};
-  
-  //long double StateL[4] = {.01158*25., 0.76688, 0.0, 126.72};
-  //  long double StateR[4] = {.9427*25., 0.76688, 0.28622, 126.72 };
+
+  // long double StateL[4] = {1.50617912044735, 0.469992817665391, 0.0,
+  // 0.417613895434584 }; long double StateR[4] = {1.0, 0.0, 0.0,
+  // 0.00999999999999979 }; long double StateL[4] =
+  // {0.999999999999998,-1.70431767385411e-23,0.9,999.999999999994}; long double
+  // StateR[4] = {0.999999999999998,4.27594960269152e-16,0.9,999.999999999995};
+
+  // long double StateL[4] = {.01158*25., 0.76688, 0.0, 126.72};
+  // long double StateR[4] = {.9427*25., 0.76688, 0.28622, 126.72};
 
   long double StateL[4] = {1.0, 0.0, 0.9, 1000.0};
-  long double StateR[4] = {1.0, 0.0, 0.99, .01 };
-  
+  long double StateR[4] = {1.0, 0.0, 0.9, .01};
+
   long double State[4];
   /*  RiemannFan Problem;
   Problem.LoadStates(StateL, StateR);
   Problem.FindWaveTypes();
   Problem.CalculateIntermediateStates();
   Problem.FanBoundaries(); */
-  SolveShockTube(StateL,  StateR, .4);
+  SolveShockTube(StateL, StateR, .4);
   /*  cout<< "Left Edge = " << Problem.Wave3.LeftB<<endl;
   cout<< "Right Edge = " << Problem.Wave3.RightB<<endl;
   cout<< "Contact = " << Problem.Wave3.ContactSpeed<<endl;
@@ -888,13 +903,12 @@ int main(){
   // cout << State[0] <<endl;
   // cout << State[1] <<endl;
   // cout << State[2] <<endl;
-  // cout << State[3] <<endl;
-  
+  // cout << State[3] <<endl;[?0u]
+
   // cout << Problem.Wave4.rho << endl;
   // cout << Problem.Wave4.v << endl;
   // cout << Problem.Wave4.vt << endl;
   // cout << Problem.Wave4.p << endl;
-
 
   // void * blank;
   // long double test = SimpsonsRule(quad,0.5, 4.0, 1.e-12 , blank);
@@ -902,6 +916,4 @@ int main(){
   // test = NewtonIteration(quad, 0.10, 1.e-12 , blank);
   // cout << test << endl;
   return 0;
-
-
 }

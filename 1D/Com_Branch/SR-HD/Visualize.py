@@ -8,6 +8,10 @@ v = np.loadtxt("./OutputData/VelocityY.dat")
 rcm = np.loadtxt("./OutputData/Rcm.dat")
 DivP = np.loadtxt("./OutputData/DivP.dat")
 # w = np.loadtxt("./OutputData/VelocityZ.dat")
+tempU = np.loadtxt("./Density.dat")
+
+RCMrho = np.loadtxt("./OutputData/Density.dat")
+RCMu = np.loadtxt("./OutputData/VelocityX.dat")
 
 # Hp = np.loadtxt("./HLLC_Comp/Pressure.dat")
 # Hrho = np.loadtxt("./HLLC_Comp/Density.dat")
@@ -16,7 +20,6 @@ DivP = np.loadtxt("./OutputData/DivP.dat")
 # Ep = np.loadtxt("./ExactSolution/Pressure.dat")
 # Erho = np.loadtxt("./ExactSolution/Density.dat")
 # Eu = np.loadtxt("./ExactSolution/VelocityX.dat")
-
 
 
 # plotVar = rho
@@ -91,13 +94,14 @@ if  True:
     DivP -= 200*deltaX
     DivP/=max(DivP)
     # DivP/=25
-    plt.plot(x,u,'b-')
-    plt.plot(x,v,'g-')
-    plt.plot(x,rho/25,'k-')
-    plt.plot(x,p/1000,'r-')
+    plt.plot(x,u-.3,'b-',linewidth=3)
+    # plt.plot(x,v,'g-',linewidth=3)
+    plt.plot(x,rho/25,'k-',linewidth=3)
+    # plt.plot(x,p/1000,'r--',linewidth=3)
+    plt.grid()
     # plt.plot(x,(DivP - 10*deltaX)/max(abs(DivP - 10*deltaX)) ,'y-')
-    plt.plot(x,DivP,'y-')
-    plt.scatter(x,rcm*.5)
+    # plt.plot(x,DivP,'y-')
+    # plt.scatter(x,rcm*.5)
 
     # plt.plot(Hx,Hu,'b.')
     # plt.plot(Hx,Hrho/25,'k.')
@@ -110,13 +114,55 @@ if  True:
     # plt.scatter(x,u,color='b',s=5, marker='.')
     # plt.scatter(x,rho/25,color='k',s=5,marker='.')
     # plt.scatter(x,p/1000,color='r',s=5,marker='.')
-    title = "t = 0.4, " +Method +", V_yL = " + VL + ", V_yR = " + VR + ", Nx = " + str(N) + ", " + RS
-    plt.title(title)
-    plt.grid()
-    # plt.legend([RS +" Vx",RS +" Rho",RS+" Pres", "HLLC Vx","HLLC Rho","HLLC Pres","Exact Vx","Exact Rho","Exact Pres",])
-    plt.legend(["Vx",'Vy'," Rho","Pres","DivP"])
+    title = "t = 0.4" +", V_yL = " + VL + ", V_yR = " + VR + ", Nx = " + str(N) + ", Contact Only"
 
-    plt.show()
+    # plt.plot(x,rho,'k.-')
+    # fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+    # fig.suptitle("Contact wave only",fontsize=20 )
+    # ax1.plot(x,rho/25,'k.-')
+    # ax1.plot(x,u,'b.-')
+    # ax2.plot(x,RCMrho/25,'k.-')
+    # ax2.plot(x,RCMu,'b.-')
+    # ax1.grid()
+    # ax2.grid()
+    # ax1.set_title("First Order Godunov",fontsize=16)
+    # ax2.set_title("RCM",fontsize=16)
+    # fig.legend(["Density","Normal Velocity"],fontsize=16)
+    plt.title("Shock tube problem at $t = 0.4$")
+    plt.legend(["Normal Velocity","Transverse Velocity","Density","Pressure"])
+    test = (u-u[0]).tolist()
+    print(test.index(min(test)))
+    print(test)
+
+    # print(max(v))
+    # print(v)
+    # plt.show()
+
+    # plt.legend([RS +" Vx",RS +" Rho",RS+" Pres", "HLLC Vx","HLLC Rho","HLLC Pres","Exact Vx","Exact Rho","Exact Pres",])
+    # plt.legend(["Vx",'Vy'," Rho","Pres","DivP"])
+    # plt.legend(["Rho"])
+    #
+    # fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+
+# First plot
+#     ax1.plot(x, tempU,"k.")
+#     ax1.set_title("HLLC+WENO")
+#     ax1.set_ylabel("Density",fontsize=14)
+#     ax1.set_xlim([.45,.8])
+#     ax1.grid()
+#     ax1.legend()
+
+# # Second plot
+#     ax2.plot(x, rho, "k.")
+#     ax2.set_title("RCM")
+#     ax2.grid()
+#     ax2.set_xlim([.45,.8])
+#     ax2.legend()
+#     fig.suptitle("$V_L=0.9 = V_R$ Shockwave only",fontsize=15)
+
+# # Adjust layout
+#     plt.tight_layout()
+#     plt.show()
 
 elif len(np.shape(rho)) == 2:
     with  open("Parameters",'r') as f:

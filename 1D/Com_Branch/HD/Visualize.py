@@ -71,15 +71,16 @@ if len(np.shape(p)) == 1:
     maxu = max(u);
     maxp = max(p);
 
-    plt.plot(x,rho,'b-')
-    plt.plot(x,u,'r-')
-    plt.plot(x,p,'k-')
+    plt.plot(x,rho,'ko',markersize=2)
+    # plt.plot(x,u,'r-')
+    # plt.plot(x,p,'k.')
     
     # plt.plot(x,DivP,'g-')
-    plt.plot(x,DivP/max(abs(DivP)),'g-')
+    # plt.plot(x,DivP/max(abs(DivP)),'g-')
     # plt.plot(x,-np.ones(len(x))*deltaX**2,'k-')
-    plt.scatter(x,rcm*.5)
-    plt.legend(["Rho","Vx","P","DivP"])
+    # plt.scatter(x,rcm*.5)
+    # plt.legend(["Rho","Vx","P","DivP"])
+    plt.legend(["Density"])
     if OverlayExact:
         plt.plot(xE,rhoE,'b--')
 

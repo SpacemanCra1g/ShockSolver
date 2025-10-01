@@ -20,13 +20,14 @@ xstart += deltaX/2 #adjust the interval one half deltax away from the start
 x = np.arange(xstart,xend,deltaX)
 
 
-plt.plot(x,u,'b-')
-plt.plot(x,v,'g-')
+# plt.plot(x,u,'b-')
+# plt.plot(x,v,'g-')
 plt.plot(x,rho,'k-')
-plt.plot(x,p,'r-')
+# plt.plot(x,p,'r-')
 
 plt.grid()
-plt.legend(["Vx","Vy"," Rho","Pres"])
+# plt.legend(["Vx","Vy"," Rho","Pres"])
+# plt.legend(["Rho"])
 
 plt.show()
 
