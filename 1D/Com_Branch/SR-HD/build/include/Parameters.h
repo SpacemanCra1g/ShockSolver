@@ -37,7 +37,7 @@
  *Run Parameters *
  *****************/
 #define EvolveChars false
-#define SpaceMethod WENO
+#define SpaceMethod FOG
 #define TestProblem CONTACTONLY
 #define BCS SHOCKTUBEBC
 #define RIEMANN HLLC
