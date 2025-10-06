@@ -43,8 +43,8 @@ int main() {
       std::cout << "The time is: " << Solver.T << " dt = " << Solver.dt
                 << std::endl;
     }
-    // } while (counter < 20 && Solver.T < TN);
-  } while (true && Solver.T < TN);
+  } while (counter < 20 && Solver.T < TN);
+  // } while (true && Solver.T < TN);
   Solver.writeResults();
   // }
 

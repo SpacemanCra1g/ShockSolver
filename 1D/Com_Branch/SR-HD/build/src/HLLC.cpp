@@ -11,13 +11,15 @@ void Domain::Hllc(int Start, int Stop) {
 
   // Cons2Prim(FluxWalls_Cons[LEFT], FluxWalls_Prims[LEFT], Start, Stop);
   // Cons2Prim(FluxWalls_Cons[RIGHT], FluxWalls_Prims[RIGHT], Start, Stop);
-  for (int i = Start; i < Stop; ++i) {
-    FluxWalls_Prims[LEFT][Tidx(PRES, i)] =
-        std::fmin(FluxWalls_Prims[LEFT][Tidx(PRES, i)], Prims[Tidx(PRES, 400)]);
 
-    FluxWalls_Prims[RIGHT][Tidx(PRES, i)] = std::fmin(
-        FluxWalls_Prims[RIGHT][Tidx(PRES, i)], Prims[Tidx(PRES, 400)]);
-  }
+  // for (int i = Start; i < Stop; ++i) {
+  //   FluxWalls_Prims[LEFT][Tidx(PRES, i)] =
+  //       std::fmin(FluxWalls_Prims[LEFT][Tidx(PRES, i)], Prims[Tidx(PRES,
+  //       400)]);
+
+  //   FluxWalls_Prims[RIGHT][Tidx(PRES, i)] = std::fmin(
+  //       FluxWalls_Prims[RIGHT][Tidx(PRES, i)], Prims[Tidx(PRES, 400)]);
+  // }
 
   Prims2Cons(FluxWalls_Prims[LEFT], FluxWalls_Cons[LEFT], Start, Stop);
   Prims2Cons(FluxWalls_Prims[RIGHT], FluxWalls_Cons[RIGHT], Start, Stop);

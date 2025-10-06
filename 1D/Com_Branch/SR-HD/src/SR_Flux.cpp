@@ -3,9 +3,9 @@
 void Domain::Flux(double *Dest, double *P, int i, int destI) {
   double vx, vy, vz, d, p, lor, val, h;
   d = P[Tidx(DENSP, i)];
-  // vx = P[Tidx(VELX, i)];
+  vx = P[Tidx(VELX, i)];
   // Changing to try to hard code VX
-  vx = P[Tidx(VELX, 4)];
+  // vx = P[Tidx(VELX, 4)];
   // CHANGEEEE
   // vx = .319;
   vy = P[Tidx(VELY, i)];
@@ -33,9 +33,9 @@ void Domain::HLL_Flux(double *Dest, double *PrL, double *PrR, double SL,
   double lorL, hL, valL, lorR, hR, valR, scalar;
 
   dL = PrL[Tidx(DENSP, i)];
-  // vxL = PrL[Tidx(VELX, i)];
+  vxL = PrL[Tidx(VELX, i)];
   // See ABOVE
-  vxL = PrL[Tidx(VELX, 4)];
+  // vxL = PrL[Tidx(VELX, 4)];
   vyL = PrL[Tidx(VELY, i)];
   // vxL = .319;
   // vyL = .319;
@@ -44,9 +44,9 @@ void Domain::HLL_Flux(double *Dest, double *PrL, double *PrR, double SL,
   pL = PrL[Tidx(PRES, i)];
 
   dR = PrR[Tidx(DENSP, i + 1)];
-  // vxR = PrR[Tidx(VELX, i + 1)];
+  vxR = PrR[Tidx(VELX, i + 1)];
   // ABOVE
-  vxR = PrR[Tidx(VELX, 4)];
+  // vxR = PrR[Tidx(VELX, 4)];
   vyR = PrR[Tidx(VELY, i + 1)];
   vzR = PrR[Tidx(VELZ, i + 1)];
   // vxR = .319;

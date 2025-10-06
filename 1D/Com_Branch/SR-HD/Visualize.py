@@ -77,7 +77,11 @@ if  True:
         RS = "AUSM+up"
 
 
-
+    Indx = np.argmax(p)
+    print(p[Indx-1:Indx+2])
+    print(E[Indx-1:Indx+2])
+    # print(Indx)
+    # exit()
 
 
 
@@ -135,7 +139,7 @@ if  True:
     # fig.legend(["Density","Normal Velocity"],fontsize=16)
     # plt.title("Shock tube problem at $t = 0.4$")
     # plt.legend(["Normal Velocity","Transverse Velocity","Density","Pressure"])
-    test = (u-u[0]).tolist()
+
     # print(test.index(min(test)))
     # print(test)
     # print(p[199:202])
@@ -147,18 +151,20 @@ if  True:
     ax1.plot(x,MomX,'b',linewidth=3)
     ax1.plot(x,MomY,'g--',linewidth=3)
     ax1.legend(["Rho","Energy","MomentumX","MomentumY"])
-    ax1.set_xlim([.45,.55])
+    ax1.set_title("Conservative Variables")
+    # ax1.set_xlim([.45,.55])
     ax1.grid()
 
     # fig.set_xlim([.48,.52])
 
-    ax2.plot(x,rho,'k',linewidth=3)
+    ax2.plot(x,rho/25,'k',linewidth=3)
     ax2.plot(x,p,'r',linewidth=3)
     ax2.plot(x,u,'b',linewidth=3)
     ax2.plot(x,v,'g--',linewidth=3)
-    ax2.legend(["Rho","Pressure","Vx","Vy"])
+    ax2.legend(["Rho/25","Pressure","Vx","Vy"])
     # ax2.set_xlim([.45,.55])
     ax2.grid()
+    ax2.set_title("Primative Variables")
     # print(max(v))
     # print(v)
     plt.show()
