@@ -308,6 +308,8 @@ public:
   // Defined in the SR dependent EnergyInverter.cpp file
   int EnergyInverter(double *Uin, double *Uout, int i);
 
+  int FixedVx(double *Uin, double *Uout, const int i, const double vx);
+
   // Defined in the Phyisics dependent IO.cpp file
   void writeResults();
 

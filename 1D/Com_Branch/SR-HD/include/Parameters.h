@@ -46,7 +46,7 @@
 #define RK_Method 3 /*set to -1 for CharTracing, sets automatically for PLM*/
 #define ell 6.0
 #define MoodOrder 3
-#define SlowStart true
+#define SlowStart false
 #define GAMMA (5.0 / 3.0)
 #define LIMITSLOPE MINMOD
 /****************

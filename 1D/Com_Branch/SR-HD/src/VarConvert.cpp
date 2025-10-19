@@ -6,6 +6,7 @@
 
 #define ENERGY_SOLVE 0
 #define PRESURE_FIX_SOLVE 1
+#define VEL_FIX_SOLVE 2
 #define MIN_DENSITY 1.e-5
 
 void Domain::Prims2Cons(double *Uin, double *Uout, int start, int stop) {
@@ -59,6 +60,8 @@ int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
     }
 
     SolMethod = ENERGY_SOLVE;
+    // SolMethod = PRESURE_FIX_SOLVE;
+    SolMethod = VEL_FIX_SOLVE;
 
     if (SolMethod == ENERGY_SOLVE) {
       err = EnergyInverter(Uin, Uout, i);
@@ -91,14 +94,32 @@ int Domain::Cons2Prim(double *Uin, double *Uout, int start, int stop) {
     }
 
     if (SolMethod == PRESURE_FIX_SOLVE) {
-      err = PressureFix(Uin, Uout, i, .5*(Uin[Tidx(PRES,i-1)] +Uin[Tidx(PRES,i+1)]) );
+      double pF = 0.90461;
+      // err = PressureFix(Uin, Uout, i, .5*(Uin[Tidx(PRES,i-1)] +Uin[Tidx(PRES,i+1)]) );
+      err = 0;
+      PressureFix(Uin, Uout, i, pF) ;
       if (err) {
         std::cout << "CRASH REPORT" << std::endl;
         std::cout << "Failure in Pressure fix" << std::endl;
         std::sqrt(-2.0);
         return i;
       } else {
-        err = PRESURE_FIX_SOLVE;
+        err = 0;
+      }
+    }
+
+    if (SolMethod == VEL_FIX_SOLVE) {
+      double vxF = 0.31937058;
+      // err = PressureFix(Uin, Uout, i, .5*(Uin[Tidx(PRES,i-1)] +Uin[Tidx(PRES,i+1)]) );
+      err = 0;
+      FixedVx(Uin, Uout, i, vxF) ;
+      if (err) {
+        std::cout << "CRASH REPORT" << std::endl;
+        std::cout << "Failure in Pressure fix" << std::endl;
+        std::sqrt(-2.0);
+        return i;
+      } else {
+        err = 0;
       }
     }
   }

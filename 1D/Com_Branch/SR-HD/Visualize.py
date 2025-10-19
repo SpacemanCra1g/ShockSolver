@@ -78,8 +78,8 @@ if  True:
 
 
     Indx = np.argmax(p)
-    print(p[Indx-1:Indx+2])
-    print(E[Indx-1:Indx+2])
+    # print(p[Indx-1:Indx+2])
+    # print(E[Indx-1:Indx+2])
     # print(Indx)
     # exit()
 
@@ -143,30 +143,53 @@ if  True:
     # print(test.index(min(test)))
     # print(test)
     # print(p[199:202])
-    fig, (ax1, ax2) = plt.subplots(1, 2, sharey=False)
+    fig, (ax2,ax3) = plt.subplots(1, 2, sharey=False)
     fig.suptitle("Contact wave only. 20 Timesteps in: FOG, HLLC",fontsize=20 )
 
-    ax1.plot(x,ConRho,'k',linewidth=3)
-    ax1.plot(x,E,'r',linewidth=3)
-    ax1.plot(x,MomX,'b',linewidth=3)
-    ax1.plot(x,MomY,'g--',linewidth=3)
-    ax1.legend(["Rho","Energy","MomentumX","MomentumY"])
-    ax1.set_title("Conservative Variables")
-    # ax1.set_xlim([.45,.55])
-    ax1.grid()
+    # ax1.plot(x,ConRho,'k',linewidth=3)
+    # ax1.plot(x,E,'r',linewidth=3)
+    # ax1.plot(x,MomX,'b',linewidth=3)
+    # ax1.plot(x,MomY,'g--',linewidth=3)
+    # ax1.legend(["Rho","Energy","MomentumX","MomentumY"])
+    # ax1.set_title("Conservative Variables")
+    # # ax1.set_xlim([.45,.55])
+    # ax1.grid()
+
+    # print(ConRho[200],MomX[200],MomY[200],E[200])
 
     # fig.set_xlim([.48,.52])
 
-    ax2.plot(x,rho/25,'k',linewidth=3)
-    ax2.plot(x,p,'r',linewidth=3)
-    ax2.plot(x,u,'b',linewidth=3)
-    ax2.plot(x,v,'g--',linewidth=3)
+    ax2.plot(x,rho/25,'k.',linewidth=3)
+    ax2.plot(x,p,'r^',linewidth=3,markersize=6,markerfacecolor='none')
+    ax2.plot(x,u,'b.',linewidth=3)
+    ax2.plot(x,v,'g.',linewidth=3)
     ax2.legend(["Rho/25","Pressure","Vx","Vy"])
     # ax2.set_xlim([.45,.55])
     ax2.grid()
     ax2.set_title("Primative Variables")
     # print(max(v))
     # print(v)
+
+    gam = 5/3
+    sig = gam/(gam-1)
+    LorD = [1.0 / np.sqrt(1 - v[i]**2 - u[i]**2) for i in range(len(x))]
+    hD = [1 + sig*(p[i]/rho[i]) for i in range(len(x))]
+    DD = [LorD[i]*rho[i] for i in range(len(x))]
+    SiD = [(LorD[i]**2)*rho[i]*hD[i]*u[i] for i in range(len(x))]
+    SjD = [(LorD[i]**2)*rho[i]*hD[i]*v[i] for i in range(len(x))]
+    ED = [(LorD[i]**2)*rho[i]*hD[i] - p[i] for i in range(len(x))]
+
+    ax3.plot(x,DD,'k.',linewidth=3)
+    ax3.plot(x,ED,'r^',linewidth=3,markersize=6,markerfacecolor='none')
+    ax3.plot(x,SiD,'b.',linewidth=3)
+    ax3.plot(x,SjD,'g.',linewidth=3)
+    
+    ax3.legend(["Rho","Energy","MomentumX","MomentumY"])
+    ax3.set_title("Conservative Variables")
+    # ax2.set_xlim([.45,.55])
+    ax3.grid()
+    
+
     plt.show()
 
     # plt.legend([RS +" Vx",RS +" Rho",RS+" Pres", "HLLC Vx","HLLC Rho","HLLC Pres","Exact Vx","Exact Rho","Exact Pres",])
